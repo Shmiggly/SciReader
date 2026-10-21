@@ -23,7 +23,7 @@
 
 **2-minute test:** flagship from Recent → click a sentence on page 2 → Shift+→, F → page 5, the "Fig. 3b" sentence: the figure pops up after it ("panel b") → page 13: click equation 22's ✓ badge → ✦ AI → Explain → Aa Pronunciation: ▶ GPJet, type "G P jet", Save → ¶ Text view → ⚙ Export audiobook → ▦ Models: preview a voice. For `E`: open the photopolymerization review sample, play a sentence with "Eq. (2)", press E.
 
-**Your to-dos (~20 min):** (1) 30 blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (don't open `bench/rating/items.json`); (2) skim `docs/writeup.md` and `docs/demo_script.md`; (3) Valency/Adaption prize rules (§9).
+**Your to-dos (~20 min):** (1) 30 blind ratings, from the repo folder `D:\Github\SciReader\SciReader`: `uv run --directory backend marimo run ../bench/rate.py` (don't open `bench/rating/items.json`); (2) skim `docs/writeup.md` and `docs/demo_script.md`; (3) Valency/Adaption prize rules (§9).
 
 **Decisions to review (details §5):** author list skipped by default; MinerU dropped; Explain works on the current sentence or a Shift+click range (no free text selection); chemistry spoken "F-E 2 O 3"; benchmark naive condition simulated from MathML glyph order; judge = phi4:14b (third family) because gemma is the gate's checker; I adjudicated the 30-item subset myself (you may want to spot-check `bench/data/adjudication.json`).
 

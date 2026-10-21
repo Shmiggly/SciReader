@@ -42,7 +42,7 @@ def _(RATING, clips, mo, saved):
     rows = []
     for c in clips:
         rows.append(mo.vstack([
-            mo.md(f"**{c['blind_id']}** &nbsp; $${c['latex']}$$"),
+            mo.md(f"**{c['blind_id']}**\n\n$$\n{c['latex']}\n$$"),
             mo.audio(src=str(RATING / "audio" / f"{c['blind_id']}.wav")),
             sliders[c["blind_id"]],
         ]))
