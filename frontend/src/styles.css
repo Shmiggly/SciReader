@@ -212,3 +212,4 @@ select, input[type="text"], input:not([type]) {
 .pron-table input { width: 100%; min-width: 120px; }
 .nowrap { white-space: nowrap; }
 .button-like { text-decoration: none; color: inherit; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; }
+.eqref-pop img { max-height: 140px; } .eq-hint { margin-right: 6px; }

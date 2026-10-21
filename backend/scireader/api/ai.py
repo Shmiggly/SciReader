@@ -188,3 +188,14 @@ def summary(doc_id: str, req: SummaryReq) -> dict:
         return qa.summarize(doc, req.section_id)
     except ollama.LLMUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
+
+
+@router.get("/docs/{doc_id}/crop")
+def crop(doc_id: str, page: int, x0: float, y0: float, x1: float, y1: float) -> Response:
+    """A crop of a PDF page (exactly as published), e.g. an equation for the reference popup."""
+    _check(doc_id)
+    key = f"crop_{page}_{int(x0)}_{int(y0)}_{int(x1)}_{int(y1)}.png"
+    cache = store.dir(doc_id) / key
+    if not cache.exists():
+        cache.write_bytes(figures.crop_png(str(store.pdf_path(doc_id)), page, [x0, y0, x1, y1], scale=2.5))
+    return Response(cache.read_bytes(), media_type="image/png", headers={"Cache-Control": "max-age=86400"})

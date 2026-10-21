@@ -82,6 +82,7 @@ interface State {
   figPopup: FigPopup | null;
   figuresOn: boolean;
   selection: string[] | null;
+  eqRef: { blockId: string; sentenceId: string } | null;
   setDoc: (doc: Doc | null) => void;
   set: (p: Partial<State>) => void;
 }
@@ -115,6 +116,7 @@ export const useStore = create<State>((set) => ({
   figPopup: null,
   figuresOn: true,
   selection: null,
+  eqRef: null,
   setDoc: (doc) => {
     const index = new Map<string, Entry>();
     const order: string[] = [];
@@ -229,6 +231,18 @@ audio.addEventListener("ended", () => {
   cancelAnimationFrame(raf);
   const st = get();
   const cur = st.current;
+  if (eqRefResume) {
+    const r = eqRefResume;
+    eqRefResume = null;
+    useStore.setState({ eqRef: null, tts: r.tts, current: r.current });
+    if (r.wasPlaying && r.src) {
+      audio.src = r.src;
+      audio.currentTime = r.time;
+      audio.playbackRate = get().speed;
+      void audio.play().then(() => useStore.setState({ playing: true }));
+    } else useStore.setState({ playing: false });
+    return;
+  }
   if (oneShot) {
     oneShot = false;
     useStore.setState({ playing: false, word: null });
@@ -252,6 +266,53 @@ audio.addEventListener("ended", () => {
 });
 
 let figPlaying = false;
+let eqRefResume: { src: string; time: number; tts: TtsResult | null; current: string | null; wasPlaying: boolean } | null = null;
+let eqRefCursor: { sid: string; i: number } | null = null;
+
+const EQ_REF = /\b(?:Eqs?\.|Eqn\.|Equations?)\s*\(?\s*(\d{1,3}[a-z]?)\s*\)?(?:\s*(?:and|,|–|-)\s*\(?(\d{1,3}[a-z]?)\)?)?/g;
+
+/** Equation blocks cited by a sentence ("Eq. (3)", "Eqs. 4 and 5"), in order. */
+export function citedEquations(sid: string | null): Block[] {
+  const st = get();
+  const e = sid ? st.index.get(sid) : undefined;
+  if (!e || !st.doc || e.b.type === "equation") return [];
+  const out: Block[] = [];
+  for (const m of e.s.text.matchAll(EQ_REF)) {
+    for (const n of [m[1], m[2]]) {
+      if (!n) continue;
+      const b = st.doc.blocks.find((x) => x.type === "equation" && x.eq_number === n);
+      if (b && !out.includes(b)) out.push(b);
+    }
+  }
+  return out;
+}
+
+/** `E`: pause, show the cited equation over the text, read it, then resume where reading was. */
+export async function readCitedEquation() {
+  const st = get();
+  const refs = citedEquations(st.current);
+  if (!refs.length || !st.current) return;
+  const i = eqRefCursor && eqRefCursor.sid === st.current ? (eqRefCursor.i + 1) % refs.length : 0;
+  eqRefCursor = { sid: st.current, i };
+  const b = refs[i];
+  if (!eqRefResume) {
+    eqRefResume = { src: audio.src, time: audio.currentTime, tts: st.tts, current: st.current, wasPlaying: st.playing };
+  }
+  const my = ++token;
+  audio.pause();
+  useStore.setState({ eqRef: { blockId: b.id, sentenceId: st.current }, word: null, loading: true });
+  try {
+    const r = await fetchTts(b.sentences[0].id);
+    if (my !== token) return;
+    audio.src = r.audio_url;
+    audio.playbackRate = get().speed;
+    await audio.play();
+    useStore.setState({ loading: false, playing: true });
+  } catch (err) {
+    eqRefResume = null;
+    useStore.setState({ eqRef: null, loading: false, error: err instanceof Error ? err.message : String(err) });
+  }
+}
 let oneShot = false;
 
 /** Read arbitrary (AI) text aloud once, without continuing the paper afterwards. */
@@ -341,6 +402,8 @@ export async function playSentence(sid: string): Promise<void> {
   figQueue = [];
   figPlaying = false;
   oneShot = false;
+  eqRefResume = null;
+  if (get().eqRef) useStore.setState({ eqRef: null });
   if (get().selection) useStore.setState({ selection: null });
   if (get().figPopup && !get().figPopup!.pinned) useStore.setState({ figPopup: null });
   const st = get();

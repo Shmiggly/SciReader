@@ -286,6 +286,7 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
       <Overlay page={index} scale={scale} />
       <EquationLayer page={index} scale={scale} pageWidth={width * scale} />
       <FigureLayer page={index} scale={scale} pageWidth={width * scale} />
+      <EqRefLayer page={index} scale={scale} pageWidth={width * scale} />
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
     </div>
   );
@@ -413,6 +414,30 @@ function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; 
       <div className="eq-actions">
         <button onClick={figureDetail} title="More detail (D)">More detail (D)</button>
       </div>
+    </div>
+  );
+}
+
+function EqRefLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
+  const ref = useStore((s) => s.eqRef);
+  const doc = useStore((s) => s.doc)!;
+  const res = useStore((s) => (ref ? s.eqResults[ref.blockId] : undefined));
+  if (!ref) return null;
+  const e = sentenceAt(ref.sentenceId);
+  const r = e?.s.rects[0];
+  const b = doc.blocks.find((x) => x.id === ref.blockId);
+  if (!r || r[0] !== page || !b) return null;
+  const w = Math.min(560, pageWidth - 16);
+  const left = Math.max(8, Math.min(r[1] * scale, pageWidth - w - 8));
+  const [x0, y0, x1, y1] = b.bbox;
+  const verdict = res?.verdict;
+  return (
+    <div className="fig-pop eqref-pop" style={{ left, top: Math.max(4, r[2] * scale - 150), width: w }} onClick={(ev) => ev.stopPropagation()}>
+      <div className="eq-pop-head">
+        <b>Equation {b.eq_number} (page {b.page + 1})</b>
+        {verdict && <span className={`eq-badge static ${verdict}`}>{verdict}</span>}
+      </div>
+      <img src={`/api/docs/${doc.id}/crop?page=${b.page}&x0=${x0}&y0=${y0}&x1=${x1}&y1=${y1}`} alt={`Equation ${b.eq_number}`} />
     </div>
   );
 }

@@ -9,7 +9,9 @@ import { Pronunciation } from "./Pronunciation";
 import {
   type EqMode,
   type FigMention,
+  citedEquations,
   figureDetail,
+  readCitedEquation,
   PRESETS,
   SKIP_LABELS,
   isReadable,
@@ -174,6 +176,11 @@ function PlaybackBar() {
         <button onClick={nextSection} title="Next section">§›</button>
       </div>
       <div className="now-reading" title="Exactly what is being spoken">
+        {citedEquations(current).length > 0 && (
+          <button className="chip eq-hint" onClick={() => void readCitedEquation()} title="Hear the cited equation (E)">
+            Eq. {citedEquations(current).map((b) => b.eq_number).join(", ")} · press E
+          </button>
+        )}
         {error ? <span className="error-text">{error}</span> : spoken ? <span>{spoken}</span> : <span className="muted">Click any sentence in the paper to start reading.</span>}
       </div>
       <div className="controls">
@@ -256,7 +263,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
         </div>
       </section>
       <section className="muted small">
-        Keys: Space play/pause · ←/→ sentence · Shift+←/→ paragraph · +/− speed · F focus
+        Keys: Space play/pause · ←/→ sentence · Shift+←/→ paragraph · +/− speed · F focus · E cited equation · D figure detail
       </section>
     </aside>
   );
@@ -290,6 +297,10 @@ function useKeyboard() {
         case "-":
         case "_":
           setSpeed(useStore.getState().speed - 0.1);
+          break;
+        case "e":
+        case "E":
+          readCitedEquation();
           break;
         case "d":
         case "D":
