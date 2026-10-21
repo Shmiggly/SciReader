@@ -131,3 +131,28 @@ def explain(doc: dict, sentence_ids: list[str], level: str = "colleague", extra:
     text = ollama.chat(model, msgs, num_ctx=NUM_CTX, num_predict=500, keep_alive="30m")
     valid = set(by_id)
     return {**parse_answer(text, valid), "model": model, "level": level}
+
+
+SUMMARY_PROMPT = (
+    "Write a spoken summary of {what} for a materials scientist who will listen to it, about {words} words: "
+    "the question, the approach, the key results with their numbers, and the main limitation. Plain spoken "
+    "English, no lists, no markdown, symbols in words. Cite sentence IDs in square brackets after each claim."
+)
+
+
+def summarize(doc: dict, section_id: str | None = None) -> dict:
+    """1-2 minute spoken summary of the whole paper or one section (AI, labeled as such by the caller)."""
+    model = ollama.models_for_jobs()["reader"]
+    if section_id:
+        title = next((o["title"] for o in doc["outline"] if o["id"] == section_id), "this section")
+        ids = [s["id"] for b in doc["blocks"] if b.get("section_id") == section_id and not b.get("skip_reason")
+               for s in b["sentences"]]
+        what = f"the section \"{title}\" (sentences {ids[0]} to {ids[-1]})" if ids else f"the section \"{title}\""
+        words = 150
+    else:
+        what, words = "the whole paper", 260
+    msgs = [{"role": "system", "content": SYSTEM + "\n\nPAPER:\n" + paper_context(doc)},
+            {"role": "user", "content": SUMMARY_PROMPT.format(what=what, words=words)}]
+    text = ollama.chat(model, msgs, num_ctx=NUM_CTX, num_predict=700, keep_alive="30m")
+    valid = {sid for sid, _ in _readable_lines(doc)}
+    return {**parse_answer(text, valid), "model": model, "section_id": section_id}

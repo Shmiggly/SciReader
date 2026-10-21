@@ -175,3 +175,16 @@ def say(req: SayReq) -> dict:
     spoken = speak(text[:4000]).spoken
     k, meta = synth_cached(spoken, req.voice)
     return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken, "words": []}
+
+
+class SummaryReq(BaseModel):
+    section_id: str | None = None
+
+
+@router.post("/docs/{doc_id}/summary")
+def summary(doc_id: str, req: SummaryReq) -> dict:
+    doc = _doc_or_404(doc_id)
+    try:
+        return qa.summarize(doc, req.section_id)
+    except ollama.LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc

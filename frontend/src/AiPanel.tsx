@@ -57,6 +57,19 @@ export function AiPanel({ onClose }: { onClose: () => void }) {
   const [q, setQ] = useState("");
   const [qa, setQa] = useState<QA[]>([]);
   const [asking, setAsking] = useState(false);
+  const [summary, setSummary] = useState<{ a?: Answer; error?: string; busy: boolean; scope: string } | null>(null);
+  const curSection = sentenceAt(current)?.b.section_id ?? null;
+  const runSummary = async (section: string | null) => {
+    const scope = section ? doc.outline.find((o) => o.id === section)?.title ?? "this section" : "the whole paper";
+    setSummary({ busy: true, scope });
+    try {
+      const a = await api.post<Answer>(`/api/docs/${doc.id}/summary`, { section_id: section });
+      setSummary({ a, busy: false, scope });
+      sayText(a.spoken, `AI summary of ${scope}:`);
+    } catch (e) {
+      setSummary({ error: e instanceof Error ? e.message : String(e), busy: false, scope });
+    }
+  };
 
   useEffect(() => {
     api.get<{ ollama: boolean }>("/api/ai/status").then((r) => setOk(r.ollama), () => setOk(false));
@@ -118,6 +131,16 @@ export function AiPanel({ onClose }: { onClose: () => void }) {
         </div>
         {explained?.error && <div className="error-box">{explained.error}</div>}
         {explained?.a && <AnswerView a={explained.a} label="AI explanation:" />}
+      </section>
+      <section>
+        <div className="panel-sub">Listen to a summary (AI)</div>
+        <div className="row">
+          <button disabled={summary?.busy} onClick={() => void runSummary(null)}>▶ Whole paper</button>
+          <button disabled={summary?.busy || !curSection} onClick={() => void runSummary(curSection)}>▶ This section</button>
+          {summary?.busy && <span className="muted small">writing the summary of {summary.scope}…</span>}
+        </div>
+        {summary?.error && <div className="error-box">{summary.error}</div>}
+        {summary?.a && <AnswerView a={summary.a} label={`AI summary of ${summary.scope}:`} />}
       </section>
       <section>
         <div className="panel-sub">Ask the paper</div>
