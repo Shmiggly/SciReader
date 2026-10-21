@@ -16,6 +16,8 @@ SciReader is Apache-2.0. Every dependency and model is tracked here; anything GP
 | spaCy, en_core_web_sm | MIT | Used by misaki |
 | soundfile (libsndfile) | BSD-3 / LGPL-2.1 | |
 | numpy | BSD-3 | |
+| rapidocr | Apache-2.0 | OCR for scanned PDFs (torch backend) |
+| marimo, matplotlib, pandas | Apache-2.0 / matplotlib (BSD-style) / BSD-3 | Benchmark analysis only (`bench` dependency group) |
 
 ## Node
 
@@ -27,6 +29,7 @@ SciReader is Apache-2.0. Every dependency and model is tracked here; anything GP
 | katex | MIT | |
 | mathjax-full | Apache-2.0 | LaTeX → MathML |
 | speech-rule-engine | Apache-2.0 | MathML → speech (ClearSpeak) |
+| @fontsource/atkinson-hyperlegible, @fontsource/opendyslexic | OFL-1.1 | Reading fonts for the text view (bundled) |
 
 ## Models (downloaded by the user, never redistributed)
 
@@ -36,6 +39,9 @@ SciReader is Apache-2.0. Every dependency and model is tracked here; anything GP
 | docling-project/docling-layout-heron, docling-models (TableFormer), CodeFormulaV2 | Apache-2.0 / MIT (unverified per model card) | Layout, tables, formula LaTeX |
 | qwen3.5:9b (Ollama) | Apache-2.0 (unverified) | Narration, figures, explain/ask |
 | gemma4:12b (Ollama) | Gemma terms / Apache-2.0 (unverified) | Back-transcription for verification |
+| qwen3.5:4b (Ollama) | Apache-2.0 (unverified) | Smaller reader; benchmark condition f |
+| phi4:14b (Ollama) | MIT | Benchmark judge only (independent model family) |
+| RapidOCR models | Apache-2.0 | OCR for scanned PDFs |
 
 ## Avoided as defaults
 
