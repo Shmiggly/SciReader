@@ -67,7 +67,7 @@ def _number_pattern(number: str | None) -> str:
 
 
 def _strip_number(s: str, number: str | None) -> str:
-    s = re.sub(r"\\(?:tag|label)\*?\s*(?:\{[^{}]*\}|\(?\d{1,3}[a-z]?\)?)|\\(?:nonumber|notag)\b", " ", s)
+    s = re.sub(r"\\(?:tag|label|eqno|leqno)\*?\s*(?:\{[^{}]*\}|\(?\d{1,3}[a-z]?\)?)|\\(?:nonumber|notag)\b", " ", s)
     s = _NUM_WRAPPED.sub(lambda m: " " + m.group(1), s)
     num = _number_pattern(number)
     # Set off by spacing or alignment, anywhere (a multi-line equation's number can sit on a middle line)...
@@ -103,11 +103,13 @@ def clean_transcription(raw: str, number: str | None, pdf_text: str) -> str:
             s = m.group(1)
             break
     s = s.strip().strip("$").strip()
+    s = s.replace("\\pmb", "\\boldsymbol")  # MathJax draws \pmb's argument twice, so it would never compare equal
     s = _ENV.sub(" ", s)
     s = _strip_number(s, number)
     s = re.sub(r"\\\\(?:\[[^\]]*\])?", " ", s)
     s = re.sub(r"(?<!\\)&", " ", s).replace("\n", " ")
     s = _cut_label(s, pdf_text)
+    s = re.sub(r"[.,;]\s*((?:\}\s*)*)$", r"\g<1>", s.rstrip())  # the sentence's period, also inside wrapping braces
     s = clean_latex(s)
     # "\mathrm { h i g h }" became "\mathrm { \mathrm{high} }" when the letters were joined.
     return re.sub(r"\\(?:mathrm|text|textrm|operatorname)\s*\{\s*(\\mathrm\{[A-Za-z]+\})\s*\}", r"\g<1>", s)
@@ -189,4 +191,5 @@ def decide(parser: str, vision: str | None, block: dict, springer: bool) -> dict
         return {**rec, "status": "agree", "used": "parser"}
     if sum(tb.values()) >= 3 and off_v != off_p:
         return {**rec, "status": "page", "used": "vision" if off_v < off_p else "parser"}
-    return {**rec, "status": "disputed", "used": "parser"}
+    # Same symbols means only the structure differs (grouping, what a root or fraction covers): no text layer can tell.
+    return {**rec, "status": "disputed", "used": "parser", "same_symbols": ps == vs}

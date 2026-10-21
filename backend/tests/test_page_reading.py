@@ -26,6 +26,9 @@ needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="Node.js is
         (r"g = f(2)", "2", "", r"g = f"),
         (r"x = 1 \quad (5)", None, "", r"x = 1"),
         (r"\mu _ { \mathrm { h i g h } } = 1", None, "", r"\mu _ { \mathrm{high} } = 1"),
+        (r"\pmb { x } _ { p } = 1", None, "", r"\boldsymbol { x } _ { p } = 1"),
+        (r"\frac{dA}{dt} = -kA \eqno{(1)}", "1", "", r"\frac{dA}{dt} = -kA"),
+        (r"{ { x = [ 3 , 3 ] . } }", None, "", r"{ { x = [ 3 , 3 ] } }"),
     ],
 )
 def test_clean_transcription(raw, number, text, expected):

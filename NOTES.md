@@ -4,58 +4,58 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 09:50 EDT (UI polish block done; tag `m6.2-polish`)
+**Last updated:** 2026-10-21 13:45 EDT (equation-quality block done; tag `m6.3-equations`)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written 09:50 EDT Wed, end of the UI polish block (fresh session from 09:16). All pushed; tags through `m6.2-polish`; 317 backend tests pass. Before/after screenshots (1366×850) were sent to the user.**
+**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you.**
 
-**Done this block (each checked in the browser pane at 1366×850, the layout fix also at 1024×768)**
-1. **AI panel refit:** a fit-to-width mode (on by default; "Fit" next to the zoom) refits the PDF when the AI or settings panel opens or the window resizes: flagship 177 % → 113 % with the panel, both columns visible. Manual zoom turns it off. A zoom change keeps the sentence being read, or the top of the view, in place. The zoom controls moved to the top bar (they covered the right column).
-2. **Equation badges** never cover text or each other: right of the equation, or in the left margin for a left-column equation on a two-column page; stacked when crowded; icons only (✓ ? ✗ !) when a margin is too narrow for labels (flagship with the AI panel open; the MDPI paper always). Hovering a badge outlines its equation.
-3. **Parser fragments are junk** (no badge, not read, not checked): flagship `b163` (a "2 2" sliver that was read as a stray "Equation.") and GNN paper p. 11 `b55` (a duplicate "x_0^(1)", numbered "1" from its own superscript, read twice). Both papers rebuilt. The flagship app tally is now 32 equations: 6 verified, 1 uncertain, 22 rules, 3 unreadable (the paper itself has 33, so the write-up's "6 of 33" still holds).
-4. **Layout bug:** a long title (MDPI review) made the reader wider than the window: top-bar buttons and "Continue" were cut off, and the fit zoom was too large. Fixed.
-5. The GNN paper had no in-app equation checks; opening it ran them: 4 verified, 1 uncertain, 6 rules.
-
-**Previous block** (fix and honesty, tag `m6.1-fixes`, details in DEVLOG): strict gate; flagship parsing fixes; benchmark rerun (judge-capable subset: naive 44 %, 9B 64 → 88 % with the gate, 4B 59 → 91 %; all 220: naive 24, rules 30, LLM 32, verified 37 %); held-out units test (generic reader 36 %, SciReader 10 % mispronounced); your ratings: SciReader as shipped 3.8 = rules 3.8; docs updated; clean-clone install passed (`D:\scratch\scireader-clone` can be deleted). **The demo script is untouched** (your call): its benchmark lines are stale ("four in five", "64 to 89 percent", "SciReader none").
+**Done this block**
+1. **Second reading of the page.** In the background equation job, before narration, `qwen3.5:9b` (the reader model, as a vision model) transcribes each equation's crop. If it agrees with Docling's LaTeX, the source is confirmed. If not, the PDF text layer decides: its glyph order is useless but its symbols are what is printed, so both readings are compared with it as bags of symbols (Springer glyphs mapped, radical bars, TeX tall-delimiter pieces, label and number removed). A tie keeps Docling's reading and marks it disputed. The chosen LaTeX drives the rules reading, the narration and the gate; both readings are kept (`equations.json` → `source`). The popover has a Source line (which reading, whether they agreed) and both readings under Check details. Code: `backend/scireader/llm/page_reading.py`, `_source()` in `equations.py`.
+2. **Flagship before → after (32 equations):** verified 6 → 7, uncertain 1 → 1, rules 22 → 24, unreadable 3 → 0. Sources: 13 agree; 17 take the page reading (14 by the text layer, plus eqs 11, 16, 31 that Docling garbled); on 1 the text layer sided with Docling (eq 3, still θ_j for θ_jl); 1 disputed (eq 20, structure only). LaTeX changes: K¹ → K⁻¹ (eqs 27, 28, 30, 32), τ_m → τ_rr (7, 10), ρ → p (13), V_f → V_j (12), γ → y and ϵ → ∈ (21), 1;n → 1:n (26, 27), "preious" → previous (4), "hgh" → high (33), cos → cos cos (18, as the PDF prints it), eq 9's junk tail dropped (it reads "E l_t" for E′_t now). Eq 27 is verified against K⁻¹ now; eqs 26 and 33 are newly verified. Eq 23 lost its ✓: a context sentence had changed in an earlier rebuild, so its narration was redone ("expectation of m" came back as μ).
+3. **Other papers (re-run in the app):** GNN 3 verified / 1 uncertain / 6 rules (2 page readings: W_χ not W_x, a matrix instead of stray text), PA12 6/1/5 (unchanged; 3 disputed on notation), OPC 1/1/4 (𝒳 not χ), DLW 0/1/3, MDPI 3/0/7 (was 2/0/8; the sum now runs from n = 1). Across 74 equations: 44 agree, 21 take the page reading, 2 keep Docling's on the text layer's word, 5 disputed, 1 without a second reading (the vision model looped and Ollama aborted it).
+4. **OCR accuracy against arXiv source** (`bench/scripts/ocr_accuracy.py`; 20 aligned equations from 3 arXiv samples, OPC didn't align): Docling 18 exact, vision 17, chosen 18; the readings agreed on 18 (17 right). On clean pdfTeX papers Docling is already good; the gain is on publisher PDFs.
+5. **Comparator equivalences** (`verify.py`, with tests): `\cos(\psi)` = `\cos\psi` (one-token argument of an operator name), `\left.X\right|_{a}` = `X|_{a}`, a script on a closing bracket = on the group (`\left(x\right)^2` = `(x)^2`), `\det` = `\operatorname{det}`. Evaluation bar vs "(Z=0)" not added: a different notation, not clearly safe.
+6. **Benchmark re-scored from cached calls** (plus a few new repair and judge calls): no 9B verdict changed, none of the 8 adjudicated wrong narrations is spoken, and the 3 newly gate-accepted narrations were checked by hand (faithful). New numbers, docs updated: judge-capable subset 70 (was 66): naive 43 %, 9B 61 → 89 % with the gate, 4B 57 → 90 %, gate recall 78/77 %; all 220: naive 25, rules 32, LLM 33, verified 40 %. AI narration is still spoken for 81 of 220. "About 1 in 3" became "more than 1 in 3" (39 %).
+7. **Bug fixed:** the backend served `.mjs` as text/plain (this machine's registry maps .mjs to text/plain), so the built app (`dev.ps1`) couldn't load the pdf.js worker and no PDF opened. If an Edge app window still fails, it cached the old response: Ctrl+F5 once.
 
 **How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
-**2-minute test:** flagship from Recent → click a sentence on page 2 → page 5, the "Fig. 3b" sentence: the figure pops up after it → page 13: equation 8's ✓ badge ("Charge"), equation 18's ? badge (rules reading, and why); hover a margin badge to outline its equation → ✦ AI (the PDF refits) → Explain → Aa Pronunciation → ¶ Text view → ▦ Models.
+**2-minute test:** flagship from Recent → page 13 → eq 27's ✓ badge (K⁻¹; Source: "the PDF's text layer matches qwen3.5:9b's reading…") → eq 21 (y = f(x), x ∈ Rᵈ) → eq 11 (unreadable before, now read from the page) → Check details shows both readings → ✦ AI → Explain → Aa Pronunciation → ¶ Text view.
 
 **Still broken or weak**
-- Flagship: 22 of 32 equations still use the rules reading (noisy OCR LaTeX); the in-app checker rejects ~25 % of correct narrations.
+- Flagship: 24 of 32 still use the rules reading. The failures are now mostly narrator and checker slips: "Theta" without "capital" (eq 14 comes back as θ), "end exponent" written back as `^{\exp}` (eqs 12, 13), "evaluated at" written back as (Z=0), a checker adding "where" (eq 21). Both readers still misread eq 3 (θ_jl) and eq 9 (E′_t).
+- The gate passes narrations with extra explanatory words when the math round-trips (eq 27: "…where the subscript on y runs from one to n").
+- Vision-model notation quirks leave 3 disputes on PA12 (`\mathop{\mathrm{argmin}}`, `\left\|` for `||`, text inside `\mathrm`).
+- The second reading adds ~2 s per equation on a paper's first check (cached afterwards).
 - Text-layer limits: superscripts lost ("O(105 s)" for 10⁵ s), "1.3A" glued, units without a number ("mAh/g").
-- Minor UI: a badge sits at the top line of a multi-line equation, not next to its number; icon-only badges need a hover for the label. Recent lists the PA12 paper twice: the second is the previous session's scanned-PDF OCR test copy (`scanned_test.pdf`).
+- Minor UI: a badge sits at the top line of a multi-line equation, not next to its number; icon-only badges need a hover for the label. Recent lists the PA12 paper twice: the second is the scanned-PDF OCR test copy (`scanned_test.pdf`).
 - OCR'd papers highlight per paragraph; summaries take 10–20 s; per-section voice/speed was cut.
 
 **Simulated or self-graded (disclosed in the docs)**
 - Benchmark "naive" is simulated from MathML glyph order; the video's generic-reader clip must be a real recording.
-- The 30-item adjudication and the 13 held-out reference corrections were made by the agent (the latter blind to SciReader's output).
+- The 30-item adjudication, the 13 held-out reference corrections (blind to SciReader's output) and the check of the 3 newly accepted narrations were made by the agent.
 - Naturalness: one rater (you), 10 equations; one rated rules clip used the old "normal Gamma" wording.
 
-**Decisions to review (details §5):** strict gate; held-out protocol (dev/test, either chemistry convention, 6 non-prose snippets dropped); Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b; badge placement and the fragment rule.
-
-**Equations: diagnosis and first experiment (10:00–10:30; the user wants to iterate on equation quality)**
-- Why flagship equations fall back: mostly the parser's formula OCR. K¹ for K⁻¹ (eqs 27, 28, 30, 32; eq 27 is "verified" against the wrong LaTeX), τ_m/τ_r for τ_rr, ρ for p, V_f for V_j, γ and ϵ for y and ∈, "preious", "hgh"; the 3 unreadable are OCR garble. Then narrator slips (an invented fraction in eq 6, "P times e to the power" for Pe, the evaluation bar read as a subscript, "Theta" without "capital"), checker slips ("end exponent" → `^{\exp}`, Bo → B_0, hallucinated tails) and comparator gaps (`\cos(\psi)` vs `\cos\psi`, `\left.\Theta\right|` vs `\Theta|`).
-- Experiment: qwen3.5:9b vision transcribing each equation crop (58 s for 32) agrees with Docling on 12, gives parseable LaTeX for all 3 unreadable, and on most of the 17 disagreements matches the page (K⁻¹, τ_rr, V_j, p, y ∈ R^d, 1:n, high, previous). It errs on eq 3 (θ_ji for θ_jl) and eq 9 ("E l_t" for E′_t). Both readers see "cos cos"/"sin sin" in eqs 18–20, as does the text layer. Scripts and results: `D:\scratch\eq-second-reading\` (`vlm_ocr.py`, `eqdiag.py`, `vlm_qwen3.5_9b.json`).
-- Plan for a fresh session: (1) a second reading of every equation crop by the vision model: agreement means "source confirmed"; on disagreement pick by the PDF text layer's symbols (Springer glyphs mapped), else keep Docling and flag it; (2) comparator equivalences (function-argument parentheses, `\left.X\right|`, evaluation bar); (3) narrator and checker prompt fixes (capital Greek; "end subscript/exponent" are not symbols), which change cached calls, so the benchmark needs a GPU re-run and the docs new numbers; (4) measure OCR accuracy against arXiv source on the sample papers (source-mode alignment gives ground truth).
+**Decisions to review (details §5):** second reading (text layer as tiebreaker; a tie keeps Docling's; a vision-only reading is used only when the text layer backs it); comparator equivalences; prompt fixes not done (see Next). Earlier: strict gate; held-out protocol; Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b; badge placement and the fragment rule.
 
 **Next**
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
-2. **Equation block in a fresh session after 12:10** (the plan above). Your review: `docs/writeup_onepage.md` (574-word draft of the one-pager; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
-3. Later, when you say so: the video (update the demo script numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
+2. **Prompt fixes (step 4 of the equation plan, not done; your call):** the narrator says "capital" for uppercase Greek; the checker treats "end subscript/exponent" as structure, not symbols. They change every cached narration and back-transcription: a GPU benchmark re-run (~1 h, background), new numbers in README, both write-ups and the bench README, and a re-run of the app's equation jobs. Caveat: the 30-item adjudication and your 10-equation ratings describe the current narrations; after a prompt change, report them as the previous version or redo them.
+3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
+4. Later, when you say so: the video (update the demo script's numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
+5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted.
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M6 done, ratings done, fix and honesty block (tag `m6.1-fixes`) and UI polish block (tag `m6.2-polish`) done; next: the user's review, then M7 ship (freeze Thu 14:00).**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M6 done, ratings done, fix and honesty block (tag `m6.1-fixes`) and UI polish block (tag `m6.2-polish`) and equation-quality block (tag `m6.3-equations`) done; next: the user's review, then M7 ship (freeze Thu 14:00).**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
-- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`, `m5-bench`, `m6-depth`, `m6.1-fixes`, `m6.2-polish`.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`, `m5-bench`, `m6-depth`, `m6.1-fixes`, `m6.2-polish`, `m6.3-equations`.
 - **Pacing:** fresh session per block, at most one subagent, small outputs.
 
 ---
@@ -106,6 +106,7 @@
 - **Gotcha: env changes need a restart.** Shells inherit the environment the Claude app started with. After installing tools or changing env vars, restart the Claude app (or refresh `$env:Path` from the registry inside the command).
 - **Gotcha: backslash-digit in generated code.** A regex backreference written as backslash-1 can land in a file as the control byte \x01 (it happened in `builder.py` and garbled numbers in captions, and again in a heredoc). Prefer `\g<1>` or a function in `re.sub`; `backend/tests/test_source_hygiene.py` fails on control characters in source. A heredoc also turned `\\begin` into `\begin` in a test (Python then reads `\b` as a backspace): write LaTeX in tests as raw strings, through the Edit tool.
 - **Gotcha: the browser pane while it's hidden**: its page runs in the background, so ResizeObserver, IntersectionObserver and requestAnimationFrame never fire and PDF pages stay gray. For testing only, replace those three with timer-based stand-ins from `javascript_tool` on the start screen, then open the paper.
+- **Gotcha: `.mjs` served as text/plain.** Python's `mimetypes` reads the Windows registry, which maps `.mjs` to text/plain on this machine, so the backend-served build couldn't load the pdf.js worker ("Setting up fake worker failed"). `main.py` registers text/javascript now. A browser that cached the old response needs one hard reload (or `fetch(url, {cache: 'reload'})` from its console).
 - **Gotcha: PowerShell 5.1 + native stderr.** With `$ErrorActionPreference = "Stop"`, redirecting a native command's output (`*>`, `2>&1`) turns its stderr lines (uv prints "Using CPython…" there) into terminating errors. In test harnesses use `Start-Process -RedirectStandardOutput/-RedirectStandardError`.
 - **GPU + TTS smoke test (2026-10-20, passed).** Scratch venv `D:\scratch\gpu-smoke\.venv` (outside the repo; disposable).
   - PyTorch **2.14.1+cu132** (CUDA 13.2), installed with `uv pip install torch --torch-backend=auto`. Sees the RTX 4070; 20 × 4096² matmuls in 0.18 s. Wheels are now in the uv cache on D:, so the project install will be fast.
@@ -146,6 +147,10 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · Equation-quality block (agent):**
+  - **Second reading of the page:** the reader model transcribes each equation crop; agreement confirms Docling's LaTeX; on disagreement the PDF text layer's bag of symbols picks the reading with fewer symbols off; a tie keeps Docling's and marks it disputed (same symbols = structure only). A reading only the vision model produced is used only when it is within 20 % (at least 2 symbols) of the text layer's bag. Springer-only confusables: 0 = prime, ϵ = ∈ (their fonts encode them so).
+  - **Comparator equivalences, only for what prints the same:** parentheses around a one-token argument of an operator name, where an evaluation bar's or a bracket's script attaches, operator names vs `\operatorname`/`\mathrm`. Not added: `X|_{Z=0}` vs `X(Z=0)` (a different notation).
+  - **Prompt fixes deferred:** they would change every narration, so the 30-item adjudication and the user's ratings would describe a previous version; the user decides.
 - **2026-10-21 · User: nothing goes public until they say so** (repo visibility, posts, uploads). Agents push only to the private repo.
 - **2026-10-21 · UI polish block (agent):**
   - **Badges go in the margins:** a left-column equation's right edge is the gutter (12 pt on the flagship), where a badge covers the other column. So left-column badges on two-column pages go in the left margin; the rest go right of the equation. They are fixed-width pills (exact layout), icons on every page when any margin is too narrow, and hovering one outlines its equation.
@@ -276,10 +281,10 @@ All are in the demo domain. Licenses and counts were checked on arXiv and journa
 
 ## 7. Architecture (current truth; update as it gets built)
 
-- `backend/scireader/`: `config.py` (env/.env), `main.py` (FastAPI app, serves `frontend/dist` if built, warms Kokoro at startup), `parsing/` (`docling_parser.py` → `builder.py` heuristics + sentences; `pdfchars.py` PDFium chars/alignment/superscripts; `latex.py` OCR LaTeX cleanup; `inspect_doc.py` CLI), `speech/` (`pipeline.py` citations + normalize; `math_speech.py` Node client; normalizer/splitter/lexicon from the subagent), `tts/` (`engine.py` Kokoro + audio cache, `registry.json` voices), `api/` (`docs.py`, `tts.py`, `jobs.py`), `store/docs.py` (doc cache by SHA-256 prefix, reading state in `state.json`).
+- `backend/scireader/`: `config.py` (env/.env), `main.py` (FastAPI app, serves `frontend/dist` if built, warms Kokoro at startup), `parsing/` (`docling_parser.py` → `builder.py` heuristics + sentences; `pdfchars.py` PDFium chars/alignment/superscripts; `latex.py` OCR LaTeX cleanup; `inspect_doc.py` CLI), `speech/` (`pipeline.py` citations + normalize; `math_speech.py` Node client; normalizer/splitter/lexicon from the subagent), `tts/` (`engine.py` Kokoro + audio cache, `registry.json` voices), `api/` (`docs.py`, `tts.py`, `jobs.py`, `ai.py`), `llm/` (`ollama.py` client + call cache, `equations.py` background verification job, `page_reading.py` second reading of equation crops with the text layer as tiebreaker, `verify.py` canonical MathML comparison, `figures.py`, `qa.py`), `store/docs.py` (doc cache by SHA-256 prefix, reading state in `state.json`).
 - `frontend/src/`: `App.tsx` (start screen + parse progress), `Reader.tsx` (layout, outline, playback bar, settings, keyboard), `PdfView.tsx` (pdf.js pages, overlays, hit testing, follow), `store.ts` (zustand + audio engine), `api.ts` (types).
 - `tools/math-speech/index.js`: JSON lines over stdin/stdout, MathJax 3 (mathjax-full) + SRE 5.0-rc (ClearSpeak).
-- Data per paper in `.data/docs/<id>/`: `source.pdf`, `docling.json` (cache), `document.json`, `speech.json`, `meta.json`. Audio cache `.data/audio/<key>.wav|.json`.
+- Data per paper in `.data/docs/<id>/`: `source.pdf`, `docling.json` (cache), `document.json`, `speech.json`, `meta.json`, `equations.json` (verdicts, narrations, both readings of the source and which one is used). Audio cache `.data/audio/<key>.wav|.json`.
 - Equation badge layout: `layoutBadges()` in `frontend/src/Equations.tsx`; zoom and fit-to-width in `PdfView.tsx` (`fitWidth` in the store).
 
 **How to run (dev):** `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173. Inspect a parse: `uv run --directory backend python -m scireader.parsing.inspect_doc ../samples/<file>.pdf`.
@@ -331,6 +336,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (per-section voice/speed cut 2026-10-21)
 - [x] M6.1 fix and honesty block (tag `m6.1-fixes`): strict gate, flagship parsing fixes, benchmark rerun, held-out units test, docs
 - [x] M6.2 UI polish block (tag `m6.2-polish`): PDF refits next to side panels, badges in the margins, parser fragments skipped, reader width fix
+- [x] M6.3 equation-quality block (tag `m6.3-equations`): second reading of the page, comparator equivalences, benchmark re-score, OCR accuracy vs arXiv source, `.mjs` MIME fix
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public only when the user says so** (private until then), submission form (by Thu 7 PM CDT)
 
 ---

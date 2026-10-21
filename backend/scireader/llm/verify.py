@@ -39,7 +39,39 @@ FN = "fn"  # MathJax's function application (U+2061) after \sin, \log, \operator
 
 
 def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
-    return _fold(_tokens(el, relaxed))
+    return _fold(_group_scripts(_tokens(el, relaxed)))
+
+
+def _group_scripts(tokens: list[str]) -> list[str]:
+    """A script on a closing bracket belongs to the bracketed group: MathJax attaches the exponent of (a+b)^2 to ")"
+    but that of \\left(a+b\\right)^2 to the group, and both print the same."""
+    out: list[str] = []
+    i = 0
+    while i < len(tokens):
+        heads = next((h for h in (["msup(", "msub("], ["msup("], ["msub("])
+                      if tokens[i:i + len(h)] == h and tokens[i + len(h):i + len(h) + 2] == [")", ","]), None)
+        if heads:
+            depth, j = 0, len(out) - 1
+            while j >= 0:
+                if out[j] == ")":
+                    depth += 1
+                elif out[j].endswith("("):
+                    if depth == 0:
+                        break
+                    depth -= 1
+                elif out[j] == "," and depth == 0:
+                    j = -1
+                    break
+                j -= 1
+            if j >= 0 and out[j] == "(":
+                group = out[j:] + [")"]
+                del out[j:]
+                out += [*heads, *group, ","]
+                i += len(heads) + 2
+                continue
+        out.append(tokens[i])
+        i += 1
+    return out
 
 
 def _fold(tokens: list[str]) -> list[str]:
@@ -87,6 +119,9 @@ def _tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
             return [] if relaxed else ["("]
         if t in CLOSE:
             return [] if relaxed else [")"]
+        if len(t) > 1 and t.isalpha():
+            # \det, \max, \lim are operators to MathJax, \operatorname{det} and \mathrm{max} are letters: same word.
+            return [f"i:{c}" for c in t]
         return [f"o:{t}"]
     if tag in UNDER_OVER:
         tag = UNDER_OVER[tag]

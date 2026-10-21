@@ -10,12 +10,12 @@
 
 ![Faithfulness by pipeline](../bench/figures/faithfulness.png)
 
-- **Unverified LLM narration silently changes about 1 in 3 equations.** On the 66 equations the judge reliably transcribes, `qwen3.5:9b` was faithful 64 % of the time (4B: 59 %), with fluent errors: a dropped evaluation bar, a factor swallowed by a denominator.
-- **A verifier fixes most of it.** The gate catches 3 in 4 errors; speaking AI only after an exact round trip lifts faithful readings to 88 % (9B) and 91 % (4B), so a small model plus a verifier matches a larger one. In a 30-item manual check (adjudicated by the build agent), none of the 15 gate-verified narrations was wrong.
+- **Unverified LLM narration silently changes more than 1 in 3 equations.** On the 70 equations the judge reliably transcribes, `qwen3.5:9b` was faithful 61 % of the time (4B: 57 %), with fluent errors: a dropped evaluation bar, a factor swallowed by a denominator.
+- **A verifier fixes most of it.** The gate catches 3 in 4 errors; speaking AI only after an exact round trip lifts faithful readings to 89 % (9B) and 90 % (4B), so a small model plus a verifier matches a larger one. In a 30-item manual check (adjudicated by the build agent), none of the 15 gate-verified narrations was wrong.
 - **"Almost verified" is not safe.** Narrations that came back with the right symbols but different grouping included the Lorentz–Lorenz equation with Nα moved into the denominator. Only exact round trips are spoken now.
 - **Faithfulness is the win, not naturalness.** In blind ratings by the author (10 equations, 1–5), SciReader as shipped scored 3.8, the same as the rule-based reading, both well above a naive reading (2.6).
 - **Self-written tests flatter you.** On 99 unit and chemistry snippets we wrote, a generic pipeline mispronounced 47 % and SciReader 0 %; on 50 held-out snippets sampled from 18 papers (references from another model, corrected blind to our output), 36 % vs 10 %.
-- **Parsing is the bottleneck on journal PDFs.** On a Springer Nature paper, the OCR'd formula LaTeX was noisy enough that only 6 of 33 equations could be verified; the gate refused the rest, as it should.
+- **Parsing is the bottleneck on journal PDFs.** On a Springer Nature paper, the OCR'd formula LaTeX was noisy enough that only 6 of 33 equations could be verified; the gate refused the rest, as it should. But it checks against the parse, not the page, so SciReader now reads each equation again from the page with the vision model and lets the PDF's text layer settle disagreements: 17 of 32 take the page reading (K⁻¹ that the OCR read as K¹, all 3 garbled ones).
 
 **Why it matters.** A faithfulness gate turns an LLM from "usually right" into "right or explicitly unsure", which is what accessibility tools for science need: a listener can't see a dropped parenthesis. The same pattern (independent back-translation, structural check, labeled fallback) applies to any AI that rewrites scientific content.
 

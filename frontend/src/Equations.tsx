@@ -14,6 +14,7 @@ export interface EqSource {
   parser?: string;
   vision?: string | null;
   off?: { parser: number | null; vision: number | null } | null;
+  same_symbols?: boolean;
   model?: string;
   error?: string | null;
 }
@@ -53,7 +54,9 @@ function sourceNote(src: EqSource): string {
         ? `The parser and ${m} read this differently. The PDF's text layer matches ${m}'s reading of the page better (${symbolsOff(off?.vision)} off, the parser's ${symbolsOff(off?.parser)}), so that reading is used.`
         : `The parser and ${m} read this differently. The PDF's text layer matches the parser's reading better (${symbolsOff(off?.parser)} off, ${m}'s ${symbolsOff(off?.vision)}), so it is used.`;
     case "disputed":
-      return `Source uncertain: the parser and ${m} read this differently, and the PDF's text layer can't tell which is right. The parser's reading is used.`;
+      return src.same_symbols
+        ? `Source uncertain: the parser and ${m} read the same symbols but a different structure (grouping, or what a root or fraction covers), which the PDF's text layer can't check. The parser's reading is used.`
+        : `Source uncertain: the parser and ${m} read this differently, and the PDF's text layer can't tell which is right. The parser's reading is used.`;
     case "vision_only":
       return `The parser's formula OCR was unusable; ${m} read this from the page, and the PDF's text layer backs that reading (${symbolsOff(off?.vision)} off).`;
     case "single":
