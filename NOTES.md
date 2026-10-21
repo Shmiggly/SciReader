@@ -4,7 +4,7 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 02:20 EDT (M3 done)
+**Last updated:** 2026-10-21 02:45 EDT (M4 done)
 
 ---
 
@@ -33,10 +33,10 @@
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M3 done (tag `m3`); M4 AI layer next.**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 SciSpeech-Bench next.**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
-- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`.
 - **Pacing:** fresh session per block, at most one subagent, small outputs.
 
 ---
@@ -124,6 +124,11 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · M4 decisions (agent):**
+  - **Flagship verification result:** 33 equations in 99 s: 5 verified, 2 uncertain, 22 rules fallback, 4 unreadable. Most rejections come from Docling's noisy OCR LaTeX (the narrator faithfully reads garbled LaTeX the checker can't reproduce, or the checker writes invalid LaTeX). Honest, and a talking point: the gate refuses to speak what it can't verify.
+  - **Comparison:** canonical MathML token sequences; exact → verified, equal after dropping brackets/fraction structure → uncertain, else mismatch with a readable diff fed to the repair prompt.
+  - **Explain without a PDF text layer:** Explain works on the current sentence or a Shift+click sentence range (no native text selection yet), which keeps answers tied to sentence IDs.
+  - **Figure descriptions** are prepared in the background after parsing; playback never waits (caption only if the description isn't ready); `D` generates a longer one on demand.
 - **2026-10-21 · MinerU bake-off dropped (time-boxed, ~10 min).** `mineru` is now 4.0.12, an agent-oriented "document library" with telemetry (we disabled it) and a cloud parse service. Its local `flash` tier returned no equations at all on the flagship, and the formula-capable tiers say "Local parse-server is disabled. Use --tier flash or --remote" (remote = cloud, ruled out). Docling stays the only parser; its formula OCR quality is what the verifier and benchmark measure. Scratch venv in `D:\scratch\mineru` (deletable).
 - **2026-10-21 · Build decisions (agent, during M0–M2):**
   - **Sentence/word rects from PDFium chars, not Docling:** Docling has block boxes only; we align block text to PDFium characters (difflib, whitespace ignored), which also gives superscript detection for numeric citations (loose box height + raised baseline; `FPDFText_GetFontSize` returns 1.0 in Nature PDFs because of the text matrix).
@@ -288,7 +293,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (dropped, see §5). All 6 samples parse: flagship ~100 s cold, the others 18–27 s.
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
-- [ ] M4 AI layer: verified equation narration, figure narration, explain/ask with citations, summaries
+- [x] M4 AI layer (tag `m4-ai`): verified equation narration + badges ✓, figure narration at first mention (panel-aware, popup, D for detail) ✓, Explain (colleague/Simpler) + Ask with citation chips ✓. Not done: summaries (first on the cut list), citation hover popups, E equation-reference popup (M6).
 - [ ] M5 SciSpeech-Bench + figure
 - [ ] M6 Reflow view, audiobook export, 2nd TTS engine, arXiv source mode
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
