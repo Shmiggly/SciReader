@@ -370,11 +370,13 @@ def build_document(
             for c0, c1, nums in find_citations(stext):
                 drop.append((c0, c1))
                 if nums:
-                    citations.append({"sentence_id": sid, "span": [c0, c1], "bib_ids": [f"bib{n}" for n in nums]})
+                    citations.append({"sentence_id": sid, "span": [c0, c1], "bib_ids": [f"bib{n}" for n in nums],
+                                      "rects": _rects(mapped, s0 + c0, s0 + c1)})
             for c0, c1, nums in sup_cites:
                 if s0 <= c0 and c1 <= s1:
                     drop.append((c0 - s0, c1 - s0))
-                    citations.append({"sentence_id": sid, "span": [c0 - s0, c1 - s0], "bib_ids": [f"bib{n}" for n in nums]})
+                    citations.append({"sentence_id": sid, "span": [c0 - s0, c1 - s0], "bib_ids": [f"bib{n}" for n in nums],
+                                      "rects": _rects(mapped, c0, c1)})
             if b.skip_reason is None or b.type == "caption":
                 norm = speak(stext, drop, lexicon)
                 spoken = norm.spoken

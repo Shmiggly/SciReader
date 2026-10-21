@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
-import type { Rect } from "./api";
+import type { Doc, Rect } from "./api";
 import { EquationBadge, EquationPopover } from "./Equations";
 import { PRESETS, closeFigure, figureDetail, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
@@ -70,6 +70,18 @@ export function PdfView() {
           arr.push({ sid: s.id, x0: r[1], y0: r[2], x1: r[3], y1: r[4] });
           m.set(r[0], arr);
         }
+      }
+    }
+    return m;
+  }, [doc]);
+
+  const cites = useMemo(() => {
+    const m = new Map<number, { x0: number; y0: number; x1: number; y1: number; bib: string[] }[]>();
+    for (const c of doc.citations) {
+      for (const r of c.rects ?? []) {
+        const arr = m.get(r[0]) ?? [];
+        arr.push({ x0: r[1], y0: r[2], x1: r[3], y1: r[4], bib: c.bib_ids });
+        m.set(r[0], arr);
       }
     }
     return m;
@@ -149,6 +161,7 @@ export function PdfView() {
             scale={scale}
             pdf={pdf}
             hits={hits.get(p.index) ?? []}
+            cites={cites.get(p.index) ?? []}
             setRef={(el) => (pageRefs.current[p.index] = el)}
           />
         ))}
@@ -182,14 +195,16 @@ interface PageProps {
   scale: number;
   pdf: PDFDocumentProxy | null;
   hits: HitRect[];
+  cites: { x0: number; y0: number; x1: number; y1: number; bib: string[] }[];
   setRef: (el: HTMLDivElement | null) => void;
 }
 
-function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
+function Page({ index, width, height, scale, pdf, hits, cites, setRef }: PageProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
   const [hover, setHover] = useState<{ sid: string; x: number; y: number } | null>(null);
+  const [cite, setCite] = useState<{ bib: string[]; x: number; y: number } | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -241,6 +256,11 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
 
   const onClick = (ev: React.MouseEvent) => {
     if (window.getSelection()?.toString()) return;
+    const c = citeAt(ev);
+    if (c) {
+      setCite(c);
+      return;
+    }
     const sid = hitTest(ev);
     if (sid && ev.shiftKey) {
       selectRangeTo(sid);
@@ -252,7 +272,23 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
     }
   };
 
+  const citeAt = (ev: React.MouseEvent) => {
+    const rect = div.current!.getBoundingClientRect();
+    const x = (ev.clientX - rect.left) / scale;
+    const y = (ev.clientY - rect.top) / scale;
+    const c = cites.find((h) => x >= h.x0 - 1 && x <= h.x1 + 1 && y >= h.y0 - 1 && y <= h.y1 + 1);
+    return c ? { bib: c.bib, x: ev.clientX - rect.left, y: ev.clientY - rect.top } : null;
+  };
+
   const onMove = (ev: React.MouseEvent) => {
+    if ((ev.target as HTMLElement).closest(".cite-tip, .fig-pop, .eq-pop")) return;
+    const c = citeAt(ev);
+    if (c) {
+      setCite(c);
+      setHover(null);
+      return;
+    }
+    if (cite) setCite(null);
     const sid = hitTest(ev);
     window.clearTimeout(hoverTimer.current);
     if (!sid) {
@@ -279,6 +315,7 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
       onMouseLeave={() => {
         window.clearTimeout(hoverTimer.current);
         setHover(null);
+        setCite(null);
       }}
       data-page={index}
     >
@@ -288,6 +325,7 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
       <FigureLayer page={index} scale={scale} pageWidth={width * scale} />
       <EqRefLayer page={index} scale={scale} pageWidth={width * scale} />
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
+      {cite && <CiteTip bib={cite.bib} x={cite.x} y={cite.y} pageWidth={width * scale} />}
     </div>
   );
 }
@@ -438,6 +476,26 @@ function EqRefLayer({ page, scale, pageWidth }: { page: number; scale: number; p
         {verdict && <span className={`eq-badge static ${verdict}`}>{verdict}</span>}
       </div>
       <img src={`/api/docs/${doc.id}/crop?page=${b.page}&x0=${x0}&y0=${y0}&x1=${x1}&y1=${y1}`} alt={`Equation ${b.eq_number}`} />
+    </div>
+  );
+}
+
+function CiteTip({ bib, x, y, pageWidth }: { bib: string[]; x: number; y: number; pageWidth: number }) {
+  const doc = useStore((s) => s.doc)!;
+  const entries = bib.map((id) => doc.bibliography.find((b) => b.id === id)).filter(Boolean) as Doc["bibliography"];
+  if (!entries.length) return null;
+  const left = Math.min(Math.max(8, x - 180), pageWidth - 380);
+  return (
+    <div className="hover-tip cite-tip" style={{ left, top: y + 16, width: 370 }} onClick={(e) => e.stopPropagation()}>
+      <div className="hover-tip-label">Reference{entries.length > 1 ? "s" : ""} (not read aloud)</div>
+      {entries.slice(0, 4).map((b) => (
+        <div key={b.id} className="cite-entry">
+          <b>[{b.label}]</b> {b.text.slice(0, 260)}
+          {b.doi && <> <a href={`https://doi.org/${b.doi}`} target="_blank" rel="noreferrer">DOI</a></>}
+          {b.arxiv && <> <a href={`https://arxiv.org/abs/${b.arxiv}`} target="_blank" rel="noreferrer">arXiv</a></>}
+        </div>
+      ))}
+      {entries.length > 4 && <div className="muted small">+{entries.length - 4} more</div>}
     </div>
   );
 }

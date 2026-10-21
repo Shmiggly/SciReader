@@ -230,3 +230,4 @@ select, input[type="text"], input:not([type]) {
 .reflow-abstract { font-style: italic; }
 .reflow-eq { display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 6px; padding: 0 6px; overflow-x: auto; }
 .reflow-eq > div { flex: 1; }
+.cite-tip { pointer-events: auto; } .cite-entry { margin: 4px 0; font-size: 12.5px; } .cite-tip a { color: var(--accent); }
