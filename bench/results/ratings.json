@@ -1,0 +1,152 @@
+{
+ "clip01": {
+  "score": 1,
+  "condition": "naive",
+  "eq_id": "2510.18125#4"
+ },
+ "clip02": {
+  "score": 4,
+  "condition": "scireader",
+  "eq_id": "2511.23306#1"
+ },
+ "clip03": {
+  "score": 2,
+  "condition": "scireader",
+  "eq_id": "2312.07149#3"
+ },
+ "clip04": {
+  "score": 4,
+  "condition": "scireader",
+  "eq_id": "2304.04986#4"
+ },
+ "clip05": {
+  "score": 5,
+  "condition": "rules",
+  "eq_id": "2307.10139#1"
+ },
+ "clip06": {
+  "score": 4,
+  "condition": "rules",
+  "eq_id": "2403.16105#4"
+ },
+ "clip07": {
+  "score": 1,
+  "condition": "naive",
+  "eq_id": "2403.16105#4"
+ },
+ "clip08": {
+  "score": 5,
+  "condition": "rules",
+  "eq_id": "2307.10139#7"
+ },
+ "clip09": {
+  "score": 5,
+  "condition": "scireader",
+  "eq_id": "2510.18125#4"
+ },
+ "clip10": {
+  "score": 1,
+  "condition": "naive",
+  "eq_id": "2307.10139#1"
+ },
+ "clip11": {
+  "score": 4,
+  "condition": "scireader",
+  "eq_id": "2307.10139#7"
+ },
+ "clip12": {
+  "score": 1,
+  "condition": "naive",
+  "eq_id": "2307.10139#7"
+ },
+ "clip13": {
+  "score": 5,
+  "condition": "naive",
+  "eq_id": "2403.16105#0"
+ },
+ "clip14": {
+  "score": 3,
+  "condition": "scireader",
+  "eq_id": "2002.00806#5"
+ },
+ "clip15": {
+  "score": 5,
+  "condition": "naive",
+  "eq_id": "2511.23306#1"
+ },
+ "clip16": {
+  "score": 4,
+  "condition": "naive",
+  "eq_id": "2304.04986#4"
+ },
+ "clip17": {
+  "score": 5,
+  "condition": "scireader",
+  "eq_id": "2307.10139#1"
+ },
+ "clip18": {
+  "score": 3,
+  "condition": "naive",
+  "eq_id": "2002.00806#5"
+ },
+ "clip19": {
+  "score": 5,
+  "condition": "rules",
+  "eq_id": "2403.16105#0"
+ },
+ "clip20": {
+  "score": 2,
+  "condition": "naive",
+  "eq_id": "2209.13557#4"
+ },
+ "clip21": {
+  "score": 5,
+  "condition": "scireader",
+  "eq_id": "2403.16105#4"
+ },
+ "clip22": {
+  "score": 4,
+  "condition": "scireader",
+  "eq_id": "2403.16105#0"
+ },
+ "clip23": {
+  "score": 5,
+  "condition": "rules",
+  "eq_id": "2312.07149#3"
+ },
+ "clip24": {
+  "score": 3,
+  "condition": "naive",
+  "eq_id": "2312.07149#3"
+ },
+ "clip25": {
+  "score": 2,
+  "condition": "rules",
+  "eq_id": "2002.00806#5"
+ },
+ "clip26": {
+  "score": 3,
+  "condition": "rules",
+  "eq_id": "2511.23306#1"
+ },
+ "clip27": {
+  "score": 4,
+  "condition": "scireader",
+  "eq_id": "2209.13557#4"
+ },
+ "clip28": {
+  "score": 3,
+  "condition": "rules",
+  "eq_id": "2510.18125#4"
+ },
+ "clip29": {
+  "score": 2,
+  "condition": "rules",
+  "eq_id": "2304.04986#4"
+ },
+ "clip30": {
+  "score": 4,
+  "condition": "rules",
+  "eq_id": "2209.13557#4"
+ }
+}

@@ -229,5 +229,23 @@ def _(items, judge_pick, mo):
     return
 
 
+@app.cell
+def _(ROOT, json, mo, pd):
+    _rp = ROOT / "results" / "ratings.json"
+    if _rp.exists():
+        _r = pd.DataFrame(json.loads(_rp.read_text(encoding="utf-8")).values())
+        _t = _r.groupby("condition")["score"].agg(["count", "mean", "median"]).round(2)
+        _t = _t.reindex([c for c in ("naive", "rules", "scireader") if c in _t.index])
+        _out = mo.vstack([
+            mo.md("### Naturalness: blind ratings by the author (1 = can't follow, 5 = natural, could write it down)"),
+            _t,
+            mo.md("Ten equations, each heard three ways in random order with the pipeline hidden (`rate.py`)."),
+        ])
+    else:
+        _out = mo.md("No ratings yet: run `marimo run bench/rate.py`.")
+    _out
+    return
+
+
 if __name__ == "__main__":
     app.run()

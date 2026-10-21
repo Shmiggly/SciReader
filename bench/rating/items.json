@@ -1,0 +1,242 @@
+[
+ {
+  "eq_id": "2510.18125#4",
+  "latex": "(\\psi,\\xi)_{\\Gamma}=\\int_{0}^{L}\\mathrm{d}u\\,\\,\\langle\\Gamma\\psi,\\xi\\rangle",
+  "condition": "naive",
+  "spoken": "( ψ , ξ ) Γ = ∫ 0 L d u ⟨ Γ ψ , ξ ⟩",
+  "key": "26cc293a78596dda18818acc",
+  "blind_id": "clip01"
+ },
+ {
+  "eq_id": "2511.23306#1",
+  "latex": "M_{k+1} = M_{k} - \\alpha \\cdot ((M_{\\mathrm{Prediction},k}-M_{\\mathrm{Design}})\\ast g_{\\mathrm{corr}})",
+  "condition": "scireader",
+  "spoken": "M sub k plus one equals M sub k minus alpha times open parenthesis M sub Prediction comma k minus M sub Design close parenthesis times g sub corr.",
+  "key": "6929a82b577aecc312ca372c",
+  "blind_id": "clip02"
+ },
+ {
+  "eq_id": "2312.07149#3",
+  "latex": "k_D(x, y; \\sigma_0)=\\sigma_0^2+x \\cdot y",
+  "condition": "scireader",
+  "spoken": "k sub D of x comma y semicolon sigma naught equals sigma naught squared plus x times y.",
+  "key": "40a73f1ef550b50d5cb3a00e",
+  "blind_id": "clip03"
+ },
+ {
+  "eq_id": "2304.04986#4",
+  "latex": "\\mathcal{L} = w_Q\\ell(Q_i^N) + w_{dQ}\\ell(\\frac{dQ^N}{dV_i}) + w_{Q_1}\\ell(Q_i^1) + \\mathcal{R}",
+  "condition": "scireader",
+  "spoken": "mathcal L equals w sub Q times ell of Q sub i superscript N plus w sub dQ times ell of the fraction with numerator dQ superscript N over denominator dV sub i plus w sub Q sub 1 times ell of Q sub i superscript 1 plus mathcal R.",
+  "key": "bf8b86e1b9bdde5b056c020c",
+  "blind_id": "clip04"
+ },
+ {
+  "eq_id": "2307.10139#1",
+  "latex": "J = \\det\\boldsymbol{F}",
+  "condition": "rules",
+  "spoken": "J equals determinant bold italic F",
+  "key": "6ca96dcd51ecb7b27ce5d9a1",
+  "blind_id": "clip05"
+ },
+ {
+  "eq_id": "2403.16105#4",
+  "latex": "\\hat{F}(t) = \\frac{4\\sqrt{R}}{3(1-\\nu)} \\int_0^t \\hat{G}(t-s) \\ d[\\delta^{3/2}(s)] \\",
+  "condition": "rules",
+  "spoken": "F hat of t equals 4 the square root of R over 3 times open paren 1 minus nu close paren the integral from 0 to t of G hat of open paren t minus s close paren empty d of the third divided by second power of delta of s empty",
+  "key": "9cd05ca7f52cb58fa64f525a",
+  "blind_id": "clip06"
+ },
+ {
+  "eq_id": "2403.16105#4",
+  "latex": "\\hat{F}(t) = \\frac{4\\sqrt{R}}{3(1-\\nu)} \\int_0^t \\hat{G}(t-s) \\ d[\\delta^{3/2}(s)] \\",
+  "condition": "naive",
+  "spoken": "F ^ ( t ) = 4 R 3 ( 1 − ν ) ∫ 0 t G ^ ( t − s ) d [ δ 3 / 2 ( s ) ]",
+  "key": "6631ccf3b0c609752f703d3d",
+  "blind_id": "clip07"
+ },
+ {
+  "eq_id": "2307.10139#7",
+  "latex": "\\boldsymbol{C} = \\boldsymbol{F}^T \\boldsymbol{F}",
+  "condition": "rules",
+  "spoken": "bold italic C equals the T power of bold italic F of bold italic F",
+  "key": "31ae47ebe3607c7b7dee180c",
+  "blind_id": "clip08"
+ },
+ {
+  "eq_id": "2510.18125#4",
+  "latex": "(\\psi,\\xi)_{\\Gamma}=\\int_{0}^{L}\\mathrm{d}u\\,\\,\\langle\\Gamma\\psi,\\xi\\rangle",
+  "condition": "scireader",
+  "spoken": "open parenthesis psi comma xi close parenthesis sub Gamma equals the integral from 0 to L of d u times open bracket Gamma psi comma xi close bracket.",
+  "key": "9493824159dd5afc76004952",
+  "blind_id": "clip09"
+ },
+ {
+  "eq_id": "2307.10139#1",
+  "latex": "J = \\det\\boldsymbol{F}",
+  "condition": "naive",
+  "spoken": "J = det F",
+  "key": "2597cf248b38a9193c3601fe",
+  "blind_id": "clip10"
+ },
+ {
+  "eq_id": "2307.10139#7",
+  "latex": "\\boldsymbol{C} = \\boldsymbol{F}^T \\boldsymbol{F}",
+  "condition": "scireader",
+  "spoken": "C equals F transpose times F.",
+  "key": "6ad57f6230096816dc796d46",
+  "blind_id": "clip11"
+ },
+ {
+  "eq_id": "2307.10139#7",
+  "latex": "\\boldsymbol{C} = \\boldsymbol{F}^T \\boldsymbol{F}",
+  "condition": "naive",
+  "spoken": "C = F T F",
+  "key": "1aaf160c08ddbfa751d9dcfb",
+  "blind_id": "clip12"
+ },
+ {
+  "eq_id": "2403.16105#0",
+  "latex": "\\frac{1}{R}=\\frac{1}{R_1}+\\frac{1}{R_2}",
+  "condition": "naive",
+  "spoken": "1 R = 1 R 1 + 1 R 2",
+  "key": "38c6d01f666fcce83a11e3f4",
+  "blind_id": "clip13"
+ },
+ {
+  "eq_id": "2002.00806#5",
+  "latex": "i_0 = k \\;c^{\\alpha_{\\rm a}}\\; (c_{\\rm s,max} -c_{\\rm s})^{\\alpha_{\\rm a}} \\;c_{\\rm s}^{\\alpha_{\\rm c}}",
+  "condition": "scireader",
+  "spoken": "i sub zero equals k times c to the power of alpha sub a, all multiplied by the quantity in open parenthesis c sub s comma max minus c sub s end parenthesis, all raised to the power of alpha sub a, then multiplied by c sub s to the power of alpha sub c.",
+  "key": "066cdbb3feaedc0d8e1197c2",
+  "blind_id": "clip14"
+ },
+ {
+  "eq_id": "2511.23306#1",
+  "latex": "M_{k+1} = M_{k} - \\alpha \\cdot ((M_{\\mathrm{Prediction},k}-M_{\\mathrm{Design}})\\ast g_{\\mathrm{corr}})",
+  "condition": "naive",
+  "spoken": "M k + 1 = M k − α ⋅ ( ( M Prediction , k − M Design ) ∗ g corr )",
+  "key": "e3223bddc525242ee172cb80",
+  "blind_id": "clip15"
+ },
+ {
+  "eq_id": "2304.04986#4",
+  "latex": "\\mathcal{L} = w_Q\\ell(Q_i^N) + w_{dQ}\\ell(\\frac{dQ^N}{dV_i}) + w_{Q_1}\\ell(Q_i^1) + \\mathcal{R}",
+  "condition": "naive",
+  "spoken": "L = w Q ℓ ( Q i N ) + w d Q ℓ ( d Q N d V i ) + w Q 1 ℓ ( Q i 1 ) + R",
+  "key": "ae0aef08e13c81c478f5dd9c",
+  "blind_id": "clip16"
+ },
+ {
+  "eq_id": "2307.10139#1",
+  "latex": "J = \\det\\boldsymbol{F}",
+  "condition": "scireader",
+  "spoken": "J equals the determinant of F bold.",
+  "key": "c81e8b28aa17803dfdbed129",
+  "blind_id": "clip17"
+ },
+ {
+  "eq_id": "2002.00806#5",
+  "latex": "i_0 = k \\;c^{\\alpha_{\\rm a}}\\; (c_{\\rm s,max} -c_{\\rm s})^{\\alpha_{\\rm a}} \\;c_{\\rm s}^{\\alpha_{\\rm c}}",
+  "condition": "naive",
+  "spoken": "i 0 = k c α a ( c s , m a x − c s ) α a c s α c",
+  "key": "b1cea4f18a44db984a2541df",
+  "blind_id": "clip18"
+ },
+ {
+  "eq_id": "2403.16105#0",
+  "latex": "\\frac{1}{R}=\\frac{1}{R_1}+\\frac{1}{R_2}",
+  "condition": "rules",
+  "spoken": "1 over R equals the fraction with numerator 1 and denominator R sub 1 plus the fraction with numerator 1 and denominator R sub 2",
+  "key": "ff1b31506c985c1be62128a2",
+  "blind_id": "clip19"
+ },
+ {
+  "eq_id": "2209.13557#4",
+  "latex": "\\boldsymbol m_{0,1} = \\boldsymbol m_{1,0} = [3,3,3,3,3,3,3,3]",
+  "condition": "naive",
+  "spoken": "m 0 , 1 = m 1 , 0 = [ 3 , 3 , 3 , 3 , 3 , 3 , 3 , 3 ]",
+  "key": "1cbb38bf5fc25cd8b274ceef",
+  "blind_id": "clip20"
+ },
+ {
+  "eq_id": "2403.16105#4",
+  "latex": "\\hat{F}(t) = \\frac{4\\sqrt{R}}{3(1-\\nu)} \\int_0^t \\hat{G}(t-s) \\ d[\\delta^{3/2}(s)] \\",
+  "condition": "scireader",
+  "spoken": "F-hat of t equals the fraction with numerator 4 times the square root of R over denominator 3 times open parenthesis 1 minus nu close parenthesis, all multiplied by the integral from 0 to t of G-hat of t minus s d delta to the power of 3 halves of s end bracket.",
+  "key": "43a64e6b62fed7bc762dccd5",
+  "blind_id": "clip21"
+ },
+ {
+  "eq_id": "2403.16105#0",
+  "latex": "\\frac{1}{R}=\\frac{1}{R_1}+\\frac{1}{R_2}",
+  "condition": "scireader",
+  "spoken": "the fraction with numerator 1 over R equals the fraction with numerator 1 over R subscript 1 plus the fraction with numerator 1 over R subscript 2.",
+  "key": "ad4c317d90620bbc8c6d955f",
+  "blind_id": "clip22"
+ },
+ {
+  "eq_id": "2312.07149#3",
+  "latex": "k_D(x, y; \\sigma_0)=\\sigma_0^2+x \\cdot y",
+  "condition": "rules",
+  "spoken": "k sub D of open paren x comma y semicolon sigma sub 0 close paren equals sigma sub 0 squared plus x times y",
+  "key": "192d90e88fa858afc1cefb05",
+  "blind_id": "clip23"
+ },
+ {
+  "eq_id": "2312.07149#3",
+  "latex": "k_D(x, y; \\sigma_0)=\\sigma_0^2+x \\cdot y",
+  "condition": "naive",
+  "spoken": "k D ( x , y ; σ 0 ) = σ 0 2 + x ⋅ y",
+  "key": "a86f956bb741b182cd80068a",
+  "blind_id": "clip24"
+ },
+ {
+  "eq_id": "2002.00806#5",
+  "latex": "i_0 = k \\;c^{\\alpha_{\\rm a}}\\; (c_{\\rm s,max} -c_{\\rm s})^{\\alpha_{\\rm a}} \\;c_{\\rm s}^{\\alpha_{\\rm c}}",
+  "condition": "rules",
+  "spoken": "i sub 0 equals k times c raised to the alpha sub a power times open paren c sub seconds comma meters a x minus c sub seconds close paren raised to the alpha sub a power times c sub seconds raised to the alpha sub c power",
+  "key": "713121d1c83471d3687f866c",
+  "blind_id": "clip25"
+ },
+ {
+  "eq_id": "2511.23306#1",
+  "latex": "M_{k+1} = M_{k} - \\alpha \\cdot ((M_{\\mathrm{Prediction},k}-M_{\\mathrm{Design}})\\ast g_{\\mathrm{corr}})",
+  "condition": "rules",
+  "spoken": "M sub k plus 1 equals M sub k minus alpha times open paren open paren M sub Prediction comma k minus M sub Design close paren asterisk g sub corr close paren",
+  "key": "4ab911f31855bb71ec9937e1",
+  "blind_id": "clip26"
+ },
+ {
+  "eq_id": "2209.13557#4",
+  "latex": "\\boldsymbol m_{0,1} = \\boldsymbol m_{1,0} = [3,3,3,3,3,3,3,3]",
+  "condition": "scireader",
+  "spoken": "m sub 0 comma 1 equals m sub 1 comma 0 equals open bracket 3 comma 3 comma 3 comma 3 comma 3 comma 3 comma 3 comma 3 close bracket.",
+  "key": "f99dbb826f16722b597ad424",
+  "blind_id": "clip27"
+ },
+ {
+  "eq_id": "2510.18125#4",
+  "latex": "(\\psi,\\xi)_{\\Gamma}=\\int_{0}^{L}\\mathrm{d}u\\,\\,\\langle\\Gamma\\psi,\\xi\\rangle",
+  "condition": "rules",
+  "spoken": "open paren psi comma xi close paren sub normal Gamma equals the integral from 0 to L of d u of left angle bracket normal Gamma psi comma xi right angle bracket",
+  "key": "7a8a5316c26d26b40054ecbf",
+  "blind_id": "clip28"
+ },
+ {
+  "eq_id": "2304.04986#4",
+  "latex": "\\mathcal{L} = w_Q\\ell(Q_i^N) + w_{dQ}\\ell(\\frac{dQ^N}{dV_i}) + w_{Q_1}\\ell(Q_i^1) + \\mathcal{R}",
+  "condition": "rules",
+  "spoken": "script L equals w sub Q script l of open paren Q sub i to the N power close paren plus w sub d Q script l of open paren d Q to the N power over d V sub i close paren plus w sub Q sub 1 script l of open paren Q sub i to the first power close paren plus script R",
+  "key": "c18588ee3ae5ef6f784f67cd",
+  "blind_id": "clip29"
+ },
+ {
+  "eq_id": "2209.13557#4",
+  "latex": "\\boldsymbol m_{0,1} = \\boldsymbol m_{1,0} = [3,3,3,3,3,3,3,3]",
+  "condition": "rules",
+  "spoken": "bold italic m sub 0 comma 1 equals bold italic m sub 1 comma 0 equals open bracket 3 comma 3 comma 3 comma 3 comma 3 comma 3 comma 3 comma 3 close bracket",
+  "key": "46f0cc57e2d72d3167d09666",
+  "blind_id": "clip30"
+ }
+]

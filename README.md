@@ -60,6 +60,7 @@ An open benchmark of how faithfully read-aloud pipelines speak math, with an ana
 - **Verification fixes most of it.** The gate catches about 4 in 5 of those errors (recall 78–81 %), raising faithful readings to **89 %** (9B) and **87 %** (4B), while still using natural AI narration for 45 % of all equations (99 of 220) and the rule-based reading for the rest.
 - **Verified means verified:** in a manual check of 30 narrations, none of the gate-verified ones was wrong, and every real error was rejected or flagged.
 - **A generic reader's text-layer reading** is faithful for only 41 % of those equations.
+- **Naturalness (blind ratings by the author, 10 equations × 3 readings, 1–5):** naive 2.6, rules 3.8, SciReader's verified narration 4.0. Verified AI narration is at least as easy to follow as the rule-based reading (better on 5 of 10, tied on 2), and both are far above a generic reader.
 - Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 24 % < rules 29 % < LLM 32 % < **LLM + verify 38 %**.
 
 In the left panel, rules = 100 % by construction (that is how the subset is defined). The analysis is a [marimo](https://marimo.io) notebook: open `bench/analysis.html` without installing anything, or run `marimo edit bench/analysis.py` to filter by field and judge.

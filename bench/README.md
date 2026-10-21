@@ -26,7 +26,7 @@ We store IDs, extracted LaTeX and our annotations, not the papers. Annotations a
 - **Silent error rate:** the share of unverified LLM narrations (c) that the judge cannot write back as the same equation.
 - **Gate precision/recall:** how well the verification gate's verdict on c predicts the judge's verdict.
 - **Units and chemistry by sound (`scripts/units.py`):** each snippet is phonemized three times with misaki and its espeak fallback (exactly the phonemizer Kokoro uses): the raw text a generic reader would send, SciReader's normalized text, and the correct reading. A snippet is mispronounced when the phoneme edit distance to the correct reading exceeds 25 % of its length.
-- **Naturalness:** 30 blind clips rated 1–5 by a listener (`rate.py`, a marimo app).
+- **Naturalness:** 30 blind clips rated 1–5 by a listener (`rate.py`, a marimo app); results below.
 
 ## Run it
 
@@ -48,6 +48,8 @@ Requires Ollama with `qwen3.5:9b`, `qwen3.5:4b`, `gemma4:12b` and `phi4:14b`.
 Add queries in `scripts/collect.py` (field, search text) or arXiv IDs to `SAMPLES`, rerun the collector, then `run.py`. Cached model calls make reruns cheap. Contributions of new fields (electrochemistry, astrophysics…) and of adjudicated items are welcome.
 
 **Manual adjudication (30 narrations, `bench/data/adjudication.json`).** We checked 30 unverified 9B narrations by hand (15 the judge accepted, 15 it rejected). The judge's "faithful" calls were right 14/15 times, but its "error" calls only 7/15 times: it often fails to transcribe correct long readings. So the judge underestimates every pipeline; correcting for that, unverified narration still changes about a third of equations. The gate verified 15 of the 30 narrations and **none of them was wrong**; it rejected (or flagged as uncertain) all 8 real errors, and rejected 6 correct narrations, which then fall back to the rule-based reading.
+
+**Blind ratings (`results/ratings.json`).** The author rated 30 clips (10 equations × naive / rules / SciReader, random order, pipeline hidden) from 1 to 5: naive 2.6, rules 3.8, SciReader 4.0.
 
 ## Caveats
 
