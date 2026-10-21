@@ -43,3 +43,14 @@ Append-only history: what was done and what was learned, newest at the bottom. C
 - Kokoro in the app: 10–13 s cold load at startup (warmed in a background thread), then ~0.06 s per sentence; word timestamps map back to PDF word boxes through the normalizer's span map.
 - M2 vertical slice verified in the browser pane: click a sentence → audio starts, sentence + word highlight on the PDF, focus mode, auto-follow, prefetch of the next sentences, playback flows through paragraphs. M3: model manager (voices with preview/default/delete, Ollama models with pull progress and job assignment, parser status, storage, "Ready offline ✓"), `scripts/dev.ps1` (Edge `--app` window) and `scripts/setup.ps1`.
 - Big context + subagent is expensive; keep outputs small.
+
+## 2026-10-21 02:13–03:00 EDT: M4 AI layer, M6 features, M5 benchmark (agent, unattended)
+
+- Verified equation narration on the flagship: 33 equations in 99 s → 5 verified, 2 uncertain, 22 rules fallback, 4 unreadable. Learned: the verifier mostly rejects because the *parser's* LaTeX is noisy (OCR of a Springer PDF), not because the narrator is bad; and qwen3.5:9b did silently drop structure (it read `\Theta|_{Z=0} = 0` as "Theta sub Z equals zero equals zero"), which the round trip caught.
+- Figure narration: 22 first-mention targets (panels included) described by qwen3.5:9b from page crops in ~4 min; the panel-b description of Fig. 3 talked only about panel b.
+- Ask the paper with the whole paper in context (80K chars) and sentence IDs: 10.6 s for the first question, 1.8 s after (Ollama prefix cache), with correct citations.
+- Pronunciation review: candidates = abbreviations, formulas and words outside misaki's dictionary (with suffix stripping, otherwise every plural is flagged). A saved respelling applied immediately and word highlighting still mapped 23/23 words.
+- SciSpeech-Bench data: OpenAlex search + arXiv `/src` (many hits are PDF-only); simple `
+ewcommand` expansion; 220 equations from 24 papers. Units by sound with misaki + espeak fallback (exactly the voice's G2P): generic 47 % vs SciReader 0 % mispronounced on 99 snippets (caveat: snippets written by us, knowing the rules).
+- Benchmark design issue caught: the in-app checker (gemma4:12b) can't also be the faithfulness judge, so the benchmark uses phi4:14b (third model family) as judge. Two judges at ~0.4 calls/s would take 2.5 h, so the secondary judge was dropped.
+- With a ~500K-token context every step is expensive; big batched steps matter.

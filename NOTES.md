@@ -4,36 +4,36 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 02:45 EDT (M4 done)
+**Last updated:** 2026-10-21 03:00 EDT (M5 running, M6 mostly done)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written 02:20 EDT Wed, after M3 (tag `m3`).**
+**Written ~03:00 EDT Wed (unattended run since 00:21; paused 01:00–02:10).**
 
 **Summary**
-1. The reader core works end to end on all 6 samples: open (drop/pick, arXiv, samples, recent) → Docling parse (flagship ~100 s first time, others ~20 s, cached after) → the real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume ("Continue from …").
-2. Speech is science-aware: units, notation, Greek, chemistry, abbreviations (284 tests), your pronunciation lexicon (102 terms), citation markers ([12], superscripts, author–year) and page furniture/affiliations/references skipped.
-3. Equations are announced ("Equation 3: …") and read with Speech Rule Engine from Docling's OCR LaTeX; modes Full / Skip (Brief = AI, comes with M4).
-4. Model manager: voices (preview, default, download, delete), Ollama models (pull with progress, delete, reader/checker job, GPU fit warning), parser status, storage, "Ready offline ✓".
-5. Next: M4 AI layer (verified equation narration with badges first). Work paused at 01:00 and resumed at 02:13.
+1. **Reader core (M0–M3, tag `m3`):** open (drop/pick, arXiv, samples, recent) → Docling parse (~100 s first time, cached) → real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume; science normalizer (284 tests) + your lexicon; page furniture, citations, references skipped.
+2. **AI layer (M4, tag `m4-ai`), all local through Ollama:** verified equation narration with badges (checking… / ✓ / ? / ✗ rules / unreadable) and a detail popover; figures pop up at first mention with panel-aware AI descriptions ("Fig. 3b" → only panel b), `D` for more detail; Explain (colleague / Simpler) and Ask with citation chips; spoken summaries (paper or section).
+3. **M6 so far:** pronunciation review screen (hear → type → preview → save, export/import with conflicts), `E` cited-equation popup, citation hover with the reference entry, clean text view (Atkinson Hyperlegible / OpenDyslexic), audiobook export (MP3 per section + playlist).
+4. **M5 SciSpeech-Bench:** 220 display equations from 24 arXiv papers (115 polymers/materials, 40 physics, 35 chemistry, 30 math), LaTeX source as ground truth; conditions a–d + 4B; independent judge phi4:14b. **Units/chemistry by sound: a generic reader mispronounces 47 % of 99 snippets, SciReader 0 %.** The equation run is in progress (GPU); results → `bench/results/`, figure via the marimo notebook `bench/analysis.py`.
+5. **Your 15 minutes:** blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (30 clips; needs `rating_audio.py` once the run finishes; I'll prepare it).
 
-**How to launch:** `./scripts/dev.ps1` (builds the UI once, starts the backend, opens an Edge app window). Dev with hot reload: `./scripts/dev.ps1 -Hot`, or two terminals: `uv run --directory backend uvicorn scireader.main:app --port 8765` and `npm --prefix frontend run dev` → http://localhost:5173. (`dev.ps1` was written but not yet run by hand.)
+**How to launch:** `./scripts/dev.ps1` (Edge app window; not yet run by hand) or dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
-**2-minute test:** open the flagship from Sample papers or Recent → click any sentence on page 2 (audio within ~1 s, yellow sentence, orange word) → press → and Shift+→ → press F (focus off/on) → scroll away (a "Back to reading position" button appears) → ⚙ Reading settings: try the High contrast preset → ▦ Models: ▶ preview another voice → ← Papers, reopen from Recent: "Continue from …".
+**2-minute test:** flagship from Recent → click a sentence on page 2 → Shift+→, F → page 5 "Fig. 3b" sentence: the figure pops up after it with "panel b" → page 13, click equation 22's ✓ badge → ✦ AI → Explain (current sentence) → Aa Pronunciation: ▶ "GPJet", type "G P jet", Save → ¶ Text view → ⚙: Export audiobook → ▦ Models: preview a voice.
 
-**Decisions to review:** author list skipped with affiliations (toggle); captions read at their layout position until M4 moves them to first mention; speed = browser playbackRate (instant, pitch-preserving); MinerU dropped (cloud-first in v4, no local formulas); chemistry style "F-E 2 O 3" with hyphens because the voice reads a lone "A" as "uh".
+**Decisions to review (details §5):** author list skipped by default; MinerU dropped (cloud-first v4); Explain works on the current sentence or a Shift+click range (no free text selection); chemistry spoken "F-E 2 O 3"; the benchmark's naive condition is simulated from MathML glyph order (no TeX installed to render PDFs); the in-app verifier and the benchmark's gate both use gemma4:12b, so the benchmark judges with phi4:14b (third model family).
 
-**Known issues:** Docling's formula LaTeX is noisy on the flagship ("M o m t u n" for Momentum; equation 5 parsed as text), so rule-based readings of some equations are odd: exactly what the M4 verifier and the benchmark measure. "fps" and some acronyms are still spelled letter by letter.
+**Known issues:** flagship equation OCR is noisy (5 of 33 verified); some acronyms still spelled letter by letter; `dev.ps1` untested; summaries take ~10–20 s.
 
-**Questions:** Valency / Adaption prize rules (NOTES §9).
+**Questions:** Valency / Adaption prize rules (§9).
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 SciSpeech-Bench next.**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 benchmark running; M6 mostly done (P1 leftovers + audiobook).**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`.
@@ -294,8 +294,8 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [x] M4 AI layer (tag `m4-ai`): verified equation narration + badges ✓, figure narration at first mention (panel-aware, popup, D for detail) ✓, Explain (colleague/Simpler) + Ask with citation chips ✓. Not done: summaries (first on the cut list), citation hover popups, E equation-reference popup (M6).
-- [ ] M5 SciSpeech-Bench + figure
-- [ ] M6 Reflow view, audiobook export, 2nd TTS engine, arXiv source mode
+- [ ] M5 SciSpeech-Bench + figure: data ✓ (220 eqs / 24 papers), units-by-sound ✓ (47 % → 0 %), equation run in progress, marimo notebook drafted, rating app ready
+- [ ] M6: pronunciation review ✓, E equation popup ✓, citation hover ✓, reflow view ✓, audiobook export ✓; left: scanned-PDF OCR, auto-pause, arXiv source mode
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
 
 ---
