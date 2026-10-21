@@ -4,59 +4,55 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 07:15 EDT (checkpoint after M0–M6; waiting for the user's go-ahead on the next block)
+**Last updated:** 2026-10-21 08:30 EDT (fix and honesty block done; tag `m6.1-fixes`)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Checkpoint 07:15 EDT Wed, fresh session. All pushed; tags `m0-setup` … `m6-depth`; 309 backend tests pass. The flagship was walked through in the browser pane at 07:00 (screenshots sent to the user). Waiting for the go-ahead on the plan below.**
+**Written 08:30 EDT Wed, end of the fix and honesty block (fresh session from 07:00, the user accepted all defaults at 07:20). All pushed; tags through `m6.1-fixes`; 316 backend tests pass. Before/after screenshots were sent to the user.**
 
-**What works**
-1. **Reader:** open (drop/pick, arXiv, samples, recent) → Docling parse (flagship ~100 s first time, cached) → the real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume; normalizer (284 tests) + lexicon; furniture, citations, references skipped; scanned PDFs OCR'd automatically.
-2. **AI layer, all local:** equation badges + detail popover (flagship: 5 verified, 2 uncertain, 22 rules, 4 unreadable); figures pop up at first mention, panel-aware (all 22 targets described; `D` = more detail); `E` equation popup; Explain (~15 s, citation chips), Ask, spoken summaries.
-3. **Depth:** pronunciation review (export/import), citation hover, text view (dyslexia fonts), audiobook export, auto-pause, arXiv source mode, model manager ("Ready offline ✓").
-4. **SciSpeech-Bench:** 220 equations / 24 arXiv papers; unverified qwen3.5:9b narration changes ~1 in 3 equations; gate 64 % → 89 % faithful; units 47 % vs 0 % (see caveats below); your ratings naive 2.6 / rules 3.8 / SciReader 4.0. marimo `bench/analysis.py` + `.html`.
-5. **Drafts for you to edit:** `README.md`, `docs/writeup.md`, `docs/demo_script.md`, `bench/README.md`.
+**Done this block (each checked in the app or by a rerun)**
+1. **Strict gate:** only an exact round trip is spoken as AI narration; "uncertain" uses the rules reading, and the popover says why (`api/tts.py`, `Equations.tsx`, `bench/scripts/run.py`).
+2. **Flagship fixes:** equation labels come from the PDF text layer (eq. 8 is now "Equation 8, Charge: sigma equals R", verified; flagship 6 verified, 1 uncertain, 22 rules, 4 unreadable); line-end hyphens restored in compounds (physics-based); Springer inline math repaired (f(x), commas, "1, 2, …, n"); a control-character bug that turned "0.23" in captions into garbage; rules wording (delta, capital Theta, ohms only after a number); figure and equation popups stay on screen; a Windows save race.
+3. **Benchmark rerun** (cached model calls; 29 rules readings re-judged): judge-capable subset 66 equations: naive 44 %, 9B 64 % → 88 % with the gate, 4B 59 % → 91 %; the gate catches 3 in 4 errors; all 220: naive 24, rules 30, LLM 32, verified 37 %. Your ratings: AI narration as rated 4.0, **SciReader as shipped 3.8 = rules 3.8** (3 of the 10 rated narrations were uncertain).
+4. **Held-out units test:** 50 snippets sampled automatically from 18 papers, references by phi4:14b corrected blind to our output: **generic reader 36 %, SciReader 10 % mispronounced** (vs 47 % / 0 % on our own 99). Dev sample used to find gaps (farads, "10Ω", g/cc, "A ˚" for Å, "˚C"); test sample scored once after the fixes. Figure `bench/figures/units_heldout.png`.
+5. **Docs:** README, write-up and bench README carry the new numbers and caveats. **The demo script is untouched** (your call): its benchmark lines are stale ("four in five", "64 to 89 percent", "SciReader none").
+6. **Tooling:** `uv run python -m scireader.parsing.rebuild` rebuilds parsed papers from the cached Docling output after builder changes (drops equation checks only where the LaTeX or label changed).
+7. **Repo audit:** no secrets, PDFs or weights tracked; history 0.5 MB; LICENSE and `docs/LICENSES.md` present. Personal details are in NOTES/CLAUDE/DEVLOG/prompts (§9).
+8. **Clean-clone install test passed:** a fresh clone of `xxxxxxx` ran `setup.ps1` in 38 s with warm caches (uv/npm/HF on D:); `dev.ps1 -NoBrowser -Port 8799` was healthy in 3 s and served the built UI. Sample PDFs are not in the repo (`scripts/fetch_samples.py`); a new machine also downloads PyTorch/CUDA wheels and ~1.5 GB of models on first setup. The clone in `D:\scratch\scireader-clone` can be deleted.
 
-**How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser` for headless, `-Rebuild` after frontend changes). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
+**How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
-**2-minute test:** flagship from Recent → click a sentence on page 2 → page 5, the "Fig. 3b" sentence: the figure pops up after it → page 13: click equation 23's ✓ badge → ✦ AI → Explain → Aa Pronunciation → ¶ Text view → ▦ Models. For `E`: photopolymerization review sample, a sentence with "Eq. (2)", press E.
+**2-minute test:** flagship from Recent → click a sentence on page 2 → page 5, the "Fig. 3b" sentence: the figure pops up after it → page 13: equation 8's ✓ badge ("Charge"), equation 18's ? badge (rules reading, and why) → ✦ AI → Explain → Aa Pronunciation → ¶ Text view → ▦ Models.
 
-**Broken (found in the 07:00 walkthrough, not fixed yet)**
-1. **Equation 8 ("Charge: σ = R")** is spoken "C times h times arg of e times sigma equals R" under a "? uncertain" badge: Docling folded the bold label into the formula, and the gate checks the narration against that parsed LaTeX, so faithfully narrated OCR garbage passes. Same pattern for the "Energy:", "Momentum:" labels.
-2. **"Uncertain" narrations are spoken.** Uncertain = same symbols, different grouping, which is exactly the LLM error class. In the 30-item check, 1 of the 2 uncertain items was a real error (Lorentz–Lorenz: Nα moved into the denominator). The benchmark's "verified" condition (89 %) speaks them too.
-3. **Springer inline math is garbled** in speech and text view: "f x ( ) can be completely estimated by a mean m x ( )…", "i equals 1; 2; =; n" (GPR section on p. 13, right next to the verified equations).
-4. **Line-break hyphens dropped in compounds:** "physicsbased", "physicsinformed", "datadriven", "gravitydriven" (13 in the flagship).
-5. **Figure popup runs off the bottom of the screen** when the mention is low on the page; the description and "More detail (D)" end up behind the playback bar.
-6. **Equation verification starts twice on open** (dev StrictMode); the second write hit a Windows `PermissionError` on `equations.json` (race in `store.write_json`).
-7. Minor: the AI rail covers the PDF's right column (no refit); some "unreadable" badges sit next to a heading or overlap; Recent lists the PA12 paper twice, once with spaces missing in the title.
-- Known before: flagship OCR noisy (5/33 verified); the in-app checker rejects ~25 % of correct narrations; OCR'd papers highlight per paragraph; summaries take 10–20 s; per-section voice/speed not built.
+**Still broken or weak**
+- Flagship: 22 of 33 equations still use the rules reading (noisy OCR LaTeX); the in-app checker rejects ~25 % of correct narrations.
+- Text-layer limits: superscripts lost ("O(105 s)" for 10⁵ s), "1.3A" glued, units without a number ("mAh/g").
+- Minor UI: the AI rail covers the PDF's right column (no refit); some "unreadable" badges sit next to a heading. Recent lists the PA12 paper twice: the second is the previous session's scanned-PDF OCR test copy (`scanned_test.pdf`).
+- OCR'd papers highlight per paragraph; summaries take 10–20 s; per-section voice/speed was cut.
 
-**Simulated or self-graded (keep disclosed everywhere)**
-- Benchmark "naive" = simulated from MathML glyph order, not a real reader. The video's generic-reader clip must be a real recording (e.g. Edge Read Aloud on the PDF).
-- The 99 unit/chemistry snippets were written by us knowing the normalizer's rules, so "SciReader 0 %" is self-fulfilling. `bench/README.md` says so; `docs/writeup.md` and the demo script ("SciReader none") don't.
-- The 30-item adjudication was done by the agent: the builder grading its own pipeline.
-- Naturalness: one rater (you), 10 equations.
+**Simulated or self-graded (disclosed in the docs)**
+- Benchmark "naive" is simulated from MathML glyph order; the video's generic-reader clip must be a real recording.
+- The 30-item adjudication and the 13 held-out reference corrections were made by the agent (the latter blind to SciReader's output).
+- Naturalness: one rater (you), 10 equations; one rated rules clip used the old "normal Gamma" wording.
 
-**Decisions to review (details §5):** author list skipped by default; MinerU dropped; Explain on the current sentence or a Shift+click range; chemistry spoken "F-E 2 O 3"; judge = phi4:14b (third family).
+**Decisions to review (details §5):** strict gate; held-out protocol (dev/test, either chemistry convention, 6 non-prose snippets dropped); Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b.
 
-**Proposed next block (waiting for go-ahead).** M0–M6 are done ~1 day early, so nothing on the §8 cut list needs cutting; cut only per-section voice/speed. In order:
-1. Gate policy: "uncertain" speaks the rule-based reading (AI narration stays visible in the popover); recompute the benchmark from cached model outputs (no new LLM runs) and update the numbers. ~45 min.
-2. Flagship demo-path fixes: equation labels out of OCR LaTeX + re-verify; hyphenated compounds; figure popup kept on screen; verify-job race; Springer inline math (time-boxed 45 min, else avoid that passage in the demo). Tag `m6.1-fixes`. ~2.5 h.
-3. Held-out units test: unit/chemistry sentences pulled automatically from the 24 benchmark papers' LaTeX (text we didn't write); rescore. ~1 h.
-4. Docs: new numbers and caveats in write-up, README, demo script; add a units/chemistry moment to the video (Relevance). ~45 min.
-5. Ship prep early: clean-clone test of `setup.ps1`/`dev.ps1`, repo audit for going public, full-resolution README screenshots. ~1.5 h.
-6. Wed evening: you record a draft video. Thu morning: fixes from it; freeze 14:00 (`demo-ready`); M7 as in §8.
+**Next**
+1. A fresh session for the next block (this one reached ~470K tokens).
+2. Your review: `docs/writeup.md` (913 words, trim to one page), `README.md`, and the privacy question in §9.
+3. Polish candidates, pick any: AI rail refit; an "Equation N, label" tour on the flagship; a units/chemistry moment for the video; video when you're ready (update the demo script numbers first).
+4. Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M6 done (tags through `m6-depth`), ratings done; next: the fix/honesty block proposed in §0, then M7 ship (freeze Thu 14:00).**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M6 done, ratings done, fix and honesty block done (tag `m6.1-fixes`); next: the user's review, polish, then M7 ship (freeze Thu 14:00).**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
-- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`, `m5-bench`, `m6-depth`.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`, `m5-bench`, `m6-depth`, `m6.1-fixes`.
 - **Pacing:** fresh session per block, at most one subagent, small outputs.
 
 ---
@@ -75,7 +71,7 @@
   2. Write-up: what you built and what you learned (the video tl;dr says one page + a figure).
   3. **Public repo with a README**, openable without signing in.
   4. Rules confirmation checkbox.
-- **Prizes:** MDRI general prize (~$10K total), sponsor prizes from Valency, Adaption and marimo (you must use their platform; exact rules not on the page → check Slack at kickoff), an NVIDIA DGX Spark (export controls).
+- **Prizes:** MDRI general prize (~$10K total), sponsor prizes from Valency, Adaption and marimo (each requires using that sponsor's platform; confirmed by the user 2026-10-21), an NVIDIA DGX Spark (export controls). We target marimo only (the benchmark notebook).
 - **Resources:** sponsor credits, curated datasets, mentors on Slack/Zoom. Own subscriptions and clusters allowed.
 - **Pre-existing code:** the page doesn't address it. Working assumption: notes, prompts, environment setup and model downloads before kickoff are fine; app code is written during the event. Ask on Slack or blaiszik@uchicago.edu if unsure.
 
@@ -105,6 +101,8 @@
 - **gh config:** `GH_CONFIG_DIR=D:\tools\gh` (user env var, set 2026-10-20). gh's default `%APPDATA%\GitHub CLI` would be redirected inside the Claude app (see the MSIX gotcha below); this way the app and normal terminals share one login. The user ran `gh auth login --web` (HTTPS) from the app's Terminal panel on 2026-10-20. Verify with `gh auth status`.
 - **Gotcha: Claude desktop is an MSIX-packaged app.** Shells it launches have writes to `%APPDATA%`/`%LOCALAPPDATA%` silently redirected to `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\…`, invisible to normal terminals (and it broke uv's Python junction). Keep tools and caches on D: through the env vars above. Installers run through winget/msiexec are unaffected.
 - **Gotcha: env changes need a restart.** Shells inherit the environment the Claude app started with. After installing tools or changing env vars, restart the Claude app (or refresh `$env:Path` from the registry inside the command).
+- **Gotcha: backslash-digit in generated code.** A regex backreference written as backslash-1 can land in a file as the control byte \x01 (it happened in `builder.py` and garbled numbers in captions, and again in a heredoc). Prefer `\g<1>` or a function in `re.sub`; `backend/tests/test_source_hygiene.py` fails on control characters in source.
+- **Gotcha: PowerShell 5.1 + native stderr.** With `$ErrorActionPreference = "Stop"`, redirecting a native command's output (`*>`, `2>&1`) turns its stderr lines (uv prints "Using CPython…" there) into terminating errors. In test harnesses use `Start-Process -RedirectStandardOutput/-RedirectStandardError`.
 - **GPU + TTS smoke test (2026-10-20, passed).** Scratch venv `D:\scratch\gpu-smoke\.venv` (outside the repo; disposable).
   - PyTorch **2.14.1+cu132** (CUDA 13.2), installed with `uv pip install torch --torch-backend=auto`. Sees the RTX 4070; 20 × 4096² matmuls in 0.18 s. Wheels are now in the uv cache on D:, so the project install will be fast.
   - **Kokoro 0.9.4** (misaki 0.9.4, spaCy 3.8, espeakng-loader 0.2.4). Weights `hexgrad/Kokoro-82M` are in `D:\models\hf` (347 MB incl. all voices). Voice `af_heart`.
@@ -144,6 +142,12 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · Fix and honesty block (user accepted all defaults at 07:20):**
+  - **Strict gate:** only an exact round trip is spoken as AI; "uncertain" (same symbols, different grouping) gets the rules reading, because grouping is where LLM narrations fail silently (1 of the 2 uncertain items in the manual check was a real error).
+  - **Equation labels** ("Charge:", "Momentum:") are taken from the PDF text layer and cut from the OCR LaTeX when the garbled copy matches the label (difflib ratio ≥ 0.6), so only the math is narrated and checked.
+  - **Held-out units protocol:** snippets sampled automatically from the PDF text of 18 non-sample, non-math benchmark papers; phi4:14b references, corrected by hand from the snippet and reference only, before scoring; chemistry counts in either convention (name or symbols) for both readers; dev sample (seed 2026) for finding gaps, test sample (seed 2027, disjoint) scored once.
+  - **Ratings as shipped:** for the 3 rated equations whose AI narration was uncertain, SciReader's score is the rules clip's score (rated blind in the same session), giving 3.8 = rules; the as-rated 4.0 is still reported.
+  - **Not pursued:** Valency and Adaption sponsor prizes (they require their platforms; the app is offline); per-section voice/speed (cut).
 - **2026-10-21 · M4 decisions (agent):**
   - **Flagship verification result:** 33 equations in 99 s: 5 verified, 2 uncertain, 22 rules fallback, 4 unreadable. Most rejections come from Docling's noisy OCR LaTeX (the narrator faithfully reads garbled LaTeX the checker can't reproduce, or the checker writes invalid LaTeX). Honest, and a talking point: the gate refuses to speak what it can't verify.
   - **Comparison:** canonical MathML token sequences; exact → verified, equal after dropping brackets/fraction structure → uncertain, else mismatch with a readable diff fed to the repair prompt.
@@ -315,19 +319,17 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [x] M4 AI layer (tag `m4-ai`): verified equation narration + badges ✓, figure narration at first mention (panel-aware, popup, D for detail) ✓, Explain (colleague/Simpler) + Ask with citation chips ✓. Not done: summaries (first on the cut list), citation hover popups, E equation-reference popup (M6).
 - [x] M5 SciSpeech-Bench (tag `m5-bench`): 220 eqs / 24 papers, figure + marimo notebook + HTML export, units-by-sound, 30-item manual adjudication, the user's 30 blind ratings
-- [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (left: per-section voice/speed)
+- [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (per-section voice/speed cut 2026-10-21)
+- [x] M6.1 fix and honesty block (tag `m6.1-fixes`): strict gate, flagship parsing fixes, benchmark rerun, held-out units test, docs
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
 
 ---
 
 ## 9. Open questions for the user
 
-1. **Go-ahead on the plan in §0** (or changes to it).
-2. **"Uncertain" equations:** speak the rule-based reading instead of the AI narration? Default: yes (only exact round trips are spoken as AI).
-3. **Self-graded adjudication:** will you check the 8 errors + 2 uncertain items in `bench/data/adjudication.json` (~10 min)? Default: the docs say it was adjudicated by the agent.
-4. **Units claim:** re-test on held-out real sentences from the benchmark papers (~1 h)? Default: yes; otherwise the caveat goes into the write-up and video.
-5. **Draft video Wednesday evening** to de-risk Thursday? Default: yes.
-6. Valency and Adaption sponsor prize rules (Slack; anything we use must work offline). marimo is settled: the benchmark analysis is a marimo notebook.
+1. **Privacy before the repo goes public:** personal details to be removed before release.
+2. **Self-graded adjudication:** the docs now say the agent adjudicated the 30 items; a 10-minute spot check of the 8 errors + 2 uncertain items in `bench/data/adjudication.json` by you would make it independent. Optional.
+3. **Video:** when you're ready, the demo script's benchmark numbers need the update first (you said not yet).
 
 ---
 
