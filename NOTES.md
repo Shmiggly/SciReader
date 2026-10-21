@@ -40,10 +40,10 @@
 **Decisions to review (details §5):** strict gate; held-out protocol (dev/test, either chemistry convention, 6 non-prose snippets dropped); Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b.
 
 **Next**
-1. A fresh session for the next block (this one reached ~470K tokens).
-2. Your review: `docs/writeup.md` (913 words, trim to one page), `README.md`, and the privacy question in §9.
-3. Polish candidates, pick any: AI rail refit; an "Equation N, label" tour on the flagship; a units/chemistry moment for the video; video when you're ready (update the demo script numbers first).
-4. Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
+1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
+2. UI polish block in a fresh session (started 08:40 at the user's request): AI rail refit, equation badge placement on flagship p. 13.
+3. Your review: `docs/writeup.md` (913 words, trim to one page), `README.md`, and the privacy question in §9.
+4. Later, when you say so: the video (update the demo script numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 
 ---
 
@@ -142,6 +142,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · User: nothing goes public until they say so** (repo visibility, posts, uploads). Agents push only to the private repo.
 - **2026-10-21 · Fix and honesty block (user accepted all defaults at 07:20):**
   - **Strict gate:** only an exact round trip is spoken as AI; "uncertain" (same symbols, different grouping) gets the rules reading, because grouping is where LLM narrations fail silently (1 of the 2 uncertain items in the manual check was a real error).
   - **Equation labels** ("Charge:", "Momentum:") are taken from the PDF text layer and cut from the OCR LaTeX when the garbled copy matches the label (difflib ratio ≥ 0.6), so only the math is narrated and checked.
@@ -321,7 +322,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M5 SciSpeech-Bench (tag `m5-bench`): 220 eqs / 24 papers, figure + marimo notebook + HTML export, units-by-sound, 30-item manual adjudication, the user's 30 blind ratings
 - [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (per-section voice/speed cut 2026-10-21)
 - [x] M6.1 fix and honesty block (tag `m6.1-fixes`): strict gate, flagship parsing fixes, benchmark rerun, held-out units test, docs
-- [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
+- [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public only when the user says so** (private until then), submission form (by Thu 7 PM CDT)
 
 ---
 
