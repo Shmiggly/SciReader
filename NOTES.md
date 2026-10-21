@@ -46,7 +46,7 @@
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
 2. **Prompt fixes: tried, not shipped** (item 8). What is left on the flagship is narrator and checker variance (eq 23 lost its ✓ on a reworded narration); more prompt rules made things worse on the benchmark.
 3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
-4. Later, when you say so: the video (update the demo script's numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
+4. Later, when you say so: the video (`docs/demo_script.md` has the current numbers and a line on the second reading since 2026-10-21 evening; equation 27's popover shows the Source line). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted.
 
 ---
@@ -346,7 +346,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 
 1. **Privacy before the repo goes public:** personal details to be removed before release.
 2. **Self-graded adjudication:** the docs now say the agent adjudicated the 30 items; a 10-minute spot check of the 8 errors + 2 uncertain items in `bench/data/adjudication.json` by you would make it independent. Optional.
-3. **Video:** when you're ready, the demo script's benchmark numbers need the update first (you said not yet).
+3. **Video:** the demo script is updated (your go-ahead, 2026-10-21 evening); its "61 to 89 percent" and "more than one in three" are on the 70 equations the judge transcribes reliably, while the sentence says "220 equations". Say "on the equations our judge can check" if you want it exact.
 
 ---
 
