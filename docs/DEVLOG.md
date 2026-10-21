@@ -34,3 +34,12 @@ Append-only history: what was done and what was learned, newest at the bottom. C
   - qwen3.5:9b VRAM barely grows with context (4K → 32K adds ~0.9 GB), so ask-the-paper can use the whole paper instead of retrieval.
 - A session with a very long context makes every step expensive; hence fresh sessions per block.
 - Logged in to GitHub with gh (config on D: through GH_CONFIG_DIR), created the private repo Shmiggly/SciReader and pushed the prep commit. The repo becomes public at submission.
+
+## 2026-10-21 00:21–01:00 EDT: hackathon kickoff, M0–M3 (agent, unattended)
+
+- The user started the session at 00:21 instead of 6:30. M0 scaffold in ~15 min: uv backend resolved first try (torch 2.14.1+cu132, Docling 2.141, Kokoro 0.9.4 with transformers 5.20), Vite 8 + React 19 + pdf.js 6 + TypeScript 7 frontend, Node math-speech helper (mathjax-full 3 + SRE 5.0-rc). All six sample PDFs fetched (the MDPI one was already downloaded by hand).
+- Docling on the flagship: ~100 s on the RTX 4070 including the first model download; it found all 33 display equations, 9 figure captions, 35 references. Its formula LaTeX (CodeFormulaV2) is tokenized and sometimes garbled ("M o m t u n" for Momentum, "C h \arg e" for Charge), and one equation came out as plain text. That is exactly the failure the verifier and the benchmark are about.
+- Learned: Springer Nature PDFs map inline-math glyphs to wrong code points (`¼` for `=`, `ð…Þ` for parentheses, `þ` for `+`); a one-to-one translation table fixes most of it. Superscript citations show up in Docling text as " 18 ."; PDFium's `FPDFText_GetFontSize` returns 1.0 there (text-matrix scaling), so superscripts are detected from loose glyph box heights and raised baselines instead (63 citation markers found and dropped from speech).
+- Kokoro in the app: 10–13 s cold load at startup (warmed in a background thread), then ~0.06 s per sentence; word timestamps map back to PDF word boxes through the normalizer's span map.
+- M2 vertical slice verified in the browser pane: click a sentence → audio starts, sentence + word highlight on the PDF, focus mode, auto-follow, prefetch of the next sentences, playback flows through paragraphs. M3: model manager (voices with preview/default/delete, Ollama models with pull progress and job assignment, parser status, storage, "Ready offline ✓"), `scripts/dev.ps1` (Edge `--app` window) and `scripts/setup.ps1`.
+- Big context + subagent is expensive; keep outputs small.
