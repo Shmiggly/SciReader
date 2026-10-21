@@ -15,4 +15,22 @@ Append-only history: what was done and what was learned, newest at the bottom. C
 - User decision: the whole app runs fully offline with local models (no cloud API keys). Installed Ollama 0.40.6 with models on D:, and pulled `qwen3.5:9b` (narrator, vision, Q&A) and `gemma4:12b` (independent back-transcriber).
 - Offline LLM smoke test on 8 physics/chemistry equations: all narrations faithful; 7/8 round trips exact. The miss was Planck's law: "divided by k sub B T" is ambiguous out loud, a perfect example of what verification is for. qwen3.5 described a synthetic XRD figure correctly. Learned: SymPy's LaTeX parser can't handle most physics notation (6/8 failed), so the verifier will compare canonical MathML trees instead; `ollama ps` under-reports gemma4's VRAM (~8.5 GB real), so the two LLMs must run in separate batches.
 - Chose 5 sample papers (+1 backup) from the demo domain (polymers for additive manufacturing + ML), verified via OpenAlex and arXiv: licenses, LaTeX-source availability, equation and figure counts. Flagship: the CC BY physics-informed Bayesian learning paper on electrohydrodynamic polymer jet printing (33 equations). Learned: the arXiv search API rate-limited us immediately (OpenAlex is the fallback), arXiv licenses often differ from the CC BY journal version, and MDPI/Europe PMC block scripted PDF downloads.
+
+## 2026-10-21 (just after midnight): plan walkthrough with the user
+
+- Went through the whole build step by step and folded every decision into the kickoff prompt and NOTES §5:
+  - **What it is:** a borderless app window; Apache-2.0 (commercial use stays open, so licenses are tracked).
+  - **Reading:** resume where you left off; focus mode on by default; no dark page; sentence + word highlight.
+  - **Voice:** heart voice; science pronunciation lexicon (PEGDA → "peg-dah", Tg → "T G").
+  - **The user's ideas:** a pronunciation review screen with shareable lexicons; equation-reference and figure popups; panel-aware figure descriptions ("Fig. 3b" describes only panel b).
+  - **Equations:** fallback chain verified AI → rules → "Equation N"; a "checking…" badge state.
+  - **Benchmark:** analysis in a marimo notebook for the sponsor prize.
+  - **Start:** kickoff 6:30 AM; questions go out as notifications.
+- Measured and verified along the way:
+  - Kokoro runs with `HF_HUB_OFFLINE=1` (fully offline), and all 28 English voices are cached.
+  - Plain respellings work for custom pronunciations.
+  - The voice's phonemizer runs without the model, which makes phoneme-level scoring of units possible.
+  - Raw Kokoro says MPa as "em-pah", nm as "en em", and mW/cm² as "em double-u slash C M two".
+  - qwen3.5:9b VRAM barely grows with context (4K → 32K adds ~0.9 GB), so ask-the-paper can use the whole paper instead of retrieval.
+- A session with a very long context makes every step expensive; hence fresh sessions per block.
 - Logged in to GitHub with gh (config on D: through GH_CONFIG_DIR), created the private repo Shmiggly/SciReader and pushed the prep commit. The repo becomes public at submission.

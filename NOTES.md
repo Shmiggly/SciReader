@@ -21,7 +21,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **Toolchain:** installed and verified 2026-10-20 (§3). GPU + Kokoro TTS smoke test passed the same night (§3).
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work. Both tested on this machine (§3).
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader (prep committed and pushed).
-- **Next actions (user):** restart the Claude app, finish the rest of §4. At kickoff, fill the blanks at the top of `docs/prompts/kickoff.md` and send it as the first message of a fresh session opened in this repo.
+- **Next actions (user):** finish §4 tonight. **Wed 6:30 AM:** follow "How to start" at the top of `docs/prompts/kickoff.md` (new session on the repo folder, Auto, Opus 5.5, effort Max, then a short message pointing at the brief).
 
 ---
 
@@ -79,7 +79,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **Gotcha: CUDA torch in a uv project.** `--torch-backend=auto` only works with `uv pip`. In `pyproject.toml`, add the PyTorch index (`https://download.pytorch.org/whl/cu132`) as an explicit `[[tool.uv.index]]` and pin `torch` to it in `[tool.uv.sources]`.
 - **espeak-ng:** no separate Windows installer was needed (bundled by `espeakng-loader`). Hugging Face warns about unauthenticated requests (harmless); set `HF_HUB_OFFLINE=1` once models are cached so the app runs offline.
 - **Ollama (installed 2026-10-20).** Server runs from the tray app at login (outside the Claude sandbox) on `http://127.0.0.1:11434`. Models live in `D:\models\ollama`: `qwen3.5:9b` (6.6 GB, text + images, 256K context) and `gemma4:12b` (8.0 GB, 11.9B Q4_K_M, text + images). Both the native `/api/chat` (with `images`, `think: false`) and the OpenAI-compatible `/v1/chat/completions` work.
-- **Measured VRAM (nvidia-smi, 12 GB card):** other apps ~2.8 GB at idle · `qwen3.5:9b` ~6.2 GB · `gemma4:12b` ~8.5 GB · Kokoro ~0.7 GB. So qwen + Kokoro fit together while reading (~9.7 GB total); gemma can't share with qwen (Ollama swaps them). **`ollama ps` under-reports gemma4** (shows 1.1 GB): trust nvidia-smi.
+- **Measured VRAM (nvidia-smi, 12 GB card):** other apps ~2.8 GB at idle · `qwen3.5:9b` ~6.2 GB · `gemma4:12b` ~8.5 GB · Kokoro ~0.7 GB. So qwen + Kokoro fit together while reading (~9.7 GB total); gemma can't share with qwen (Ollama swaps them). Context length barely matters for qwen3.5: total VRAM was 8.6 GB at `num_ctx` 4096, 8.9 GB at 8192 and 9.5 GB at 32768 (other apps 2.2 GB at that moment). So a whole paper fits in context next to Kokoro. **`ollama ps` under-reports gemma4** (shows 1.1 GB): trust nvidia-smi.
 - **Load times:** cold first load from disk 18–28 s; warm swap ~5 s. After loading, ~70 tokens/s for qwen3.5:9b, so narrating one equation takes 0.2–0.7 s.
 - **LLM smoke test (2026-10-20), 8 physics/chem equations:** qwen3.5:9b narrations were all faithful and natural. gemma4:12b blind back-transcription recovered 7/8. The miss (Planck's law) is the textbook case for verification: "e to the h nu divided by k sub B T" is ambiguous about the denominator, and the transcriber also dropped "(T)". Figure test: qwen3.5:9b described a synthetic two-phase XRD plot correctly (axes, units, legend, all 10 peak positions) in ~10 s including a model swap.
 - **Gotcha: SymPy's LaTeX parser (lark backend) failed on 6 of 8 equations** (`\Delta`, `\varepsilon`, `\hbar`, `\nabla`, integrals, `\mathrm`). Plain string similarity is also misleading (0.70 for a correct Arrhenius round trip). The verifier needs canonicalized structural comparison (see §5).
@@ -100,14 +100,74 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - [x] Ollama 0.40.6 installed; `qwen3.5:9b` + `gemma4:12b` pulled to D: and tested (§3). Done 2026-10-20.
 - [ ] Before kickoff: check that the Ollama icon is in the system tray (its server starts at login).
 - [x] Sample papers chosen from the demo domain (§6). Done 2026-10-20.
-- [ ] Download sample #5 by hand (MDPI blocks scripts): open `https://www.mdpi.com/2073-4360/13/14/2325/pdf` in a browser and save it as `D:\Github\SciReader\SciReader\samples\polym13142325.pdf`.
-- [ ] Kickoff session: open it directly on the repo folder (**not** in a worktree, so commits land on `main`) and pick **auto** mode in the message box (new sessions default to asking for permission, which would stall the unattended run). Keep-awake is already on, battery included, but a closed laptop lid still sleeps.
+- [x] Sample #5 downloaded by hand to `samples/polym13142325.pdf` (9.2 MB, CC BY 4.0; not committed). Done 2026-10-20.
+- [ ] Kickoff session: open it directly on the repo folder (**not** in a worktree, so commits land on `main`) and pick **auto** mode in the message box (new sessions default to asking for permission, which would stall the unattended run). Keep-awake is already on, battery included, but a closed laptop lid still sleeps. Model Opus 5.5, effort **Max**.
 - [ ] At kickoff: read the sponsor prize rules (Valency, Adaption, marimo) on Slack and note them in the kickoff prompt.
 
 ---
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · Plan walkthrough, step 9 (schedule, cuts, submission):**
+  - **Kickoff** Wed 6:30 AM Eastern. The first ~3 h run unattended.
+  - **Questions:** the agent asks through `PushNotification` with a stated default and keeps working (no blocking questions unless everything is blocked).
+  - **Effort:** Max for every session; "ultrathink" is added to the prompts as a backup.
+  - **Sessions:** a fresh session per block, with a "Hand off" prompt.
+  - **Schedule and cut order** are in §8. Freeze Thu 14:00, submit by 19:00.
+  - **The user records the video** in their own voice.
+- **2026-10-21 · Plan walkthrough, step 8 (benchmark):** user agreed with all picks.
+  - **Papers:** at least half polymers/materials.
+  - **Size:** 200 equations (minimum 100).
+  - **Ratings:** the user's ~30 blind naturalness ratings.
+  - **Units and chemistry:** scored at the phoneme level with misaki (offline).
+  - **Release:** the dataset goes public (CC BY 4.0 annotations).
+  - **marimo prize** only requires using their platform somehow, so **the benchmark analysis and figures live in a marimo notebook** (`bench/analysis.py`, plus a static HTML export).
+- **2026-10-20 · Plan walkthrough, step 7 (model manager):** user agreed with all picks.
+  - Voice previews.
+  - A dropdown per AI job (reader / checker).
+  - GPU-memory fit warning (no hardware profiles yet).
+  - No second voice engine for the hackathon (Qwen3-TTS first later: Apache-2.0, multilingual → French).
+  - The video's one-click download is `qwen3.5:4b`, which the benchmark also needs; delete it and re-download it on camera.
+- **2026-10-20 · Plan walkthrough, step 6 (AI helpers):**
+  - **Figure descriptions play at first mention:** finish the sentence, then the caption and description. They aren't repeated when the layout reaches the figure.
+  - **The figure pops up where it was mentioned** (user's idea).
+  - **Panel-aware** (user's idea): "Fig. 3b" describes only panel b, and "Fig. 3" describes the whole figure. Each target is described once.
+  - **Short descriptions** with `D` for more detail.
+  - **Explain** defaults to colleague level, with a "Simpler" button.
+  - **Typed questions only** (voice later).
+  - **Summaries** are kept but come last among the AI features.
+  - **Figure descriptions** are prepared in the background for every mentioned target.
+- **2026-10-20 · Plan walkthrough, step 5 (equations):**
+  - **Full** reading by default. The user is wary it may sound heavy on long equations: → skips the rest of an equation, and an "auto" mode is an option if needed.
+  - **Fallback chain:** verified AI reading → rule-based reading → say only "Equation 3" (unreadable).
+  - **Badges** get a "checking…" state, so it's clear when verification isn't done yet; playback never waits for the AI.
+  - **Equation references:** pressing `E` on "Eq. (3)" shows a popup anchored over the reference with the equation (crop from the PDF) and its badge, reads it, and returns (P1).
+  - Ask the paper uses whole-paper context (measured cheap) instead of retrieval.
+- **2026-10-20 · Plan walkthrough, step 4 (the voice):**
+  - Default voice `af_heart`, chosen from samples.
+  - Section titles announced on entry; footnotes skipped by default (toggle).
+  - Pronunciation lexicon is core: shipped `lexicons/science-en.json`, plus a user lexicon that overrides it. The user's pronunciations: PEGDA → "peg-dah" (hard "da"), Tg → "T G". Plain respellings work (verified with Kokoro).
+  - The user's idea, a **pronunciation review screen** (P1), lists likely-mispronounced terms per paper, lets you fix them, and supports export/import so lexicons grow and can be shared. It's the seed of an open science pronunciation dataset.
+  - Auto-pause after each paragraph is off, a possible addition at the end (P2).
+- **2026-10-20 · Plan walkthrough, step 3 (reading screen):**
+  - Sentence + word highlight, with 3–4 color presets including high-contrast.
+  - Scrolling away stops auto-follow and shows a "Back to reading position" button.
+  - Focus mode is on by default (key `F`).
+  - No dark or inverted PDF page (the app's interface still follows the system theme).
+  - The clean text (reflow) view is a toggle, not side by side.
+  - Layout as in the walkthrough mockup: outline on the left, PDF in the center, AI rail on the right, playback bar at the bottom.
+- **2026-10-20 · Plan walkthrough, step 2 (opening a paper):**
+  - **Resume where I left off** is core (M3).
+  - **One paper open at a time**, plus a small "Recent papers" list. I kept that list because it's how you get back to a paper to resume; the user can drop it.
+  - **Scanned/OCR PDFs** are the first stretch pick, skipped on the first pass.
+  - **Later updates:** starting to listen before parsing finishes, a library from a folder, Zotero.
+- **2026-10-20 · Plan walkthrough, step 1 (what it is and how it runs):**
+  - **Borderless app window:** Edge `--app` mode + a web app manifest, so it looks like a desktop program.
+  - **English only** for now.
+  - **Simple install** for the hackathon (README + setup script); a one-click installer is a future goal.
+  - **Apache-2.0**, keeping commercial use open, so dependency licenses get tracked from day one.
+  - **Name stays SciReader.**
+  - **Target is reading on a PC/laptop screen;** a mobile app is a future idea, so keep the backend a clean API.
 - **2026-10-20 · Fully offline (user requirement).** The app must work with Wi-Fi off: no cloud APIs, no CDNs, no runtime downloads. arXiv import is the only online feature and must fail gracefully. No cloud API keys anywhere. This also strengthens the pitch: private, free, usable on unpublished work.
 - **2026-10-20 · Local LLMs.** `qwen3.5:9b` narrates equations, describes figures, and does explain/ask/summaries. `gemma4:12b` (a different model family, so errors are less correlated) only back-transcribes for verification. Run verification in two batches per paper (all narrations, then all back-transcriptions with `keep_alive: 0`) so the models swap once, not per equation. Use `think: false` and temperature 0 for narration and transcription. No cloud provider is implemented; the provider interface stays generic.
 - **2026-10-20 · Verifier design.** Primary check: convert both LaTeX strings to MathML with MathJax (the same Node helper as SRE) and compare canonicalized trees (flatten `mrow`; unify `\varepsilon`/`\epsilon`, `\dfrac`/`\frac`, implicit vs explicit multiplication, `e^{x}`/`\exp`, `\mathrm{A}`/`A`). SymPy equivalence or numeric spot checks are secondary, only when both sides parse. On a mismatch, retry once by telling the narrator what was lost, then fall back to SRE speech.
@@ -116,7 +176,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - **2026-10-20 · Combination:** the AI-reliability angle goes into **verified narration**: every LLM rewrite of math is back-transcribed and checked for symbolic equivalence against the source LaTeX; failures fall back to deterministic speech. The benchmark measures how often unverified LLM narration silently changes the math. That's a real faithfulness/hallucination eval at small scale.
 - **2026-10-20 · Fidelity principle:** body text is read verbatim (deterministic normalization only). AI touches only equations, figures and tables, plus on-demand features, and always labels itself.
 - **2026-10-20 · Stack defaults:** Python 3.12 + uv + FastAPI backend; Vite + React + TS + pdfjs-dist frontend; Node helper for Speech Rule Engine; local web app first, desktop packaging only as a stretch.
-- **2026-10-20 · Parser:** Docling first (MIT, Windows-friendly, layout labels + bbox + reading order + formula LaTeX). Time-boxed MinerU 2.5 bake-off (best formula scores on OmniDocBench in 2026; GPU; license moved to a custom Apache-based license in Apr 2026, fine for open source). Marker is avoided as default (weights restricted above revenue thresholds; verify if revisited).
+- **2026-10-20 · Parser:** Docling first (MIT, Windows-friendly, layout labels + bbox + reading order + formula LaTeX). Time-boxed MinerU 2.5 bake-off (best formula scores on OmniDocBench in 2026; GPU; license moved to a custom Apache-based license in Apr 2026 with commercial terms above a usage threshold, so it stays optional only, given the Apache-2.0 license). Marker is avoided as default (weights restricted above revenue thresholds; verify if revisited).
 - **2026-10-20 · TTS:** Kokoro-82M (Apache-2.0, fast, good quality, CPU or GPU) as default. Candidates for a 2nd engine: Piper (low-end CPU), Chatterbox (MIT, cloning), Qwen3-TTS (Apache-2.0). Avoid XTTS-v2 as default (non-commercial license).
 - **2026-10-20 · Word highlighting moves to P0 (M2).** The smoke test showed Kokoro returns per-word timestamps and synthesizes a sentence in ~0.1 s, so word-level highlight is cheap and directly serves readers who lose their place.
 
@@ -160,7 +220,39 @@ Model dir: `D:\models\scireader`. HF cache: `D:\models\hf`.
 
 ## 8. Roadmap & milestone status
 
-Times are from kickoff. Details in the kickoff prompt §7.
+Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's time zone; kickoff Wed 6:30 AM, deadline Thu 8:00 PM = 7:00 PM CDT):
+
+| When | What | Who |
+|---|---|---|
+| Wed 6:30–9:30 | M0–M3 | Agent, unattended |
+| Wed ~9:30 | Checkpoint prompt, then a fresh session | User |
+| Wed 10:00–16:00 | M4 AI layer | Agent, the user steering |
+| Wed 16:00–20:00 | M5 benchmark + marimo analysis; the user's ~30 blind ratings | Agent + ~15 min of the user |
+| Wed 20:00–23:00 | M6 starts (pronunciation review screen first) | Agent |
+| Wed night | Long benchmark GPU runs keep going; optional agent stretch | GPU / agent |
+| Thu 7:00–14:00 | M6 continues, then fixes (fresh session in the morning) | Agent, the user steering |
+| **Thu 14:00** | **Feature freeze**, tag `demo-ready` | |
+| Thu 14:00–17:00 | M7: README, write-up + figure, video script, repo audit | Agent |
+| Thu 17:00–18:30 | User records the video (own voice, not sped up; Windows Snipping Tool or OBS), uploads and posts it | User |
+| Thu 18:30–19:00 | Repo public, submission form | User, agent checks |
+| Thu 20:00 | Deadline (1 h buffer) | |
+
+**Cut order if behind (cut from the top):**
+1. Summaries
+2. Auto-pause, audiobook export, arXiv source mode
+3. Scanned-PDF OCR
+4. Clean text view
+5. Benchmark extras (inline and unit items, 4B model, full-PDF pipeline)
+6. Equation-reference popup
+7. Pronunciation review screen (the lexicon file stays)
+8. Ask the paper (Explain stays)
+
+**Never cut:**
+- the reader core: click-to-read, highlight, voice, skipping, normalizer + lexicon, resume;
+- verified equations with badges;
+- figures at first mention;
+- a minimal benchmark (100 equations, 4 main conditions) with its marimo figure;
+- the video and write-up.
 
 - [ ] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads
 - [ ] M1 (0:20–1:15) Parse → Document JSON, sentence split, normalizer + tests, Kokoro synth, MinerU bake-off
@@ -175,13 +267,14 @@ Times are from kickoff. Details in the kickoff prompt §7.
 
 ## 9. Open questions for the user
 
-1. Sponsor prize rules (Valency / Adaption / marimo): is one worth targeting? (marimo is cheap to target: the benchmark analysis could be a marimo notebook.)
+1. Valency and Adaption sponsor prize rules (check on Slack at kickoff; anything we use must work offline). marimo is settled: the benchmark analysis is a marimo notebook.
 
 ---
 
 ## 10. Parked ideas (not for this hackathon unless the plan changes)
 
 - **Idea 2, sharpest version:** "Do AI-scientist agents fabricate when the science can't be done?" An eval where agents get computational chemistry/materials tasks that are secretly impossible or underspecified (missing data, non-converging setups, contradictory inputs). Measure how often they report fabricated results vs. admit failure. Fills the "verification gap" named in the 2026 AI-scientist surveys (arXiv:2608.05179). Crowded neighbors to differentiate from: SciHazard, LabSafety Bench, LABSHIELD, ChemSafetyBench, WMDP. Good candidate for a post-hackathon project.
+- **Future product path (user, 2026-10-20):** one-click installer, mobile app, other languages (French first), library from a folder, Zotero integration, start listening before parsing finishes, asking questions by voice (offline speech recognition), a second voice engine (Qwen3-TTS first: Apache-2.0, multilingual, voice cloning), a community-shared science pronunciation dataset (field packs: polymers, electrochemistry, astrophysics…). Before any closed release: replace GPL pieces (espeak-ng/phonemizer via misaki), avoid MinerU, and re-check model licenses (`docs/LICENSES.md`).
 - Podcast-style two-voice paper discussions (VibeVoice-like), but only after fidelity is solved.
 - Reading-comprehension checks (quick spoken questions after each section).
 
