@@ -80,6 +80,12 @@ class MathSpeech:
 _POLISH = [
     (re.compile(r"\bnormal d\b"), "d"),
     (re.compile(r"\bnormal (?=[A-Za-z]\b)"), ""),
+    # SRE reads an upright Δ as a triangle; scientists say "delta G", "delta H".
+    (re.compile(r"\bnormal triangle\b"), "delta"),
+    # ...and an upright Ω as the unit, which it only is after a number ("5 ohms").
+    (re.compile(r"(?<![\d.] )\bohms\b"), "capital Omega"),
+    # Upright capital Greek ("normal Theta") is just a capital letter to a listener.
+    (re.compile(r"\bnormal (?=(?:Gamma|Delta|Theta|Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega)\b)"), "capital "),
     (re.compile(r"\s+"), " "),
 ]
 

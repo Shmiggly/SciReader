@@ -6,6 +6,7 @@ import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
 import { EquationBadge, EquationPopover } from "./Equations";
+import { fitInScroller, useFitInScroller } from "./fit";
 import { PRESETS, closeFigure, figureDetail, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -429,6 +430,8 @@ function EquationLayer({ page, scale, pageWidth }: { page: number; scale: number
 function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
   const pop = useStore((s) => s.figPopup);
   const doc = useStore((s) => s.doc)!;
+  const ref = useRef<HTMLDivElement>(null);
+  useFitInScroller(ref);
   if (!pop) return null;
   const e = sentenceAt(pop.sentence_id);
   const r = e?.s.rects[e.s.rects.length - 1];
@@ -436,7 +439,7 @@ function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; 
   const w = Math.min(520, pageWidth - 16);
   const left = Math.max(8, Math.min(r[1] * scale, pageWidth - w - 8));
   return (
-    <div className="fig-pop" style={{ left, top: r[4] * scale + 10, width: w }} onClick={(ev) => ev.stopPropagation()}>
+    <div className="fig-pop" ref={ref} style={{ left, top: r[4] * scale + 10, width: w }} onClick={(ev) => ev.stopPropagation()}>
       <div className="eq-pop-head">
         <b>{pop.label}</b>
         <button className={pop.pinned ? "toggle on" : "toggle"} onClick={() => useStore.setState({ figPopup: { ...pop, pinned: !pop.pinned } })} title="Keep this open">
@@ -444,7 +447,7 @@ function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; 
         </button>
         <button className="ghost" onClick={closeFigure} aria-label="Close">✕</button>
       </div>
-      <img src={`/api/docs/${doc.id}/figures/${pop.figure_id}/image`} alt={pop.label} />
+      <img src={`/api/docs/${doc.id}/figures/${pop.figure_id}/image`} alt={pop.label} onLoad={() => fitInScroller(ref.current)} />
       <div className="fig-desc">
         <span className="ai-label">AI description</span>{" "}
         {pop.loading ? "…" : pop.description ?? "Not ready yet: reading the caption only."}

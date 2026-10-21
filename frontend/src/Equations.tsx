@@ -1,8 +1,9 @@
 // Verified equation narration in the UI: background polling, badges on the PDF, and the detail popover.
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import { api, type Block } from "./api";
+import { useFitInScroller } from "./fit";
 import { playSentence, useStore } from "./store";
 
 export interface EqAttempt { speech: string; back: string; result: string; diff: string }
@@ -77,6 +78,8 @@ export function EquationBadge({ b, scale }: { b: Block; scale: number }) {
 export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: number; pageWidth: number }) {
   const res = useStore((s) => s.eqResults[b.id]);
   const eqState = useStore((s) => s.eqState);
+  const ref = useRef<HTMLDivElement>(null);
+  useFitInScroller(ref);
   const st = badgeState(b, res, eqState);
   let html = "";
   try {
@@ -84,12 +87,12 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
   } catch {
     html = "";
   }
-  const label = b.eq_number ? `Equation ${b.eq_number}` : "Equation";
+  const label = (b.eq_number ? `Equation ${b.eq_number}` : "Equation") + (b.eq_label ? ` · ${b.eq_label}` : "");
   const used = st === "verified" ? res?.speech_ai : b.speech_rules;
   const left = Math.max(8, Math.min(b.bbox[0] * scale, pageWidth - 470));
   const last = res?.attempts?.[res.attempts.length - 1];
   return (
-    <div className="eq-pop" style={{ left, top: b.bbox[3] * scale + 8 }} onClick={(e) => e.stopPropagation()}>
+    <div className="eq-pop" ref={ref} style={{ left, top: b.bbox[3] * scale + 8 }} onClick={(e) => e.stopPropagation()}>
       <div className="eq-pop-head">
         <b>{label}</b>
         <span className={`eq-badge static ${st}`}>{LABEL[st] ?? st}</span>

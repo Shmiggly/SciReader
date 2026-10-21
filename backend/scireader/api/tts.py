@@ -8,6 +8,7 @@ from collections import OrderedDict
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
+from ..parsing.latex import equation_intro
 from ..speech.lexicon import strip_markup
 from ..speech.pipeline import speak
 from ..tts.engine import audio_path, get_engine, registry, synth_cached
@@ -53,8 +54,7 @@ def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
 
     Only an exact round trip ("verified") is spoken as AI. "Uncertain" means the grouping differs, which is
     where LLM narrations go silently wrong, so it gets the rule-based reading like a failed check."""
-    number = block.get("eq_number")
-    label = f"Equation {number}" if number else "Equation"
+    label = equation_intro(block.get("eq_number"), block.get("eq_label"))
     ai = ai or {}
     if mode == "skip":
         return f"{label}."

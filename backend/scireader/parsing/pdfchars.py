@@ -11,6 +11,7 @@ from __future__ import annotations
 import difflib
 from dataclasses import dataclass
 from statistics import median
+from typing import Callable
 
 import pypdfium2 as pdfium
 import pypdfium2.raw as pdfium_c
@@ -96,6 +97,35 @@ def align(text: str, chars: list[PdfChar]) -> list[PdfChar | None]:
         for k in range(size):
             result[t_idx[a + k]] = p_list[b + k]
     return result
+
+
+_HYPHENS = {"-", "‐", "‑", "­", "\x02"}
+
+
+def restore_hyphens(text: str, mapped: list[PdfChar | None], chars: list[PdfChar],
+                    keep: Callable[[str, str], bool]) -> tuple[str, list[PdfChar | None]]:
+    """Put back line-end hyphens that the parser removed when joining lines, where keep(left, right) says the
+    hyphen belongs to the word ("physics-|based"), not to the line break ("pro-|cessing")."""
+    pos = {id(c): k for k, c in enumerate(chars)}
+    out, out_map = [], []
+    for i, ch in enumerate(text):
+        if (i > 0 and ch.isalpha() and text[i - 1].isalpha() and mapped[i] is not None and mapped[i - 1] is not None
+                and abs(mapped[i].base - mapped[i - 1].base) > 0.5 * max(mapped[i].size, 1.0)):
+            a, b = pos.get(id(mapped[i - 1])), pos.get(id(mapped[i]))
+            between = chars[a + 1: b] if a is not None and b is not None and a < b else []
+            hyph = [c for c in between if c.ch in _HYPHENS]
+            if hyph and all(c.ch in _HYPHENS or not c.ch.strip() for c in between):
+                j, k = i, i
+                while j > 0 and text[j - 1].isalpha():
+                    j -= 1
+                while k < len(text) and text[k].isalpha():
+                    k += 1
+                if keep(text[j:i], text[i:k]):
+                    out.append("-")
+                    out_map.append(hyph[0])
+        out.append(ch)
+        out_map.append(mapped[i])
+    return "".join(out), out_map
 
 
 def superscript_mask(mapped: list[PdfChar | None]) -> list[bool]:

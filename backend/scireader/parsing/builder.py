@@ -15,8 +15,8 @@ from typing import Any, Callable
 
 from ..speech.math_speech import get_math_speech
 from ..speech.pipeline import expand_numbers, find_citations, get_lexicon, speak, split_sentences
-from .latex import clean_latex, extract_equation_number, latex_has_content
-from .pdfchars import PdfChar, PdfText, align, rects_for_span, superscript_mask
+from .latex import clean_latex, equation_intro, extract_equation_number, latex_has_content, split_label
+from .pdfchars import PdfChar, PdfText, align, rects_for_span, restore_hyphens, superscript_mask
 
 Progress = Callable[[str, float], None]
 
@@ -68,6 +68,43 @@ DROP_CAP = re.compile(r"^([B-HJ-Z]) ([a-z]{1,})\b")
 SPRINGER_GLYPHS = str.maketrans({"¼": "=", "ð": "(", "Þ": ")", "þ": "+", "Ã": "×"})
 # ...and set decimal points as colons ("0:033 s"); only "0:ddd" is safe to fix (ratios like 1:1 exist).
 SPRINGER_DECIMAL = re.compile(r"(?<![\d:])(0):(\d)")
+
+
+# Springer also sets inline-math parentheses as separate glyphs that the text layer puts after their content
+# ("f x ð Þ" for f(x)), math commas as ";" and "…" as "=". These patterns never occur in prose.
+_SPRINGER_CALL = re.compile(r"\b([A-Za-zα-ωΑ-Ω]) ((?:[A-Za-z0-9α-ω]'?)(?:; ?[A-Za-z0-9α-ω]'?){0,3}) ?(\() ?(\))")
+_SPRINGER_LIST = re.compile(r"\b\d+(?:; \d+)+; =; [a-zA-Z]\b|\b[a-zA-Z]; [a-zA-Z]\b")
+
+
+def repair_springer_math(text: str, mapped: list) -> tuple[str, list]:
+    """"f x ( )" → "f(x)", "K x; x' ( )" → "K(x, x')", "i = 1; 2; =; n" → "i = 1, 2, …, n", keeping the char map."""
+    out_t: list[str] = []
+    out_m: list = []
+    last = 0
+    for m in _SPRINGER_CALL.finditer(text):
+        out_t.append(text[last:m.start()])
+        out_m.extend(mapped[last:m.start()])
+        seq = [(m.start(1), m.group(1)), (m.start(3), "(")]
+        seq += [(m.start(2) + k, "," if ch == ";" else ch) for k, ch in enumerate(m.group(2))]
+        seq.append((m.start(4), ")"))
+        for i, ch in seq:
+            out_t.append(ch)
+            out_m.append(mapped[i])
+        last = m.end()
+    out_t.append(text[last:])
+    out_m.extend(mapped[last:])
+    text = "".join(out_t)
+    # Same-length substitutions: the char map is unchanged.
+    text = _SPRINGER_LIST.sub(lambda m: m.group(0).replace(";", ",").replace("=", "…"), text)
+    return text, out_m
+
+
+def _compound(left: str, right: str) -> bool:
+    """A hyphen at a line end is part of the word when both halves are words and the joined form isn't one:
+    "physics-based", "data-driven" (but "how-ever" → "however", "pro-cessing" → "processing")."""
+    from ..speech.review import _known
+
+    return len(left) >= 3 and len(right) >= 3 and _known(left) and _known(right) and not _known(left + right)
 
 
 @dataclass
@@ -298,7 +335,7 @@ def build_document(
         if b.type == "equation":
             latex_raw = b.latex or ""
             latex_nonum, number = extract_equation_number(latex_raw)
-            latex = clean_latex(latex_nonum)
+            eq_label, latex = split_label(clean_latex(latex_nonum), b.text)
             if number is None:
                 m = re.search(r"\((\d{1,3}[a-z]?)\)\s*$", b.text.translate(SPRINGER_GLYPHS))
                 number = m.group(1) if m else None
@@ -306,10 +343,11 @@ def build_document(
             block["latex"] = latex
             block["latex_raw"] = latex_raw
             block["eq_number"] = number
+            block["eq_label"] = eq_label
             speech = math.speak(latex) if latex_has_content(latex) else None
             block["speech_rules"] = speech
-            label = f"Equation {number}" if number else "Equation"
-            spoken = f"{label}: {speech}." if speech else f"{label}."
+            intro = equation_intro(number, eq_label)
+            spoken = f"{intro}: {speech}." if speech else f"{intro}."
             sid = f"s{sentence_counter}"
             sentence_counter += 1
             block["sentences"].append({
@@ -338,8 +376,10 @@ def build_document(
         for pi, bb in b.provs:
             pdf_chars.extend(pdftext.chars_in(pi, bb))
         mapped = align(text, pdf_chars)
+        text, mapped = restore_hyphens(text, mapped, pdf_chars, _compound)
         if meta.get("springer_glyphs"):
-            text = SPRINGER_DECIMAL.sub(r".", text.translate(SPRINGER_GLYPHS))
+            text = SPRINGER_DECIMAL.sub(r"\1.\2", text.translate(SPRINGER_GLYPHS))
+            text, mapped = repair_springer_math(text, mapped)
         block["text"] = text
 
         sup = (superscript_mask(mapped) if b.type in ("paragraph", "abstract", "list_item", "caption") and not b.skip_reason

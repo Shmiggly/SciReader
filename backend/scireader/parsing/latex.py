@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from difflib import SequenceMatcher
 
 # Trailing equation numbers: "\quad ( 1 )", "& & ( 6 )", "\tag{3}", "\qquad (12a)", also with \, spacing.
 _SPACING = r"(?:\\quad|\\qquad|\\,|\\;|\\ |\\!|~|&|\\hfill|\s)*"
@@ -33,9 +34,51 @@ def extract_equation_number(latex: str) -> tuple[str, str | None]:
 def _join_letter_runs(latex: str) -> str:
     def repl(m: re.Match) -> str:
         word = m.group(1).replace(" ", "")
+        # "R e V _ { j }" is Re·V_j (the subscript belongs to the last letter), not a word; "l o w _ { 1 }" is.
+        if re.match(r"\s*[_^]", m.string[m.end():]) and any(c.isupper() for c in word[1:]):
+            return m.group(0)
         return r"\mathrm{" + word + "}"
 
     return _LETTER_RUN.sub(repl, latex)
+
+
+# A text label typeset before a display equation ("Charge:", "Jet Radius", "Electric field:"), read from the PDF
+# text layer. The OCR LaTeX carries a garbled copy of it ("C h \arg e \cdot", "\mathrm{Momtun} \colon").
+_PDF_LABEL = re.compile(r"^\s*([A-Z][a-z]{2,}(?: [A-Za-z][a-z]+){0,3}):?\s")
+_LABEL_TOKEN = re.compile(
+    r"\s*(?:\\(?:mathrm|text|operatorname)\s*\{[^{}]*\}"
+    r"|\\(?:arg|det|deg|dim|exp|ker|lg|ln|log|max|min|sin|cos|tan|sec|hom)\b"
+    r"|[A-Za-z]{2,}:"
+    r"|[A-Za-z]\s*_\s*\{\s*\}"  # a letter with an empty subscript: OCR debris
+    r"|[A-Za-z](?![A-Za-z])(?!\s*[_^]))"  # a single letter, unless it carries a sub/superscript (then it's math)
+)
+_LABEL_END = re.compile(r"\s*(?:\\colon|:|\\cdot)")
+
+
+def equation_intro(number: str | None, label: str | None) -> str:
+    """How an equation is announced: "Equation 8, Charge", "Equation 8", "Electric field" or "Equation"."""
+    if number:
+        return f"Equation {number}, {label}" if label else f"Equation {number}"
+    return label or "Equation"
+
+
+def split_label(latex: str, pdf_text: str) -> tuple[str | None, str]:
+    """(label, latex without the label) when the PDF shows a word label before the equation, else (None, latex)."""
+    m = _PDF_LABEL.match(pdf_text or "")
+    if not m:
+        return None, latex
+    label = m.group(1)
+    pos = 0
+    while (t := _LABEL_TOKEN.match(latex, pos)) and t.end() > pos:
+        pos = t.end()
+    if (e := _LABEL_END.match(latex, pos)) is not None:
+        pos = e.end()
+    prefix, rest = latex[:pos], latex[pos:].strip()
+    letters = re.sub(r"[^A-Za-z]", "", re.sub(r"\\(?:mathrm|text|operatorname|colon|cdot)", "", prefix)).lower()
+    want = re.sub(r"[^a-z]", "", label.lower())
+    if len(letters) < 3 or SequenceMatcher(None, letters, want).ratio() < 0.6 or not latex_has_content(rest):
+        return None, latex
+    return label, rest
 
 
 def clean_latex(latex: str) -> str:
@@ -60,5 +103,7 @@ def latex_has_content(latex: str | None) -> bool:
         return False
     if "\\begin{matrix}" in latex and "=" not in latex:
         return False
-    stripped = re.sub(r"\\(?:begin|end)\{\w+\}|\\[a-zA-Z]+|[{}\s&\\]", "", latex)
+    s = re.sub(r"\\(?:begin|end)\{\w+\}|\\(?:left|right|quad|qquad|mathrm|text|operatorname|displaystyle)\b", "", latex)
+    s = re.sub(r"\\[a-zA-Z]+", "x", s)  # a command such as \sigma is one symbol
+    stripped = re.sub(r"[{}\s&\\]", "", s)
     return len(stripped) >= 3 and bool(re.search(r"[A-Za-z=+<>]", stripped))

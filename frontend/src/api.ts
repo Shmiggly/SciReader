@@ -19,6 +19,7 @@ export interface Block {
   text: string;
   latex?: string;
   eq_number?: string | null;
+  eq_label?: string | null;
   speech_rules?: string | null;
   figure_id?: string;
   skip_reason?: string;
