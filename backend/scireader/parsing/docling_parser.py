@@ -13,7 +13,7 @@ from .builder import Progress, build_document
 _lock = threading.Lock()
 
 
-def _make_converter() -> Any:
+def _make_converter(ocr: bool = False) -> Any:
     from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
     from docling.datamodel.base_models import InputFormat
     from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -26,7 +26,12 @@ def _make_converter() -> Any:
     except Exception:  # noqa: BLE001
         device = AcceleratorDevice.CPU
     opts = PdfPipelineOptions()
-    opts.do_ocr = False
+    opts.do_ocr = ocr
+    if ocr:
+        from docling.datamodel.pipeline_options import RapidOcrOptions
+
+        # Scanned/old papers: full-page OCR with RapidOCR on the torch backend (no extra runtime needed).
+        opts.ocr_options = RapidOcrOptions(backend="torch", force_full_page_ocr=True)
     opts.do_table_structure = True
     opts.do_formula_enrichment = True
     opts.accelerator_options = AcceleratorOptions(device=device)
@@ -38,10 +43,11 @@ class DoclingParser:
 
     def convert(self, pdf_path: Path, progress: Progress | None = None) -> Any:
         say = progress or (lambda msg, frac: None)
+        ocr = needs_ocr(pdf_path)
         with _lock:  # one parse at a time on the GPU
-            say("Loading layout models", 0.03)
-            conv = _make_converter()
-            say("Analyzing layout, equations and tables (Docling)", 0.08)
+            say("No text layer found: this looks like a scanned PDF, running OCR (slower)" if ocr else "Loading layout models", 0.03)
+            conv = _make_converter(ocr)
+            say("Running OCR, layout, equations and tables (Docling)" if ocr else "Analyzing layout, equations and tables (Docling)", 0.08)
             t0 = time.time()
             result = conv.convert(str(pdf_path))
             doc = result.document
@@ -72,3 +78,21 @@ def _free_gpu() -> None:
             torch.cuda.empty_cache()
     except Exception:  # noqa: BLE001
         pass
+
+
+def needs_ocr(pdf_path: Path) -> bool:
+    """True when most pages have (almost) no extractable text: a scanned or image-only PDF."""
+    import pypdfium2 as pdfium
+
+    pdf = pdfium.PdfDocument(str(pdf_path))
+    try:
+        n = len(pdf)
+        empty = 0
+        for i in range(n):
+            tp = pdf[i].get_textpage()
+            if tp.count_chars() < 40:
+                empty += 1
+            tp.close()
+        return n > 0 and empty / n >= 0.6
+    finally:
+        pdf.close()

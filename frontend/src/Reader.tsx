@@ -90,6 +90,11 @@ export function Reader({ onClose }: { onClose: () => void }) {
       <div className="reader-body">
         <Outline />
         <main className="center">
+          {doc.ocr && (
+            <div className="resume-banner">
+              <span>Scanned PDF: the text came from OCR, so highlights follow paragraphs rather than single words, and some words may be misread.</span>
+            </div>
+          )}
           {resume && (
             <div className="resume-banner">
               <span>

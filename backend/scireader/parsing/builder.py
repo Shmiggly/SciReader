@@ -419,6 +419,7 @@ def build_document(
         "figures": figures,
         "bibliography": bibliography,
         "citations": citations,
+        "ocr": sum(len(c) for c in pdftext.pages) < 40 * max(1, len(pdftext.pages)),
         "stats": {
             "blocks": len(out_blocks),
             "sentences": sentence_counter,

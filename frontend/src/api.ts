@@ -46,6 +46,7 @@ export interface Doc {
   bibliography: { id: string; label: string; text: string; doi?: string; arxiv?: string }[];
   citations: { sentence_id: string; span: [number, number]; bib_ids: string[]; rects?: Rect[] }[];
   stats: { blocks: number; sentences: number; equations: number };
+  ocr?: boolean;
 }
 
 export interface ParseStatus {
