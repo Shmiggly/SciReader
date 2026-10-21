@@ -1,6 +1,7 @@
 // App state (zustand) and the playback engine: per-sentence audio, prefetch, word timing, media keys.
 import { create } from "zustand";
 import { api, type Block, type Doc, type Sentence, type TtsResult, type TtsWord } from "./api";
+import type { EqResult } from "./Equations";
 
 export type EqMode = "full" | "brief" | "skip";
 
@@ -22,6 +23,29 @@ export const PRESETS: Record<string, { label: string; sentence: string; word: st
   sky: { label: "Sky", sentence: "rgba(64, 156, 255, 0.20)", word: "rgba(30, 110, 230, 0.42)" },
   contrast: { label: "High contrast", sentence: "rgba(255, 235, 0, 0.45)", word: "rgba(0, 0, 0, 0.0)", outline: "#000" },
 };
+
+export interface FigMention {
+  sentence_id: string;
+  span: [number, number];
+  key: string;
+  number: string;
+  panels: string[];
+  figure_id: string;
+  first: boolean;
+}
+
+export interface FigPopup {
+  key: string;
+  figure_id: string;
+  sentence_id: string;
+  label: string;
+  description: string | null;
+  pinned: boolean;
+  loading: boolean;
+}
+
+const narrated = new Set<string>();
+let figQueue: FigMention[] = [];
 
 interface Entry {
   s: Sentence;
@@ -49,6 +73,14 @@ interface State {
   skips: Record<string, boolean>;
   announceSections: boolean;
   scale: number;
+  eqResults: Record<string, EqResult>;
+  eqState: string;
+  eqMessage: string;
+  eqOpen: string | null;
+  figMentions: Map<string, FigMention[]>;
+  mentionedFigs: Set<string>;
+  figPopup: FigPopup | null;
+  figuresOn: boolean;
   setDoc: (doc: Doc | null) => void;
   set: (p: Partial<State>) => void;
 }
@@ -73,6 +105,14 @@ export const useStore = create<State>((set) => ({
   skips: Object.fromEntries(Object.keys(SKIP_LABELS).map((k) => [k, true])),
   announceSections: true,
   scale: 1.4,
+  eqResults: {},
+  eqState: "idle",
+  eqMessage: "",
+  eqOpen: null,
+  figMentions: new Map(),
+  mentionedFigs: new Set(),
+  figPopup: null,
+  figuresOn: true,
   setDoc: (doc) => {
     const index = new Map<string, Entry>();
     const order: string[] = [];
@@ -84,7 +124,8 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null });
+    narrated.clear();
   },
   set: (p) => set(p),
 }));
@@ -99,6 +140,7 @@ export function isReadable(b: Block): boolean {
   if (b.type === "heading" && !st.announceSections) return false;
   if (b.type === "figure" || b.type === "table") return false;
   if (b.skip_reason === "junk") return false;
+  if (b.type === "caption" && st.figuresOn && b.figure_id && st.mentionedFigs.has(b.figure_id)) return false;
   if (b.skip_reason && st.skips[b.skip_reason] !== false) return false;
   return b.sentences.length > 0;
 }
@@ -178,15 +220,73 @@ audio.addEventListener("play", () => {
 audio.addEventListener("pause", () => cancelAnimationFrame(raf));
 audio.addEventListener("ended", () => {
   cancelAnimationFrame(raf);
-  const cur = get().current;
-  const e = cur ? get().index.get(cur) : undefined;
+  const st = get();
+  const cur = st.current;
+  // Figure narration: after the sentence that first mentions a figure (or panel), describe it.
+  if (!figPlaying && cur && st.figuresOn) {
+    const ms = (st.figMentions.get(cur) ?? []).filter((m) => m.first && !narrated.has(m.key));
+    if (ms.length) figQueue = ms;
+  }
+  if (figQueue.length) {
+    void playFigure(figQueue.shift()!);
+    return;
+  }
+  figPlaying = false;
+  if (st.figPopup && !st.figPopup.pinned) useStore.setState({ figPopup: null });
+  const e = cur ? st.index.get(cur) : undefined;
   const next = e ? nextReadable(e.idx, 1) : null;
   if (next) void playSentence(next);
   else useStore.setState({ playing: false, word: null });
 });
 
+let figPlaying = false;
+
+async function playFigure(m: FigMention, detail = false): Promise<void> {
+  const my = ++token;
+  const st = get();
+  narrated.add(m.key);
+  figPlaying = true;
+  const label = `Figure ${m.number}${m.panels.length ? `, panel${m.panels.length > 1 ? "s" : ""} ${m.panels.join(", ")}` : ""}`;
+  useStore.setState({
+    figPopup: { key: m.key, figure_id: m.figure_id, sentence_id: m.sentence_id, label, description: null, pinned: st.figPopup?.pinned ?? false, loading: true },
+    word: null,
+    loading: true,
+  });
+  try {
+    const r = await api.get<TtsResult & { description: string | null }>(
+      `/api/tts/${st.doc!.id}/figure/${m.key}?voice=${encodeURIComponent(st.voice)}${detail ? "&detail=true" : ""}`,
+    );
+    if (my !== token) return;
+    useStore.setState((s) => ({ figPopup: s.figPopup ? { ...s.figPopup, description: r.description, loading: false } : null, tts: null }));
+    audio.src = r.audio_url;
+    audio.playbackRate = get().speed;
+    await audio.play();
+    useStore.setState({ loading: false, playing: true });
+  } catch (err) {
+    if (my !== token) return;
+    figPlaying = false;
+    useStore.setState({ loading: false, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+/** `D`: more detail on the figure currently shown. */
+export function figureDetail() {
+  const p = get().figPopup;
+  if (!p) return;
+  const m: FigMention = { sentence_id: p.sentence_id, span: [0, 0], key: p.key, number: p.key.replace(/[a-h]+$/, ""), panels: p.key.replace(/^\d+/, "").split("").filter(Boolean), figure_id: p.figure_id, first: true };
+  figQueue = [];
+  void playFigure(m, true);
+}
+
+export function closeFigure() {
+  useStore.setState({ figPopup: null });
+}
+
 export async function playSentence(sid: string): Promise<void> {
   const my = ++token;
+  figQueue = [];
+  figPlaying = false;
+  if (get().figPopup && !get().figPopup!.pinned) useStore.setState({ figPopup: null });
   const st = get();
   if (!st.doc || !st.index.has(sid)) return;
   audio.pause();

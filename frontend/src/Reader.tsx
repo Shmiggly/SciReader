@@ -1,10 +1,13 @@
 // Reader layout: outline (left), PDF (center), side panel (right), playback bar (bottom).
 import { useEffect, useState } from "react";
 import { api, type PaperState, type Voice } from "./api";
+import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
 import {
   type EqMode,
+  type FigMention,
+  figureDetail,
   PRESETS,
   SKIP_LABELS,
   isReadable,
@@ -48,6 +51,15 @@ export function Reader({ onClose }: { onClose: () => void }) {
   }, [doc.id]);
 
   useKeyboard();
+  useEquationChecks(doc.id);
+  useEffect(() => {
+    api.get<{ mentions: FigMention[] }>(`/api/docs/${doc.id}/figures`).then((r) => {
+      const byS = new Map<string, FigMention[]>();
+      for (const m of r.mentions) byS.set(m.sentence_id, [...(byS.get(m.sentence_id) ?? []), m]);
+      useStore.setState({ figMentions: byS, mentionedFigs: new Set(r.mentions.map((m) => m.figure_id)) });
+    }, () => undefined);
+    void api.post(`/api/docs/${doc.id}/figures/prepare`).catch(() => undefined);
+  }, [doc.id]);
 
   return (
     <div className="reader">
@@ -219,6 +231,10 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           <input type="checkbox" checked={announce} onChange={(ev) => useStore.setState({ announceSections: ev.target.checked })} />
           Announce section titles
         </label>
+        <label className="check">
+          <input type="checkbox" checked={useStore((s) => s.figuresOn)} onChange={(ev) => useStore.setState({ figuresOn: ev.target.checked })} />
+          Describe figures at first mention (AI, labeled)
+        </label>
       </section>
       <section>
         <div className="panel-sub">Highlight colors</div>
@@ -266,6 +282,10 @@ function useKeyboard() {
         case "-":
         case "_":
           setSpeed(useStore.getState().speed - 0.1);
+          break;
+        case "d":
+        case "D":
+          figureDetail();
           break;
         case "f":
         case "F":

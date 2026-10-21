@@ -1,0 +1,115 @@
+"""AI routes (local LLMs through Ollama): verified equation narration status and results."""
+
+from __future__ import annotations
+
+from fastapi import APIRouter
+
+from ..llm import equations, ollama
+from .docs import _check, store
+
+router = APIRouter(prefix="/api")
+
+
+@router.get("/ai/status")
+def ai_status() -> dict:
+    return {"ollama": ollama.available(), "models": ollama.models_for_jobs()}
+
+
+@router.get("/docs/{doc_id}/equations")
+def get_equations(doc_id: str) -> dict:
+    _check(doc_id)
+    return {"status": equations.status(doc_id), "results": _public(equations.results(store, doc_id))}
+
+
+@router.post("/docs/{doc_id}/equations/verify")
+def verify(doc_id: str, force: bool = False) -> dict:
+    _check(doc_id)
+    if store.document(doc_id) is None:
+        return {"state": "error", "message": "Not parsed"}
+    return equations.start(store, doc_id, force=force)
+
+
+def _public(res: dict) -> dict:
+    return {
+        bid: {
+            "verdict": r.get("verdict"),
+            "speech_ai": r.get("speech_ai"),
+            "brief": r.get("brief"),
+            "reason": r.get("reason"),
+            "attempts": r.get("attempts", []),
+            "models": r.get("models"),
+        }
+        for bid, r in res.items()
+    }
+
+
+# ---------------------------------------------------------------------------------------------
+# Figures: mentions, crops, descriptions, narration audio
+
+from fastapi import HTTPException  # noqa: E402
+from fastapi.responses import Response  # noqa: E402
+
+from ..llm import figures  # noqa: E402
+from ..tts.engine import synth_cached  # noqa: E402
+
+
+@router.get("/docs/{doc_id}/figures")
+def get_figures(doc_id: str) -> dict:
+    _check(doc_id)
+    doc = store.document(doc_id)
+    if doc is None:
+        raise HTTPException(404, "Not parsed yet")
+    descs = store.read_json(doc_id, "figures.json") or {}
+    return {"status": figures.status(doc_id), "mentions": figures.find_mentions(doc),
+            "descriptions": {k: {"description": v.get("description"), "caption_part": v.get("caption_part"),
+                                 "label": v.get("label"), "panels": v.get("panels")} for k, v in descs.items()}}
+
+
+@router.post("/docs/{doc_id}/figures/prepare")
+def prepare_figures(doc_id: str) -> dict:
+    _check(doc_id)
+    return figures.start(store, doc_id)
+
+
+@router.get("/docs/{doc_id}/figures/{fig_id}/image")
+def figure_image(doc_id: str, fig_id: str) -> Response:
+    _check(doc_id)
+    doc = store.document(doc_id)
+    fig = next((f for f in (doc or {}).get("figures", []) if f["id"] == fig_id), None)
+    if fig is None:
+        raise HTTPException(404, "Unknown figure")
+    cache = store.dir(doc_id) / f"{fig_id}.png"
+    if not cache.exists():
+        cache.write_bytes(figures.crop_png(str(store.pdf_path(doc_id)), fig["page"], fig["bbox"]))
+    return Response(cache.read_bytes(), media_type="image/png", headers={"Cache-Control": "max-age=86400"})
+
+
+@router.get("/tts/{doc_id}/figure/{key}")
+def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = False) -> dict:
+    """Narration for a figure target: label + caption part + labeled AI description (if ready)."""
+    _check(doc_id)
+    doc = store.document(doc_id)
+    if doc is None:
+        raise HTTPException(404, "Not parsed yet")
+    descs = store.read_json(doc_id, "figures.json") or {}
+    entry = descs.get(key + (":detail" if detail else ""))
+    if entry is None and detail and ollama.available():
+        try:
+            entry = figures.describe(store, doc_id, doc, key, detail=detail)
+        except Exception:  # noqa: BLE001 - playback never waits on a failing AI
+            entry = None
+    if entry is None:
+        number = key.rstrip("abcdefgh")
+        fig = next((f for f in doc["figures"] if f.get("number") == number), None)
+        if fig is None:
+            raise HTTPException(404, "Unknown figure")
+        panels = list(key[len(number):])
+        entry = {"label": f"Figure {number}", "panels": panels,
+                 "caption_part": figures.caption_part(figures.caption_text(doc, fig), panels), "description": None}
+    from ..speech.pipeline import speak
+
+    spoken = speak(figures.spoken_for(entry)).spoken
+    k, meta = synth_cached(spoken, voice)
+    return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken,
+            "description": entry.get("description"), "label": entry.get("label"), "panels": entry.get("panels"),
+            "words": []}

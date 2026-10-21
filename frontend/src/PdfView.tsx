@@ -5,7 +5,8 @@ import * as pdfjs from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Rect } from "./api";
-import { PRESETS, playSentence, sentenceAt, useStore } from "./store";
+import { EquationBadge, EquationPopover } from "./Equations";
+import { PRESETS, closeFigure, figureDetail, playSentence, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -279,6 +280,8 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
     >
       <canvas ref={canvas} style={{ width: width * scale, height: height * scale }} />
       <Overlay page={index} scale={scale} />
+      <EquationLayer page={index} scale={scale} pageWidth={width * scale} />
+      <FigureLayer page={index} scale={scale} pageWidth={width * scale} />
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
     </div>
   );
@@ -355,6 +358,52 @@ function HoverTip({ sid, x, y, pageWidth }: { sid: string; x: number; y: number;
     <div className="hover-tip" style={{ left, top: y + 18 }}>
       <div className="hover-tip-label">{e.b.skip_reason ? `Skipped by default (${e.b.skip_reason.replace("_", " ")})` : "Spoken as"}</div>
       <div>{e.s.spoken}</div>
+    </div>
+  );
+}
+
+function EquationLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
+  const doc = useStore((s) => s.doc)!;
+  const eqOpen = useStore((s) => s.eqOpen);
+  const eqs = useMemo(() => doc.blocks.filter((b) => b.type === "equation" && b.page === page), [doc, page]);
+  if (!eqs.length) return null;
+  const open = eqs.find((b) => b.id === eqOpen);
+  return (
+    <div className="eq-layer">
+      {eqs.map((b) => (
+        <EquationBadge key={b.id} b={b} scale={scale} />
+      ))}
+      {open && <EquationPopover b={open} scale={scale} pageWidth={pageWidth} />}
+    </div>
+  );
+}
+
+function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
+  const pop = useStore((s) => s.figPopup);
+  const doc = useStore((s) => s.doc)!;
+  if (!pop) return null;
+  const e = sentenceAt(pop.sentence_id);
+  const r = e?.s.rects[e.s.rects.length - 1];
+  if (!r || r[0] !== page) return null;
+  const w = Math.min(520, pageWidth - 16);
+  const left = Math.max(8, Math.min(r[1] * scale, pageWidth - w - 8));
+  return (
+    <div className="fig-pop" style={{ left, top: r[4] * scale + 10, width: w }} onClick={(ev) => ev.stopPropagation()}>
+      <div className="eq-pop-head">
+        <b>{pop.label}</b>
+        <button className={pop.pinned ? "toggle on" : "toggle"} onClick={() => useStore.setState({ figPopup: { ...pop, pinned: !pop.pinned } })} title="Keep this open">
+          📌
+        </button>
+        <button className="ghost" onClick={closeFigure} aria-label="Close">✕</button>
+      </div>
+      <img src={`/api/docs/${doc.id}/figures/${pop.figure_id}/image`} alt={pop.label} />
+      <div className="fig-desc">
+        <span className="ai-label">AI description</span>{" "}
+        {pop.loading ? "…" : pop.description ?? "Not ready yet: reading the caption only."}
+      </div>
+      <div className="eq-actions">
+        <button onClick={figureDetail} title="More detail (D)">More detail (D)</button>
+      </div>
     </div>
   );
 }

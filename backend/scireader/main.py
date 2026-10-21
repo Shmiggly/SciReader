@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from . import __version__  # noqa: E402
+from .api import ai as ai_api  # noqa: E402
 from .api import docs as docs_api  # noqa: E402
 from .api import models as models_api  # noqa: E402
 from .api import tts as tts_api  # noqa: E402
@@ -31,6 +32,7 @@ app.add_middleware(
 app.include_router(docs_api.router)
 app.include_router(tts_api.router)
 app.include_router(models_api.router)
+app.include_router(ai_api.router)
 
 
 @app.on_event("startup")

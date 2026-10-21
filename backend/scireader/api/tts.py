@@ -48,11 +48,19 @@ def invalidate(doc_id: str | None = None) -> None:
             _cache.pop(doc_id, None)
 
 
-def equation_spoken(block: dict, mode: str) -> str:
+def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
+    """Full: verified AI narration if available, else the rule-based reading. Brief: labeled AI summary."""
     number = block.get("eq_number")
     label = f"Equation {number}" if number else "Equation"
+    ai = ai or {}
+    if mode == "skip":
+        return f"{label}."
+    if mode == "brief" and ai.get("brief"):
+        return f"{label}. AI summary: {ai['brief'].rstrip('.')}."
+    if ai.get("verdict") in ("verified", "uncertain") and ai.get("speech_ai"):
+        return f"{label}: {ai['speech_ai'].rstrip('.')}."
     speech = block.get("speech_rules")
-    if mode == "skip" or not speech:
+    if not speech:
         return f"{label}."
     return f"{label}: {speech}."
 
@@ -66,7 +74,8 @@ def tts(doc_id: str, sentence_id: str, voice: str = "af_heart", eq_mode: str = "
     sentence, block = by_id[sentence_id]
     entry = speech.get(sentence_id, {})
     if block["type"] == "equation":
-        spoken = equation_spoken(block, eq_mode)
+        ai = (store.read_json(doc_id, "equations.json") or {}).get(block["id"])
+        spoken = equation_spoken(block, eq_mode, ai)
         norm = None
     elif block.get("skip_reason") and block["type"] != "caption":
         spoken = sentence["text"]

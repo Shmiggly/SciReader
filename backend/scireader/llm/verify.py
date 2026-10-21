@@ -1,0 +1,157 @@
+"""Structural comparison of two LaTeX equations through canonicalized MathML (MathJax via the Node helper).
+
+SymPy's LaTeX parser fails on most physics notation and plain string similarity is misleading, so we
+compare MathML trees after normalizing away differences that don't change the math as heard:
+mrow nesting, styles/attributes, ε/ϵ-style variants, \\mathrm{A} vs A, \\dfrac vs \\frac, implicit vs
+explicit multiplication, bracket shapes, spacing, msubsup vs nested scripts.
+"""
+
+from __future__ import annotations
+
+import difflib
+import re
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+
+from ..speech.math_speech import get_math_speech
+
+TRANSPARENT = {"math", "mrow", "mstyle", "mpadded", "semantics", "mtd", "mtr", "mtable", "mlabeledtr", "menclose", "mphantom"}
+SCRIPTS = {"msub", "msup", "msubsup", "mfrac", "msqrt", "mroot", "munder", "mover", "munderover"}
+DROP_MO = {"\u2061", "\u2062", "\u2063", "\u2064", "⋅", "·", "×", "*", "∗", "", ","}
+OPEN = {"(", "[", "{", "⟨", "⌊", "⌈", "\u2016"}
+CLOSE = {")", "]", "}", "⟩", "⌋", "⌉"}
+VARIANTS = {"ϵ": "ε", "ϕ": "φ", "ϑ": "θ", "ϰ": "κ", "ϱ": "ρ", "ϖ": "π", "−": "-", "∣": "|", "′": "'", "″": "''", "ℓ": "l"}
+UNDER_OVER = {"munder": "msub", "mover": "msup", "munderover": "msubsup"}
+
+
+def _local(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
+def _norm_text(t: str | None) -> str:
+    t = (t or "").strip()
+    return "".join(VARIANTS.get(ch, ch) for ch in t)
+
+
+def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
+    tag = _local(el.tag)
+    if tag in ("mspace", "none", "mprescripts", "annotation", "annotation-xml"):
+        return []
+    if tag in TRANSPARENT:
+        out: list[str] = []
+        for ch in el:
+            out.extend(canon_tokens(ch, relaxed))
+        return out
+    if tag == "mi":
+        return [f"o:{c}" if c == "'" else f"i:{c}" for c in _norm_text(el.text) if not c.isspace()]
+    if tag == "mn":
+        return [f"n:{c}" for c in _norm_text(el.text).replace(",", "") if not c.isspace()]
+    if tag == "mtext":
+        words = re.sub(r"[^a-z0-9]", "", _norm_text(el.text).lower())
+        return [] if relaxed or not words else [f"t:{words}"]
+    if tag in ("mo", "ms"):
+        t = _norm_text(el.text)
+        if t in DROP_MO:
+            return []
+        if t in OPEN:
+            return [] if relaxed else ["("]
+        if t in CLOSE:
+            return [] if relaxed else [")"]
+        return [f"o:{t}"]
+    if tag in UNDER_OVER:
+        tag = UNDER_OVER[tag]
+    kids = list(el)
+    if tag == "msubsup" and len(kids) == 3:
+        base, sub, sup = (canon_tokens(k, relaxed) for k in kids)
+        return ["msup(", "msub(", *base, ",", *sub, ")", ",", *sup, ")"]
+    if tag == "mfrac" and relaxed and len(kids) == 2:
+        num, den = (canon_tokens(k, relaxed) for k in kids)
+        return [*num, "o:/", *den]
+    if tag in SCRIPTS:
+        out = [f"{tag}("]
+        for i, k in enumerate(kids):
+            if i:
+                out.append(",")
+            out.extend(canon_tokens(k, relaxed))
+        out.append(")")
+        return out
+    out = []
+    for ch in el:
+        out.extend(canon_tokens(ch, relaxed))
+    return out
+
+
+def _parse(mathml: str) -> ET.Element:
+    return ET.fromstring(mathml)
+
+
+def to_mathml(latex: str) -> tuple[str | None, str | None]:
+    res = get_math_speech().run(latex, display=True, speech=False)
+    return res.get("mathml"), res.get("error")
+
+
+@dataclass
+class Comparison:
+    status: str  # "match" | "relaxed" | "mismatch" | "error"
+    ratio: float
+    diff: str
+    error: str | None = None
+
+
+def compare(source_latex: str, back_latex: str) -> Comparison:
+    src_ml, err = to_mathml(source_latex)
+    if not src_ml:
+        return Comparison("error", 0.0, "", f"source LaTeX does not parse: {err}")
+    back_ml, err2 = to_mathml(_strip_delims(back_latex))
+    if not back_ml:
+        return Comparison("mismatch", 0.0, "the transcription is not valid LaTeX", err2)
+    try:
+        a_el, b_el = _parse(src_ml), _parse(back_ml)
+    except ET.ParseError as exc:
+        return Comparison("error", 0.0, "", f"MathML parse error: {exc}")
+    a, b = canon_tokens(a_el), canon_tokens(b_el)
+    ratio = difflib.SequenceMatcher(None, a, b, autojunk=False).ratio()
+    if a == b:
+        return Comparison("match", 1.0, "")
+    ar, br = canon_tokens(a_el, True), canon_tokens(b_el, True)
+    if ar == br:
+        return Comparison("relaxed", ratio, "same symbols and order; grouping or brackets differ")
+    return Comparison("mismatch", ratio, describe_diff(a, b))
+
+
+def describe_diff(a: list[str], b: list[str], limit: int = 3) -> str:
+    sm = difflib.SequenceMatcher(None, a, b, autojunk=False)
+    parts = []
+    for op, i1, i2, j1, j2 in sm.get_opcodes():
+        if op == "equal":
+            continue
+        src = _pretty(a[i1:i2])
+        got = _pretty(b[j1:j2])
+        if op == "delete":
+            parts.append(f"'{src}' was lost")
+        elif op == "insert":
+            parts.append(f"'{got}' was added")
+        else:
+            parts.append(f"'{src}' came back as '{got}'")
+        if len(parts) >= limit:
+            break
+    return "; ".join(parts)
+
+
+def _pretty(tokens: list[str]) -> str:
+    out = []
+    for t in tokens:
+        if ":" in t and not t.endswith("("):
+            out.append(t.split(":", 1)[1])
+        else:
+            out.append({"msup(": "^(", "msub(": "_(", "mfrac(": "frac(", "msqrt(": "sqrt("}.get(t, t))
+    return " ".join(out)[:80]
+
+
+def _strip_delims(s: str) -> str:
+    s = s.strip()
+    s = re.sub(r"^```(?:latex|tex)?\s*|\s*```$", "", s)
+    s = s.strip().strip("$").strip()
+    s = re.sub(r"^\\\[|\\\]$", "", s).strip()
+    s = re.sub(r"^\\begin\{(equation|align)\*?\}|\\end\{(equation|align)\*?\}$", "", s).strip()
+    return s

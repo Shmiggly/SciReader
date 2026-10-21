@@ -68,6 +68,12 @@ def _run(doc_id: str, store: DocStore, force: bool) -> None:
         meta["stats"] = document.get("stats")
         store.write_json(doc_id, "meta.json", meta)
         _set(doc_id, state="ready", message="Ready", progress=1.0)
+        from ..llm import equations
+
+        equations.start(store, doc_id)  # verified narration in the background (needs Ollama)
+        from ..llm import figures
+
+        figures.start(store, doc_id)  # figure descriptions for every first mention
     except Exception as exc:  # noqa: BLE001
         traceback.print_exc()
         _set(doc_id, state="error", message=f"Parsing failed: {exc}", progress=0.0)
