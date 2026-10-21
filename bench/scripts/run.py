@@ -6,7 +6,7 @@ Conditions (spoken text per equation):
   b_sre       Speech Rule Engine, ClearSpeak, from the source LaTeX
   c_llm       local LLM narration (qwen3.5:9b), unverified
   d_verified  c + verification gate (gemma4:12b back-transcription, canonical MathML compare,
-              one repair round, fallback to b_sre)
+              one repair round); only an exact round trip is spoken as AI, otherwise b_sre
   f_llm4b / f_verified4b   the same with qwen3.5:4b as narrator
 Judging: an independent model family (phi4:14b) transcribes every spoken text back to LaTeX; we compare
 to the source with the same canonical MathML comparison (match / relaxed / mismatch). gemma4:12b is a
@@ -127,10 +127,9 @@ def main() -> int:
                 verdict, text = "verified", it[raw_key]
             elif r2 == "match":
                 verdict, text = "verified", it[f"{raw_key}_repair"]
-            elif g1["result"] == "relaxed":
-                verdict, text = "uncertain", it[raw_key]
-            elif r2 == "relaxed":
-                verdict, text = "uncertain", it[f"{raw_key}_repair"]
+            elif "relaxed" in (g1["result"], r2):
+                # Same symbols, different grouping: like the app, speak the rules reading, not the AI narration.
+                verdict, text = "uncertain", it["b_sre"]
             else:
                 verdict, text = "fallback", it["b_sre"]
             it[ver_key] = text

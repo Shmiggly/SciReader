@@ -230,16 +230,27 @@ def _(items, judge_pick, mo):
 
 
 @app.cell
-def _(ROOT, json, mo, pd):
+def _(ROOT, items, json, mo, pd):
     _rp = ROOT / "results" / "ratings.json"
     if _rp.exists():
         _r = pd.DataFrame(json.loads(_rp.read_text(encoding="utf-8")).values())
-        _t = _r.groupby("condition")["score"].agg(["count", "mean", "median"]).round(2)
-        _t = _t.reindex([c for c in ("naive", "rules", "scireader") if c in _t.index])
+        # The clips were made while "uncertain" narrations were still spoken. SciReader now speaks the rules reading
+        # for those, so its shipped score on them is the rules clip's score, rated blind in the same session.
+        _verdict = {_it["id"]: _it.get("d_verified_verdict") for _it in items}
+        _rules = _r[_r.condition == "rules"].set_index("eq_id")["score"]
+        _ship = _r[_r.condition == "scireader"].copy()
+        _uncertain = int((_ship.eq_id.map(_verdict) != "verified").sum())
+        _ship["score"] = [s if _verdict.get(e) == "verified" else _rules[e] for e, s in zip(_ship.eq_id, _ship.score)]
+        _ship["condition"] = "SciReader as shipped"
+        _all = pd.concat([_r.replace({"condition": {"scireader": "AI narration as rated"}}), _ship])
+        _t = _all.groupby("condition")["score"].agg(["count", "mean", "median"]).round(2)
+        _t = _t.reindex([c for c in ("naive", "rules", "AI narration as rated", "SciReader as shipped") if c in _t.index])
         _out = mo.vstack([
             mo.md("### Naturalness: blind ratings by the author (1 = can't follow, 5 = natural, could write it down)"),
             _t,
-            mo.md("Ten equations, each heard three ways in random order with the pipeline hidden (`rate.py`)."),
+            mo.md(f"Ten equations, each heard three ways in random order with the pipeline hidden (`rate.py`). {_uncertain} of "
+                  "the ten AI narrations were *uncertain* (same symbols, different grouping); SciReader no longer speaks those, "
+                  "so *SciReader as shipped* uses the rules clip's score for them."),
         ])
     else:
         _out = mo.md("No ratings yet: run `marimo run bench/rate.py`.")

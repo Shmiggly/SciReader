@@ -49,7 +49,10 @@ def invalidate(doc_id: str | None = None) -> None:
 
 
 def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
-    """Full: verified AI narration if available, else the rule-based reading. Brief: labeled AI summary."""
+    """Full: verified AI narration if available, else the rule-based reading. Brief: labeled AI summary.
+
+    Only an exact round trip ("verified") is spoken as AI. "Uncertain" means the grouping differs, which is
+    where LLM narrations go silently wrong, so it gets the rule-based reading like a failed check."""
     number = block.get("eq_number")
     label = f"Equation {number}" if number else "Equation"
     ai = ai or {}
@@ -57,7 +60,7 @@ def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
         return f"{label}."
     if mode == "brief" and ai.get("brief"):
         return f"{label}. AI summary: {ai['brief'].rstrip('.')}."
-    if ai.get("verdict") in ("verified", "uncertain") and ai.get("speech_ai"):
+    if ai.get("verdict") == "verified" and ai.get("speech_ai"):
         return f"{label}: {ai['speech_ai'].rstrip('.')}."
     speech = block.get("speech_rules")
     if not speech:

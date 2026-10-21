@@ -85,7 +85,7 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
     html = "";
   }
   const label = b.eq_number ? `Equation ${b.eq_number}` : "Equation";
-  const used = st === "verified" || st === "uncertain" ? res?.speech_ai : b.speech_rules;
+  const used = st === "verified" ? res?.speech_ai : b.speech_rules;
   const left = Math.max(8, Math.min(b.bbox[0] * scale, pageWidth - 470));
   const last = res?.attempts?.[res.attempts.length - 1];
   return (
@@ -97,11 +97,15 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
       </div>
       <div className="eq-katex" dangerouslySetInnerHTML={{ __html: html }} />
       <div className="eq-field">
-        <div className="eq-field-label">Spoken now {st === "verified" || st === "uncertain" ? "(AI narration, checked)" : "(rule-based reading)"}</div>
+        <div className="eq-field-label">Spoken now {st === "verified" ? "(AI narration, checked)" : "(rule-based reading)"}</div>
         <div>{used || "“" + label + "” only: no reading could be produced."}</div>
       </div>
       {st === "verified" && <div className="muted small">An independent model ({res?.models?.checker}) wrote this narration back as LaTeX, and it matched the equation exactly.</div>}
-      {st === "uncertain" && <div className="muted small">The narration was transcribed back with the same symbols, but the grouping differs: {res?.reason}</div>}
+      {st === "uncertain" && (
+        <div className="muted small">
+          Not spoken: the AI narration (“{res?.speech_ai}”) was written back with the same symbols but a different grouping ({res?.reason}), and grouping is where AI readings go silently wrong. The rule-based reading is used instead.
+        </div>
+      )}
       {st === "fallback" && res && (
         <div className="muted small">The AI narration didn't survive the check ({res.reason || "mismatch"}), so the rule-based reading is used.</div>
       )}

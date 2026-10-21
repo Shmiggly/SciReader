@@ -15,6 +15,18 @@ from ..config import get_settings
 _state_lock = threading.Lock()
 
 
+def replace_retry(tmp: Path, target: Path, tries: int = 20) -> None:
+    """os.replace, retried: on Windows it fails while another thread has the target open for reading."""
+    for i in range(tries):
+        try:
+            tmp.replace(target)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            time.sleep(0.05)
+
+
 def file_hash(path: Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -67,7 +79,7 @@ class DocStore:
         p = self.dir(doc_id) / name
         tmp = p.with_suffix(".tmp")
         tmp.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-        tmp.replace(p)
+        replace_retry(tmp, p)
 
     def list_recent(self, limit: int = 12) -> list[dict]:
         state = load_state()
@@ -108,5 +120,5 @@ def update_state(fn) -> dict:
         p = get_settings().state_path
         tmp = p.with_suffix(".tmp")
         tmp.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
-        tmp.replace(p)
+        replace_retry(tmp, p)
         return state
