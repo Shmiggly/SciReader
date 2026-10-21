@@ -1138,6 +1138,18 @@
       ],
       "source": "shipped",
       "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "Si",
+      "say_as": "silicon",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "chemistry",
+        "materials"
+      ],
+      "source": "shipped",
+      "note": "Element symbol used as a word (\"Si wafer\"); the voice would say 'see'."
     }
   ]
 }
