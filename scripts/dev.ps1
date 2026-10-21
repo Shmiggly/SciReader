@@ -2,9 +2,11 @@
 #   ./scripts/dev.ps1            build the UI if needed, start the backend, open the app window
 #   ./scripts/dev.ps1 -Rebuild   rebuild the UI first
 #   ./scripts/dev.ps1 -Hot       also start the Vite dev server (hot reload) and open that instead
+#   ./scripts/dev.ps1 -NoBrowser don't open a window (e.g. for scripted checks)
 param(
     [switch]$Rebuild,
     [switch]$Hot,
+    [switch]$NoBrowser,
     [int]$Port = 8765
 )
 $ErrorActionPreference = "Stop"
@@ -46,7 +48,9 @@ $candidates = @(
     "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
 )
 $browser = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
-if ($browser) {
+if ($NoBrowser) {
+    Write-Host "Not opening a window (-NoBrowser)."
+} elseif ($browser) {
     Start-Process -FilePath $browser -ArgumentList @("--app=$url", "--window-size=1440,900")
 } else {
     Start-Process $url

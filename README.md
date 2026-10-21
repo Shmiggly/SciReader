@@ -97,7 +97,7 @@ cd SciReader
 ./scripts/dev.ps1     # starts the backend and opens SciReader in its own app window
 ```
 
-Development with hot reload: `./scripts/dev.ps1 -Hot`. Sample papers: `uv run --no-project python scripts/fetch_samples.py`.
+If PowerShell refuses to run scripts, use `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1` (and the same for `dev.ps1`). Development with hot reload: `./scripts/dev.ps1 -Hot`. Sample papers: `uv run --no-project python scripts/fetch_samples.py`.
 
 Configuration lives in `.env` (see `.env.example`): data folder, model folder, Ollama URL and model names.
 
