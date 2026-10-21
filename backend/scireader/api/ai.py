@@ -113,3 +113,65 @@ def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = Fa
     return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken,
             "description": entry.get("description"), "label": entry.get("label"), "panels": entry.get("panels"),
             "words": []}
+
+
+# ---------------------------------------------------------------------------------------------
+# Explain / Ask (grounded, with sentence citations) and reading arbitrary AI text aloud
+
+from pydantic import BaseModel  # noqa: E402
+
+from ..llm import qa  # noqa: E402
+
+
+class AskReq(BaseModel):
+    question: str
+    history: list[dict] = []
+
+
+class ExplainReq(BaseModel):
+    sentence_ids: list[str] = []
+    text: str = ""
+    level: str = "colleague"
+
+
+def _doc_or_404(doc_id: str) -> dict:
+    _check(doc_id)
+    doc = store.document(doc_id)
+    if doc is None:
+        raise HTTPException(404, "Not parsed yet")
+    return doc
+
+
+@router.post("/docs/{doc_id}/ask")
+def ask(doc_id: str, req: AskReq) -> dict:
+    doc = _doc_or_404(doc_id)
+    try:
+        return qa.ask(doc, req.question, req.history)
+    except ollama.LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+@router.post("/docs/{doc_id}/explain")
+def explain(doc_id: str, req: ExplainReq) -> dict:
+    doc = _doc_or_404(doc_id)
+    try:
+        return qa.explain(doc, req.sentence_ids, req.level, req.text)
+    except ollama.LLMUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+
+
+class SayReq(BaseModel):
+    text: str
+    voice: str = "af_heart"
+    label: str = ""
+
+
+@router.post("/tts/say")
+def say(req: SayReq) -> dict:
+    """Speak arbitrary text (AI answers, explanations) through the same normalizer and voice."""
+    from ..speech.pipeline import speak
+
+    text = (req.label + " " if req.label else "") + req.text
+    spoken = speak(text[:4000]).spoken
+    k, meta = synth_cached(spoken, req.voice)
+    return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken, "words": []}

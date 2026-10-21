@@ -6,7 +6,7 @@ import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Rect } from "./api";
 import { EquationBadge, EquationPopover } from "./Equations";
-import { PRESETS, closeFigure, figureDetail, playSentence, sentenceAt, useStore } from "./store";
+import { PRESETS, closeFigure, figureDetail, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -242,6 +242,10 @@ function Page({ index, width, height, scale, pdf, hits, setRef }: PageProps) {
   const onClick = (ev: React.MouseEvent) => {
     if (window.getSelection()?.toString()) return;
     const sid = hitTest(ev);
+    if (sid && ev.shiftKey) {
+      selectRangeTo(sid);
+      return;
+    }
     if (sid) {
       useStore.setState({ follow: true });
       void playSentence(sid);
@@ -304,6 +308,8 @@ function Overlay({ page, scale }: { page: number; scale: number }) {
   const preset = PRESETS[presetKey] ?? PRESETS.sun;
   const e = sentenceAt(current);
 
+  const selection = useStore((s) => s.selection);
+  const selRects = selection ? selection.flatMap((sid) => sentenceAt(sid)?.s.rects ?? []).filter((r) => r[0] === page) : [];
   const sentenceRects = e ? e.s.rects.filter((r) => r[0] === page) : [];
   const wordRects = word ? word.rects.filter((r) => r[0] === page) : [];
 
@@ -332,6 +338,9 @@ function Overlay({ page, scale }: { page: number; scale: number }) {
         </>
       )}
       {dimWholePage && <div className="focus-dim-page" />}
+      {selRects.map((r, i) => (
+        <div key={`sel${i}`} className="hl-selection" style={rectStyle(r, scale)} />
+      ))}
       {sentenceRects.map((r, i) => (
         <div key={`s${i}`} className="hl-sentence" style={{ ...rectStyle(r, scale), background: preset.sentence }} />
       ))}

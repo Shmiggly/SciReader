@@ -81,6 +81,7 @@ interface State {
   mentionedFigs: Set<string>;
   figPopup: FigPopup | null;
   figuresOn: boolean;
+  selection: string[] | null;
   setDoc: (doc: Doc | null) => void;
   set: (p: Partial<State>) => void;
 }
@@ -113,6 +114,7 @@ export const useStore = create<State>((set) => ({
   mentionedFigs: new Set(),
   figPopup: null,
   figuresOn: true,
+  selection: null,
   setDoc: (doc) => {
     const index = new Map<string, Entry>();
     const order: string[] = [];
@@ -124,7 +126,7 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null, selection: null });
     narrated.clear();
   },
   set: (p) => set(p),
@@ -222,6 +224,11 @@ audio.addEventListener("ended", () => {
   cancelAnimationFrame(raf);
   const st = get();
   const cur = st.current;
+  if (oneShot) {
+    oneShot = false;
+    useStore.setState({ playing: false, word: null });
+    return;
+  }
   // Figure narration: after the sentence that first mentions a figure (or panel), describe it.
   if (!figPlaying && cur && st.figuresOn) {
     const ms = (st.figMentions.get(cur) ?? []).filter((m) => m.first && !narrated.has(m.key));
@@ -240,6 +247,48 @@ audio.addEventListener("ended", () => {
 });
 
 let figPlaying = false;
+let oneShot = false;
+
+/** Read arbitrary (AI) text aloud once, without continuing the paper afterwards. */
+export async function sayText(text: string, label = "") {
+  const my = ++token;
+  audio.pause();
+  useStore.setState({ loading: true, word: null });
+  try {
+    const r = await api.post<TtsResult>("/api/tts/say", { text, voice: get().voice, label });
+    if (my !== token) return;
+    oneShot = true;
+    useStore.setState({ tts: null });
+    audio.src = r.audio_url;
+    audio.playbackRate = get().speed;
+    await audio.play();
+    useStore.setState({ loading: false, playing: true });
+  } catch (err) {
+    if (my !== token) return;
+    useStore.setState({ loading: false, error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+/** Jump to a sentence (citation chips): stop, highlight it and bring it into view. */
+export function jumpTo(sid: string) {
+  token++;
+  audio.pause();
+  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null });
+}
+
+/** Shift+click: select the sentences between the current one and the clicked one. */
+export function selectRangeTo(sid: string) {
+  const st = get();
+  const a = st.current ? st.index.get(st.current) : undefined;
+  const b = st.index.get(sid);
+  if (!b) return;
+  if (!a) {
+    useStore.setState({ selection: [sid] });
+    return;
+  }
+  const [lo, hi] = a.idx <= b.idx ? [a.idx, b.idx] : [b.idx, a.idx];
+  useStore.setState({ selection: st.order.slice(lo, Math.min(hi + 1, lo + 40)) });
+}
 
 async function playFigure(m: FigMention, detail = false): Promise<void> {
   const my = ++token;
@@ -286,6 +335,8 @@ export async function playSentence(sid: string): Promise<void> {
   const my = ++token;
   figQueue = [];
   figPlaying = false;
+  oneShot = false;
+  if (get().selection) useStore.setState({ selection: null });
   if (get().figPopup && !get().figPopup!.pinned) useStore.setState({ figPopup: null });
   const st = get();
   if (!st.doc || !st.index.has(sid)) return;
@@ -431,7 +482,7 @@ export function saveNow() {
     .put(`/api/state/${st.doc.id}`, {
       sentence_id: st.current,
       section_title: section?.title ?? null,
-      snippet: e ? e.s.text.slice(0, 90) : null,
+      snippet: e ? (e.b.type === "equation" ? `Equation ${e.b.eq_number ?? ""}`.trim() : e.s.text.slice(0, 90)) : null,
       speed: st.speed,
       voice: st.voice,
       eq_mode: st.eqMode,

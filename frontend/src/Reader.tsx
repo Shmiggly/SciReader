@@ -1,6 +1,7 @@
 // Reader layout: outline (left), PDF (center), side panel (right), playback bar (bottom).
 import { useEffect, useState } from "react";
 import { api, type PaperState, type Voice } from "./api";
+import { AiPanel } from "./AiPanel";
 import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
@@ -30,6 +31,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   const [resume, setResume] = useState<PaperState["position"] | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showModels, setShowModels] = useState(false);
+  const [showAi, setShowAi] = useState(false);
 
   // Restore per-paper settings and offer to continue.
   useEffect(() => {
@@ -68,6 +70,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
           ← Papers
         </button>
         <div className="doc-title" title={doc.title}>{doc.title}</div>
+        <button className="ghost" onClick={() => setShowAi((v) => !v)} aria-pressed={showAi}>✦ AI</button>
         <button className="ghost" onClick={() => setShowModels(true)}>▦ Models</button>
         <button className="ghost" onClick={() => setShowSettings((v) => !v)} aria-pressed={showSettings}>
           ⚙ Reading settings
@@ -91,6 +94,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
           <PdfView />
         </main>
         {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+        {showAi && !showSettings && <AiPanel onClose={() => setShowAi(false)} />}
       </div>
       <PlaybackBar />
     </div>
