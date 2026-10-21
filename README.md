@@ -53,7 +53,15 @@ An open benchmark of how faithfully read-aloud pipelines speak math, with an ana
 - **Equations:** 220 display equations from 24 open arXiv papers (115 polymers/materials, 40 physics, 35 chemistry, 30 math), with the LaTeX from the arXiv source as ground truth. Each pipeline's speech is transcribed back to LaTeX by an independent judge model from a third family (`phi4:14b`) and compared structurally.
 - **Units and chemistry by sound:** 99 snippets phonemized with the voice's own phonemizer. **A generic reader mispronounces 47 % of them; SciReader 0 %** (caveat: we wrote the snippets knowing the normalizer's rules).
 
-_Equation results are being computed; see `bench/README.md`._
+![SciSpeech-Bench: share of equations a listener can write back, per pipeline](bench/figures/faithfulness.png)
+
+**What we found** (judge: `phi4:14b`, a third model family; details and caveats in [`bench/README.md`](bench/README.md)):
+- **Unverified local LLM narration silently changes about 1 in 3 equations.** On the 63 equations the judge can reliably transcribe (it reconstructs their rule-based reading), `qwen3.5:9b` narrations were written back faithfully only 64 % of the time; `qwen3.5:4b` 57 %.
+- **Verification fixes most of it.** The gate catches about 4 in 5 of those errors (recall 78–81 %), raising faithful readings to **89 %** (9B) and **87 %** (4B), while still using natural AI narration for 45 % of all equations (99 of 220) and the rule-based reading for the rest.
+- **A generic reader's text-layer reading** is faithful for only 41 % of those equations.
+- Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 24 % < rules 29 % < LLM 32 % < **LLM + verify 38 %**.
+
+In the left panel, rules = 100 % by construction (that is how the subset is defined). The analysis is a [marimo](https://marimo.io) notebook: open `bench/analysis.html` without installing anything, or run `marimo edit bench/analysis.py` to filter by field and judge.
 
 ## How it works
 

@@ -16,8 +16,8 @@
 1. **Reader core (M0–M3, tag `m3`):** open (drop/pick, arXiv, samples, recent) → Docling parse (~100 s first time, cached) → real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume; science normalizer (284 tests) + your lexicon; page furniture, citations, references skipped.
 2. **AI layer (M4, tag `m4-ai`), all local through Ollama:** verified equation narration with badges (checking… / ✓ / ? / ✗ rules / unreadable) and a detail popover; figures pop up at first mention with panel-aware AI descriptions ("Fig. 3b" → only panel b), `D` for more detail; Explain (colleague / Simpler) and Ask with citation chips; spoken summaries (paper or section).
 3. **M6 so far:** pronunciation review screen (hear → type → preview → save, export/import with conflicts), `E` cited-equation popup, citation hover with the reference entry, clean text view (Atkinson Hyperlegible / OpenDyslexic), audiobook export (MP3 per section + playlist).
-4. **M5 SciSpeech-Bench:** 220 display equations from 24 arXiv papers (115 polymers/materials, 40 physics, 35 chemistry, 30 math), LaTeX source as ground truth; conditions a–d + 4B; independent judge phi4:14b. **Units/chemistry by sound: a generic reader mispronounces 47 % of 99 snippets, SciReader 0 %.** The equation run is in progress (GPU); results → `bench/results/`, figure via the marimo notebook `bench/analysis.py`.
-5. **Your 15 minutes:** blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (30 clips; needs `rating_audio.py` once the run finishes; I'll prepare it).
+4. **M5 SciSpeech-Bench (tag `m5-bench`):** 220 equations / 24 arXiv papers, judge phi4:14b. **Unverified LLM narration silently changes ~1 in 3 equations; the gate catches ~4 in 5 of those errors (faithful 64 % → 89 % on the 63 judge-capable equations; 4B 57 % → 87 %).** Units by sound: generic 47 % vs SciReader 0 % mispronounced. Figure `bench/figures/faithfulness.png`, marimo notebook `bench/analysis.py` + `bench/analysis.html`. Caveat: the judge is the ceiling over all 220 (naive 24 / rules 29 / LLM 32 / verified 38 %).
+5. **Your 15 minutes:** blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (30 clips are ready in `bench/rating/`; don't open `items.json`, it reveals which pipeline is which).
 
 **How to launch:** `./scripts/dev.ps1` (Edge app window; not yet run by hand) or dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
@@ -33,7 +33,7 @@
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 benchmark running; M6 mostly done (P1 leftovers + audiobook).**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 done (tag `m5-bench`); M6 done except per-section voice; next M7 polish.**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`.
@@ -294,8 +294,8 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [x] M4 AI layer (tag `m4-ai`): verified equation narration + badges ✓, figure narration at first mention (panel-aware, popup, D for detail) ✓, Explain (colleague/Simpler) + Ask with citation chips ✓. Not done: summaries (first on the cut list), citation hover popups, E equation-reference popup (M6).
-- [ ] M5 SciSpeech-Bench + figure: data ✓ (220 eqs / 24 papers), units-by-sound ✓ (47 % → 0 %), equation run in progress, marimo notebook drafted, rating app ready
-- [ ] M6: pronunciation review ✓, E equation popup ✓, citation hover ✓, reflow view ✓, audiobook export ✓; left: scanned-PDF OCR, auto-pause, arXiv source mode
+- [x] M5 SciSpeech-Bench (tag `m5-bench`): 220 eqs / 24 papers, figure + marimo notebook + HTML export, units-by-sound; left: the user's 30 blind ratings, a manually adjudicated subset
+- [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (left: per-section voice/speed)
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
 
 ---
