@@ -1,0 +1,223 @@
+{
+ "version": 1,
+ "engines": [
+  {
+   "id": "kokoro",
+   "name": "Kokoro-82M",
+   "repo_id": "hexgrad/Kokoro-82M",
+   "license": "Apache-2.0",
+   "size_mb": 330,
+   "languages": [
+    "en-US",
+    "en-GB"
+   ],
+   "gpu": "optional (CUDA), ~0.7 GB VRAM; runs on CPU",
+   "quality": "Natural neural voice, ~100x real time on an RTX 4070, per-word timestamps",
+   "files": [
+    "config.json",
+    "kokoro-v1_0.pth"
+   ],
+   "voice_file": "voices/{voice}.pt",
+   "voice_size_mb": 0.5,
+   "default_voice": "af_heart",
+   "voices": [
+    {
+     "id": "af_heart",
+     "name": "Heart",
+     "gender": "female",
+     "accent": "American",
+     "grade": "A"
+    },
+    {
+     "id": "af_alloy",
+     "name": "Alloy",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C"
+    },
+    {
+     "id": "af_aoede",
+     "name": "Aoede",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "af_bella",
+     "name": "Bella",
+     "gender": "female",
+     "accent": "American",
+     "grade": "A-"
+    },
+    {
+     "id": "af_jessica",
+     "name": "Jessica",
+     "gender": "female",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "af_kore",
+     "name": "Kore",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "af_nicole",
+     "name": "Nicole",
+     "gender": "female",
+     "accent": "American",
+     "grade": "B-"
+    },
+    {
+     "id": "af_nova",
+     "name": "Nova",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C"
+    },
+    {
+     "id": "af_river",
+     "name": "River",
+     "gender": "female",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "af_sarah",
+     "name": "Sarah",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "af_sky",
+     "name": "Sky",
+     "gender": "female",
+     "accent": "American",
+     "grade": "C-"
+    },
+    {
+     "id": "am_adam",
+     "name": "Adam",
+     "gender": "male",
+     "accent": "American",
+     "grade": "F+"
+    },
+    {
+     "id": "am_echo",
+     "name": "Echo",
+     "gender": "male",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "am_eric",
+     "name": "Eric",
+     "gender": "male",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "am_fenrir",
+     "name": "Fenrir",
+     "gender": "male",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "am_liam",
+     "name": "Liam",
+     "gender": "male",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "am_michael",
+     "name": "Michael",
+     "gender": "male",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "am_onyx",
+     "name": "Onyx",
+     "gender": "male",
+     "accent": "American",
+     "grade": "D"
+    },
+    {
+     "id": "am_puck",
+     "name": "Puck",
+     "gender": "male",
+     "accent": "American",
+     "grade": "C+"
+    },
+    {
+     "id": "am_santa",
+     "name": "Santa",
+     "gender": "male",
+     "accent": "American",
+     "grade": "D-"
+    },
+    {
+     "id": "bf_alice",
+     "name": "Alice",
+     "gender": "female",
+     "accent": "British",
+     "grade": "D"
+    },
+    {
+     "id": "bf_emma",
+     "name": "Emma",
+     "gender": "female",
+     "accent": "British",
+     "grade": "B-"
+    },
+    {
+     "id": "bf_isabella",
+     "name": "Isabella",
+     "gender": "female",
+     "accent": "British",
+     "grade": "C"
+    },
+    {
+     "id": "bf_lily",
+     "name": "Lily",
+     "gender": "female",
+     "accent": "British",
+     "grade": "D"
+    },
+    {
+     "id": "bm_daniel",
+     "name": "Daniel",
+     "gender": "male",
+     "accent": "British",
+     "grade": "D"
+    },
+    {
+     "id": "bm_fable",
+     "name": "Fable",
+     "gender": "male",
+     "accent": "British",
+     "grade": "C"
+    },
+    {
+     "id": "bm_george",
+     "name": "George",
+     "gender": "male",
+     "accent": "British",
+     "grade": "C"
+    },
+    {
+     "id": "bm_lewis",
+     "name": "Lewis",
+     "gender": "male",
+     "accent": "British",
+     "grade": "D+"
+    }
+   ]
+  }
+ ]
+}

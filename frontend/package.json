@@ -6,8 +6,8 @@
   "scripts": {
     "postinstall": "node scripts/copy-pdfjs-assets.mjs",
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "typecheck": "tsc -b --noEmit",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p .",
     "preview": "vite preview"
   },
   "dependencies": {
