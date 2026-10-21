@@ -66,6 +66,8 @@ ARXIV = re.compile(r"arXiv[:\s]*(\d{4}\.\d{4,5})", re.I)
 DROP_CAP = re.compile(r"^([B-HJ-Z]) ([a-z]{1,})\b")
 # Springer Nature PDFs encode math glyphs with wrong code points (MathPi fonts).
 SPRINGER_GLYPHS = str.maketrans({"¼": "=", "ð": "(", "Þ": ")", "þ": "+", "Ã": "×"})
+# ...and set decimal points as colons ("0:033 s"); only "0:ddd" is safe to fix (ratios like 1:1 exist).
+SPRINGER_DECIMAL = re.compile(r"(?<![\d:])(0):(\d)")
 
 
 @dataclass
@@ -337,7 +339,7 @@ def build_document(
             pdf_chars.extend(pdftext.chars_in(pi, bb))
         mapped = align(text, pdf_chars)
         if meta.get("springer_glyphs"):
-            text = text.translate(SPRINGER_GLYPHS)
+            text = SPRINGER_DECIMAL.sub(r".", text.translate(SPRINGER_GLYPHS))
         block["text"] = text
 
         sup = (superscript_mask(mapped) if b.type in ("paragraph", "abstract", "list_item", "caption") and not b.skip_reason

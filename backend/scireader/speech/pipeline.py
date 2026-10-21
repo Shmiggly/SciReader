@@ -6,13 +6,10 @@ import re
 from functools import lru_cache
 
 from ..config import get_settings
-try:
-    from .en.normalizer import normalize
-    from .lexicon import Lexicon
-    from .normalized import Normalized
-    from .splitter import split_sentences  # noqa: F401  (re-exported for the builder)
-except ImportError:  # pragma: no cover - minimal fallback while the full normalizer is unavailable
-    from ._fallback import Lexicon, Normalized, normalize, split_sentences  # type: ignore[assignment]
+from .en.normalizer import normalize
+from .lexicon import Lexicon
+from .normalized import Normalized
+from .splitter import split_sentences  # noqa: F401  (re-exported for the builder)
 
 # Inline numeric citations: [12], [3-5], [1, 4, 7], [12,13]
 BRACKET_CITE = re.compile(r"\s?\[\s*\d{1,3}(?:\s*[-–,]\s*\d{1,3})*\s*\]")

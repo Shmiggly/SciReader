@@ -1,0 +1,1143 @@
+{
+  "version": 1,
+  "language": "en",
+  "name": "SciReader science pronunciations (English)",
+  "license": "CC BY 4.0",
+  "entries": [
+    {
+      "term": "PEGDA",
+      "say_as": "peg-dah",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "monomers"
+      ],
+      "source": "shipped",
+      "note": "poly(ethylene glycol) diacrylate; user pronunciation, hard 'da'"
+    },
+    {
+      "term": "Tg",
+      "say_as": "T G",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "properties"
+      ],
+      "source": "shipped",
+      "note": "glass transition temperature"
+    },
+    {
+      "term": "Tm",
+      "say_as": "T M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "properties"
+      ],
+      "source": "shipped",
+      "note": "melting temperature"
+    },
+    {
+      "term": "PLA",
+      "say_as": "P-L-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polylactic acid"
+    },
+    {
+      "term": "ABS",
+      "say_as": "A-B-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "acrylonitrile butadiene styrene"
+    },
+    {
+      "term": "PETG",
+      "say_as": "P-E-T-G",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "glycol-modified PET"
+    },
+    {
+      "term": "TPU",
+      "say_as": "T-P-U",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "thermoplastic polyurethane"
+    },
+    {
+      "term": "PDMS",
+      "say_as": "P-D-M-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polydimethylsiloxane"
+    },
+    {
+      "term": "PEEK",
+      "say_as": "P-E-E-K",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyether ether ketone"
+    },
+    {
+      "term": "PMMA",
+      "say_as": "P-M-M-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(methyl methacrylate)"
+    },
+    {
+      "term": "PVA",
+      "say_as": "P-V-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(vinyl alcohol)"
+    },
+    {
+      "term": "PCL",
+      "say_as": "P-C-L",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polycaprolactone"
+    },
+    {
+      "term": "PU",
+      "say_as": "P-U",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyurethane"
+    },
+    {
+      "term": "PET",
+      "say_as": "P-E-T",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(ethylene terephthalate)"
+    },
+    {
+      "term": "PP",
+      "say_as": "P-P",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polypropylene"
+    },
+    {
+      "term": "HDPE",
+      "say_as": "H-D-P-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "high-density polyethylene"
+    },
+    {
+      "term": "LDPE",
+      "say_as": "L-D-P-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "low-density polyethylene"
+    },
+    {
+      "term": "PVDF",
+      "say_as": "P-V-D-F",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(vinylidene fluoride)"
+    },
+    {
+      "term": "PEO",
+      "say_as": "P-E-O",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(ethylene oxide)"
+    },
+    {
+      "term": "PLGA",
+      "say_as": "P-L-G-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(lactic-co-glycolic acid)"
+    },
+    {
+      "term": "PVC",
+      "say_as": "P-V-C",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(vinyl chloride)"
+    },
+    {
+      "term": "PLLA",
+      "say_as": "P-L-L-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(L-lactide)"
+    },
+    {
+      "term": "PHA",
+      "say_as": "P-H-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyhydroxyalkanoate"
+    },
+    {
+      "term": "PA12",
+      "say_as": "P-A twelve",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyamide 12; hyphen so the voice says the letter A, not the article"
+    },
+    {
+      "term": "PA6",
+      "say_as": "P-A six",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyamide 6"
+    },
+    {
+      "term": "PA11",
+      "say_as": "P-A eleven",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "polyamide 11"
+    },
+    {
+      "term": "PEG",
+      "say_as": "peg",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": "poly(ethylene glycol)"
+    },
+    {
+      "term": "GelMA",
+      "say_as": "gel-ma",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "biomaterials"
+      ],
+      "source": "shipped",
+      "note": "gelatin methacryloyl"
+    },
+    {
+      "term": "wt%",
+      "say_as": "weight percent",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": null
+    },
+    {
+      "term": "vol%",
+      "say_as": "volume percent",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": null
+    },
+    {
+      "term": "HDDA",
+      "say_as": "H-D-D-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "1,6-hexanediol diacrylate"
+    },
+    {
+      "term": "TMPTA",
+      "say_as": "T-M-P-T-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "trimethylolpropane triacrylate"
+    },
+    {
+      "term": "TPO",
+      "say_as": "T-P-O",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "diphenyl(2,4,6-trimethylbenzoyl)phosphine oxide, photoinitiator"
+    },
+    {
+      "term": "BAPO",
+      "say_as": "B-A-P-O",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "bis-acylphosphine oxide photoinitiator"
+    },
+    {
+      "term": "UDMA",
+      "say_as": "U-D-M-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "urethane dimethacrylate"
+    },
+    {
+      "term": "HEMA",
+      "say_as": "H-E-M-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers",
+        "photopolymers"
+      ],
+      "source": "shipped",
+      "note": "2-hydroxyethyl methacrylate"
+    },
+    {
+      "term": "SLA",
+      "say_as": "S-L-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "stereolithography"
+    },
+    {
+      "term": "DLP",
+      "say_as": "D-L-P",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "digital light processing"
+    },
+    {
+      "term": "FFF",
+      "say_as": "F-F-F",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "fused filament fabrication"
+    },
+    {
+      "term": "FDM",
+      "say_as": "F-D-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "fused deposition modeling"
+    },
+    {
+      "term": "SLS",
+      "say_as": "S-L-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "selective laser sintering"
+    },
+    {
+      "term": "MJF",
+      "say_as": "M-J-F",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "multi jet fusion"
+    },
+    {
+      "term": "DIW",
+      "say_as": "D-I-W",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "direct ink writing"
+    },
+    {
+      "term": "DED",
+      "say_as": "D-E-D",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "directed energy deposition"
+    },
+    {
+      "term": "AM",
+      "say_as": "A-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "additive manufacturing"
+    },
+    {
+      "term": "CLIP",
+      "say_as": "C-L-I-P",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "continuous liquid interface production"
+    },
+    {
+      "term": "2PP",
+      "say_as": "two P P",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "additive-manufacturing"
+      ],
+      "source": "shipped",
+      "note": "two-photon polymerization"
+    },
+    {
+      "term": "DSC",
+      "say_as": "D-S-C",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "differential scanning calorimetry"
+    },
+    {
+      "term": "TGA",
+      "say_as": "T-G-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "thermogravimetric analysis"
+    },
+    {
+      "term": "DMA",
+      "say_as": "D-M-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "dynamic mechanical analysis"
+    },
+    {
+      "term": "FTIR",
+      "say_as": "F-T-I-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "Fourier-transform infrared spectroscopy"
+    },
+    {
+      "term": "GPC",
+      "say_as": "G-P-C",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "gel permeation chromatography"
+    },
+    {
+      "term": "SEM",
+      "say_as": "S-E-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "scanning electron microscopy"
+    },
+    {
+      "term": "XRD",
+      "say_as": "X-R-D",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "X-ray diffraction"
+    },
+    {
+      "term": "TEM",
+      "say_as": "T-E-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "transmission electron microscopy"
+    },
+    {
+      "term": "NMR",
+      "say_as": "N-M-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "nuclear magnetic resonance"
+    },
+    {
+      "term": "UV",
+      "say_as": "U-V",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "ultraviolet"
+    },
+    {
+      "term": "IR",
+      "say_as": "I-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "infrared"
+    },
+    {
+      "term": "NIR",
+      "say_as": "N-I-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "near infrared"
+    },
+    {
+      "term": "XPS",
+      "say_as": "X-P-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "X-ray photoelectron spectroscopy"
+    },
+    {
+      "term": "DLS",
+      "say_as": "D-L-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "dynamic light scattering"
+    },
+    {
+      "term": "EDS",
+      "say_as": "E-D-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "energy-dispersive X-ray spectroscopy"
+    },
+    {
+      "term": "EDX",
+      "say_as": "E-D-X",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "energy-dispersive X-ray spectroscopy"
+    },
+    {
+      "term": "SAXS",
+      "say_as": "sacks",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "small-angle X-ray scattering"
+    },
+    {
+      "term": "WAXS",
+      "say_as": "wacks",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "wide-angle X-ray scattering"
+    },
+    {
+      "term": "AFM",
+      "say_as": "A-F-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "atomic force microscopy"
+    },
+    {
+      "term": "ATR",
+      "say_as": "A-T-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "attenuated total reflectance"
+    },
+    {
+      "term": "UTS",
+      "say_as": "U-T-S",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "ultimate tensile strength"
+    },
+    {
+      "term": "CTE",
+      "say_as": "C-T-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "coefficient of thermal expansion"
+    },
+    {
+      "term": "HDT",
+      "say_as": "H-D-T",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "heat deflection temperature"
+    },
+    {
+      "term": "MFI",
+      "say_as": "M-F-I",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "melt flow index"
+    },
+    {
+      "term": "PDI",
+      "say_as": "P-D-I",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "characterization"
+      ],
+      "source": "shipped",
+      "note": "polydispersity index"
+    },
+    {
+      "term": "Mw",
+      "say_as": "M W",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "properties"
+      ],
+      "source": "shipped",
+      "note": "weight-average molecular weight"
+    },
+    {
+      "term": "Tc",
+      "say_as": "T C",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "polymers",
+        "properties"
+      ],
+      "source": "shipped",
+      "note": "crystallization temperature"
+    },
+    {
+      "term": "DFT",
+      "say_as": "D-F-T",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "simulation"
+      ],
+      "source": "shipped",
+      "note": "density functional theory"
+    },
+    {
+      "term": "MD",
+      "say_as": "M-D",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "simulation"
+      ],
+      "source": "shipped",
+      "note": "molecular dynamics"
+    },
+    {
+      "term": "GNN",
+      "say_as": "G-N-N",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "graph neural network"
+    },
+    {
+      "term": "ANN",
+      "say_as": "A-N-N",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "artificial neural network"
+    },
+    {
+      "term": "MLP",
+      "say_as": "M-L-P",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "multilayer perceptron"
+    },
+    {
+      "term": "CNN",
+      "say_as": "C-N-N",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "convolutional neural network"
+    },
+    {
+      "term": "RNN",
+      "say_as": "R-N-N",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "recurrent neural network"
+    },
+    {
+      "term": "LSTM",
+      "say_as": "L-S-T-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "long short-term memory"
+    },
+    {
+      "term": "GPR",
+      "say_as": "G-P-R",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "Gaussian process regression"
+    },
+    {
+      "term": "PINN",
+      "say_as": "P-I-N-N",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "physics-informed neural network"
+    },
+    {
+      "term": "EHD",
+      "say_as": "E-H-D",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "simulation"
+      ],
+      "source": "shipped",
+      "note": "electrohydrodynamic"
+    },
+    {
+      "term": "PCA",
+      "say_as": "P-C-A",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "principal component analysis"
+    },
+    {
+      "term": "RMSE",
+      "say_as": "R-M-S-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "root mean square error"
+    },
+    {
+      "term": "MAE",
+      "say_as": "M-A-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "mean absolute error"
+    },
+    {
+      "term": "MSE",
+      "say_as": "M-S-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "mean squared error"
+    },
+    {
+      "term": "VAE",
+      "say_as": "V-A-E",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "variational autoencoder"
+    },
+    {
+      "term": "LLM",
+      "say_as": "L-L-M",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "large language model"
+    },
+    {
+      "term": "UMAP",
+      "say_as": "you-map",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": "uniform manifold approximation and projection"
+    },
+    {
+      "term": "XGBoost",
+      "say_as": "X-G-boost",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning"
+      ],
+      "source": "shipped",
+      "note": null
+    },
+    {
+      "term": "BigSMILES",
+      "say_as": "big smiles",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "machine-learning",
+        "polymers"
+      ],
+      "source": "shipped",
+      "note": null
+    },
+    {
+      "term": "photoinitiator",
+      "say_as": "photo-initiator",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "photoinitiators",
+      "say_as": "photo-initiators",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "polyimide",
+      "say_as": "poly-imide",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "isocyanate",
+      "say_as": "iso-cyanate",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "thermogravimetric",
+      "say_as": "thermo-gravimetric",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "hyperparameter",
+      "say_as": "hyper-parameter",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "hyperparameters",
+      "say_as": "hyper-parameters",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    },
+    {
+      "term": "backpropagation",
+      "say_as": "back-propagation",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "vocabulary"
+      ],
+      "source": "shipped",
+      "note": "not in the misaki dictionary"
+    }
+  ]
+}

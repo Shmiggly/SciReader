@@ -111,6 +111,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · MinerU bake-off dropped (time-boxed, ~10 min).** `mineru` is now 4.0.12, an agent-oriented "document library" with telemetry (we disabled it) and a cloud parse service. Its local `flash` tier returned no equations at all on the flagship, and the formula-capable tiers say "Local parse-server is disabled. Use --tier flash or --remote" (remote = cloud, ruled out). Docling stays the only parser; its formula OCR quality is what the verifier and benchmark measure. Scratch venv in `D:\scratch\mineru` (deletable).
 - **2026-10-21 · Build decisions (agent, during M0–M2):**
   - **Sentence/word rects from PDFium chars, not Docling:** Docling has block boxes only; we align block text to PDFium characters (difflib, whitespace ignored), which also gives superscript detection for numeric citations (loose box height + raised baseline; `FPDFText_GetFontSize` returns 1.0 in Nature PDFs because of the text matrix).
   - **Springer Nature glyph fix:** their PDFs encode inline-math glyphs wrongly (`¼` → `=`, `ð…Þ` → `( )`, `þ` → `+`); applied per document when ≥ 6 such glyphs appear.
@@ -271,7 +272,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - the video and write-up.
 
 - [x] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads (tag `m0-setup`)
-- [ ] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (not started)
+- [ ] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (dropped, see §5). All 6 samples parse: flagship ~100 s cold, the others 18–27 s.
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [ ] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [ ] M4 AI layer: verified equation narration, figure narration, explain/ask with citations, summaries

@@ -8,11 +8,7 @@ from collections import OrderedDict
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
-try:
-    from ..speech.lexicon import strip_markup
-except ImportError:  # pragma: no cover
-    def strip_markup(s: str) -> str:
-        return s
+from ..speech.lexicon import strip_markup
 from ..speech.pipeline import speak
 from ..tts.engine import audio_path, get_engine, registry, synth_cached
 from .docs import _check, store
