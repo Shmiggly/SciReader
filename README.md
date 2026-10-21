@@ -32,6 +32,8 @@ Researchers with dyslexia, ADHD or low vision, non-native readers, and anyone li
 4. On a mismatch the narrator gets one repair round ("'k_B T' came back as 'k_B' times 'T'"). If it still fails, SciReader falls back to the rule-based reading, and if even that is impossible it says only "Equation 3".
 5. Only an exact round trip is spoken as AI narration. "Uncertain" (same symbols, different grouping) gets the rule-based reading too, because grouping is exactly where AI readings go silently wrong.
 
+What you hear is a natural wording of the checked reading: no "sub" or "open parenthesis", "times" after a fraction, "the concentration of A" for [A] in kinetics, and in the default Auto mode a long equation is announced and summarized (labeled AI) instead of read for a minute. Precise mode speaks the explicit wording exactly as checked, which is also what SciSpeech-Bench scores.
+
 Each equation gets a badge in the PDF's margin: *checking*, ✓ verified, ? uncertain, ✗ rules, unreadable (icons only when the margin is narrow; hovering a badge outlines its equation). Clicking it shows the equation (KaTeX), exactly what is spoken, which reading of the page it comes from and whether the two readings agreed, and the check's attempts. Playback never waits for the AI.
 
 **Start anywhere, keep your place**

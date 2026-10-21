@@ -18,7 +18,7 @@ We store IDs, extracted LaTeX and our annotations, not the papers. Annotations a
 | a · naive | The equation's glyphs in reading order, the way a generic reader gets them from a PDF text layer (simulated from MathML token order). |
 | b · rules | Speech Rule Engine, ClearSpeak style, from the source LaTeX. |
 | c · LLM | Local narration by `qwen3.5:9b`, unverified. |
-| d · LLM + verify | c, back-transcribed by `gemma4:12b` (never sees the LaTeX) and compared as canonical MathML; one repair round; spoken only after an exact round trip, otherwise b ("uncertain" grouping included). This is SciReader's pipeline. |
+| d · LLM + verify | c, back-transcribed by `gemma4:12b` (never sees the LaTeX) and compared as canonical MathML; one repair round; spoken only after an exact round trip, otherwise b ("uncertain" grouping included). This is SciReader's pipeline in its Precise reading mode; the app's default Auto mode speaks a deterministic natural rewrite of the same text (no "sub", no "open parenthesis"), which is not scored here. |
 | f · 4B | c and d with `qwen3.5:4b` as narrator. |
 
 ## Metrics

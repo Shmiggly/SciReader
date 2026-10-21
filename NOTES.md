@@ -4,7 +4,7 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 16:45 EDT (prompt-fix experiment done, not shipped; tag `m6.4-prompts`)
+**Last updated:** 2026-10-21 evening (listening check: fixes from the user's notes in, round 2 waiting for the user)
 
 ---
 
@@ -22,11 +22,15 @@
 7. **Bug fixed:** the backend served `.mjs` as text/plain (this machine's registry maps .mjs to text/plain), so the built app (`dev.ps1`) couldn't load the pdf.js worker and no PDF opened. If an Edge app window still fails, it cached the old response: Ctrl+F5 once.
 8. **Prompt fixes tried, not shipped (14:25–16:45, your go-ahead).** v2: the narrator says "capital" before uppercase Greek, "prime" for a prime, "evaluated at" for an evaluation bar; the checker is told "end exponent" and similar are not symbols. v1b: the checker change only. Same judge for all three (its prompt is now frozen in `run.py`: it had shared the checker's, so the first rerun changed how every condition was scored). Judge-capable subset: 9B unverified 61 % (v1) / 53 % (v2) / 61 % (v1b); 9B + gate 89 / 87 / 87 %; 4B + gate 90 / 94 / 86 %; gate recall 9B 78 / 73 / 74 %; 9B narrations spoken 81 / 77 / 85 of 220; all 220, 9B + gate 40 / 37 / 40 %. v2's narrator over-applied the rules ("capital" before Latin and calligraphic letters, "evaluated at" for f(x)); v1b let more errors through. **The shipped prompts are unchanged (v1)**, so the 30-item check and your ratings still describe what the app speaks. On the flagship v2 had verified 10 instead of 7. Table in `bench/README.md`; raw results `bench/results/results_prompts_v2.jsonl`, `results_checker_v1b.jsonl`; the app's equation results are back to v1.
 
+9. **Listening check (evening, with you).** You rated 30 clips (round 1, on a private page). Fixed (commit `xxxxxxx`): natural equation wording by default (no "sub", "parenthesis" for "open paren", "times" after a fraction, "d power", "where", "evaluated at", err → error, kinetics [A] → "the concentration of A", d[A]/dt → "the derivative of … with respect to time"; `speech/math_words.py`); reading modes Auto (default: a reading over 50 words becomes "a long equation" + the labeled AI summary) / Full / Precise (the explicit wording the gate checks and the benchmark scores) / Brief / Skip; figure narration goes straight to the AI description; panel letters as letters ("Figure 1 A"); pauses around "(AM)" and inside repeat-unit formulas; "type one"; lexicon: SMILES, hertz, log10Hz, (meth)acrylate, N vinyl carbazole, multi-fidelity; citation markers no longer read ("12-16" as "to", "19 Another…"). **Round 2 for you:** a second private page: Before/After per fix, and two picks by ear (the final R of eq 8: as now, "ar" or "capital R"; "multi-fidelity" vs "multi fidelity").
+
 **How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
 **2-minute test:** flagship from Recent → page 13 → eq 27's ✓ badge (K⁻¹; Source: "the PDF's text layer matches qwen3.5:9b's reading…") → eq 21 (y = f(x), x ∈ Rᵈ) → eq 11 (unreadable before, now read from the page) → Check details shows both readings → ✦ AI → Explain → Aa Pronunciation → ¶ Text view.
 
 **Still broken or weak**
+- Waiting on your round-2 picks: the weak final R (eq 8) and "multifidelity".
+- Springer prose: ∈ printed as ϵ is read "epsilon" ("K epsilon R nxn"), θ′ as "theta 0"; a page header leaks into a sentence ("5 of 24 [A]…", MDPI) and "Page 1 of 1" from a figure (PA12); the chemical subscript in "(R 2 )" is dropped as a citation (MDPI).
 - Flagship: 24 of 32 still use the rules reading. The failures are now mostly narrator and checker slips: "Theta" without "capital" (eq 14 comes back as θ), "end exponent" written back as `^{\exp}` (eqs 12, 13), "evaluated at" written back as (Z=0), a checker adding "where" (eq 21). Both readers still misread eq 3 (θ_jl) and eq 9 (E′_t).
 - The gate passes narrations with extra explanatory words when the math round-trips (eq 27: "…where the subscript on y runs from one to n").
 - Vision-model notation quirks leave 3 disputes on PA12 (`\mathop{\mathrm{argmin}}`, `\left\|` for `||`, text inside `\mathrm`).
@@ -40,7 +44,7 @@
 - The 30-item adjudication, the 13 held-out reference corrections (blind to SciReader's output) and the check of the 3 newly accepted narrations were made by the agent.
 - Naturalness: one rater (you), 10 equations; one rated rules clip used the old "normal Gamma" wording.
 
-**Decisions to review (details §5):** second reading (text layer as tiebreaker; a tie keeps Docling's; a vision-only reading is used only when the text layer backs it); comparator equivalences; prompt fixes not done (see Next). Earlier: strict gate; held-out protocol; Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b; badge placement and the fragment rule.
+**Decisions to review (details §5):** natural wording by default with Precise as an option (the benchmark scores Precise); Auto mode's 50-word limit; second reading (text layer as tiebreaker; a tie keeps Docling's; a vision-only reading is used only when the text layer backs it); comparator equivalences; prompt fixes not done (see Next). Earlier: strict gate; held-out protocol; Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b; badge placement and the fragment rule.
 
 **Next**
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
@@ -148,6 +152,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-21 · Listening check (user's notes, evening):** spoken equations use a deterministic natural rewrite of the checked text by default (the user's wording), and long equations (> 50 words) are summarized by the labeled AI brief in Auto mode; Precise mode keeps the explicit, checked wording, which is what SciSpeech-Bench scores (disclosed in both READMEs). Saved per-paper "full" (the old default) loads as Auto.
 - **2026-10-21 · Equation-quality block (agent):**
   - **Second reading of the page:** the reader model transcribes each equation crop; agreement confirms Docling's LaTeX; on disagreement the PDF text layer's bag of symbols picks the reading with fewer symbols off; a tie keeps Docling's and marks it disputed (same symbols = structure only). A reading only the vision model produced is used only when it is within 20 % (at least 2 symbols) of the text layer's bag. Springer-only confusables: 0 = prime, ϵ = ∈ (their fonts encode them so).
   - **Comparator equivalences, only for what prints the same:** parentheses around a one-token argument of an operator name, where an evaluation bar's or a bracket's script attaches, operator names vs `\operatorname`/`\mathrm`. Not added: `X|_{Z=0}` vs `X(Z=0)` (a different notation).
@@ -374,3 +379,10 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - Keep it under ~400 lines. Move finished narrative (what was done, what was learned) to `docs/DEVLOG.md` (append-only; it feeds the write-up).
 - Dates are absolute (YYYY-MM-DD). Note "unverified" next to anything not yet checked.
 - Prompts live in `docs/prompts/`: `kickoff.md` (first message at kickoff) and `followups.md` (checkpoint, resume, iterate, unattended, ship).
+
+## 2026-10-21 evening: the listening check (with the user)
+
+- **The user's ears found what no metric did.** 30 clips rendered exactly as the app plays them, on a private page with a note per clip; 18 notes came back. Most were about equation wording: a scientist does not say "sub", "open parenthesis" or "d-th power", says "where" for the comma before a condition, "times" after a fraction, "the concentration of A" for [A] and "the derivative of … with respect to time" for d[A]/dt. Long equations (35 s and 106 s) were "way too long to keep following".
+- **Exact and natural are different texts.** The gate needs the explicit wording to check a narration; a listener wants less. So the checked text stays explicit (Precise mode, what the benchmark scores) and the app speaks a deterministic rewrite of it by default. Auto mode replaces readings over 50 words with the labeled AI summary.
+- **The voice's phonemizer decides small things.** A lone "a" is the article (panel "Figure 1 a" became "uh"), an all-caps "SMILES" is spelled out, "N-vinylcarbazole" gets a short i while "N vinyl carbazole" gets the dictionary's long one. Checking misaki's phonemes before asking the user made most fixes one try.
+- **Some bugs were visible without listening:** citation ranges with a baseline dash ("12-16" read as "to") and markers the sentence splitter moved to the next sentence ("19 Another…"). Round 2 gives the user Before/After pairs and two A/B picks (a weak final R; "multi-fidelity").
