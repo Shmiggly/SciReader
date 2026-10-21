@@ -12,7 +12,7 @@
 
 **Interim note (00:47 EDT).**
 - **Works now:** open a paper (drop/pick, arXiv, sample list, recent list) → Docling parse (~100 s first time, cached after) → PDF with click-to-read, sentence + word highlight, focus mode (on by default), auto-follow with "Back to reading position", prefetch + disk audio cache, outline sidebar, skipping of page furniture/affiliations/bibliography, superscript and bracket citation markers dropped from speech, equations spoken with SRE (from Docling's OCR LaTeX). Screenshot: `docs/screenshots/m2-reader-focus-highlight.jpg`.
-- **In progress:** science normalizer + sentence splitter + lexicon (a subagent is writing them with ~100+ tests; a minimal fallback is in place until then).
+- **01:00 update:** science normalizer + splitter + 102-term lexicon are in (284 tests pass); model manager panel and `scripts/dev.ps1`/`setup.ps1` done; all 6 samples pre-parsed. Work pauses from ~01:00 to 02:10 EDT. **Left for M3:** verify TTS with the real normalizer in the browser, tag `m3`, final version of this section.
 - **How to launch (dev):** two terminals: `uv run --directory backend uvicorn scireader.main:app --port 8765` and `npm --prefix frontend run dev`, then open http://localhost:5173. (`scripts/dev.ps1` comes in M3.)
 - **Decisions to review:** author list skipped by default along with affiliations (toggle in ⚙ Reading settings); captions are read at their layout position until figure narration (M4) moves them to first mention; speed uses the browser's pitch-preserving playbackRate (instant, no re-synthesis).
 
