@@ -5,6 +5,7 @@ import { AiPanel } from "./AiPanel";
 import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
+import { ReflowSettings, ReflowView } from "./ReflowView";
 import { Pronunciation } from "./Pronunciation";
 import {
   type EqMode,
@@ -36,6 +37,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   const [showModels, setShowModels] = useState(false);
   const [showAi, setShowAi] = useState(false);
   const [showPron, setShowPron] = useState(false);
+  const view = useStore((s) => s.view);
 
   // Restore per-paper settings and offer to continue.
   useEffect(() => {
@@ -74,6 +76,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
           ← Papers
         </button>
         <div className="doc-title" title={doc.title}>{doc.title}</div>
+        <button className="ghost" onClick={() => useStore.setState({ view: view === "pdf" ? "text" : "pdf" })} title="Switch between the PDF and a clean text view">{view === "pdf" ? "¶ Text view" : "▤ PDF view"}</button>
         <button className="ghost" onClick={() => setShowAi((v) => !v)} aria-pressed={showAi}>✦ AI</button>
         <button className="ghost" onClick={() => setShowPron(true)}>Aa Pronunciation</button>
         <button className="ghost" onClick={() => setShowModels(true)}>▦ Models</button>
@@ -97,7 +100,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
               <button className="ghost" onClick={() => setResume(null)}>Dismiss</button>
             </div>
           )}
-          <PdfView />
+          {view === "text" ? <ReflowView /> : <PdfView />}
         </main>
         {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
         {showAi && !showSettings && <AiPanel onClose={() => setShowAi(false)} />}
@@ -251,6 +254,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           Describe figures at first mention (AI, labeled)
         </label>
       </section>
+      <ReflowSettings />
       <section>
         <div className="panel-sub">Highlight colors</div>
         <div className="presets">

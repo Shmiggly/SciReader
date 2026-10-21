@@ -83,6 +83,8 @@ interface State {
   figuresOn: boolean;
   selection: string[] | null;
   eqRef: { blockId: string; sentenceId: string } | null;
+  view: "pdf" | "text";
+  reflow: { font: string; size: number; lineHeight: number; width: number };
   setDoc: (doc: Doc | null) => void;
   set: (p: Partial<State>) => void;
 }
@@ -117,6 +119,8 @@ export const useStore = create<State>((set) => ({
   figuresOn: true,
   selection: null,
   eqRef: null,
+  view: "pdf",
+  reflow: { font: "atkinson", size: 19, lineHeight: 1.7, width: 70 },
   setDoc: (doc) => {
     const index = new Map<string, Entry>();
     const order: string[] = [];
