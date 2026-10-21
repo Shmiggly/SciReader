@@ -45,6 +45,7 @@ _BASE = [
     ("Wh", "watt hour", "watt hours", "", "k"),
     ("Ah", "amp hour", "amp hours", "", "m"),
     ("cal", "calorie", "calories", "", "k"),
+    ("F", "farad", "farads", "", "mµμnp"),
 ]
 
 _SPECIAL = {
@@ -69,14 +70,19 @@ _SPECIAL = {
     "Pa s": ("pascal second", "pascal seconds"),
     "dB": ("decibel", "decibels"), "atm": ("atmosphere", "atmospheres"), "Torr": ("torr", "torr"),
     "mbar": ("millibar", "millibar"),
+    "cc": ("cubic centimeter", "cubic centimeters"),
+    # Text layers often split Å into "A" + a spacing ring (U+02DA) and use that ring for degrees.
+    "A˚": ("angstrom", "angstroms"), "A ˚": ("angstrom", "angstroms"),
+    "˚C": ("degree Celsius", "degrees Celsius"), "˚ C": ("degree Celsius", "degrees Celsius"),
+    "˚": ("degree", "degrees"),
 }
 
 # Expanded only after a number even though they are 2+ characters long.
 _NOT_BARE = {
     "min", "hr", "mol", "Pa", "Da", "ms", "ns", "ps", "fs", "cal", "Ah", "Wh", "Pa s", "mPa s",
-    "° C", "° F", "Ω", "Ω", "K", "mol %", "wt %", "vol %", "pM", "nA", "pA", "fM",
+    "° C", "° F", "Ω", "Ω", "K", "mol %", "wt %", "vol %", "pM", "nA", "pA", "fM", "cc", "mF", "pF",
 }
-_ALWAYS_BARE = {"%", "°", "Å", "Å", "‰", "℃", "℉"}
+_ALWAYS_BARE = {"%", "°", "Å", "Å", "‰", "℃", "℉", "˚"}
 
 UNITS: dict[str, Unit] = {}
 for _sym, _sg, _pl, _kind, _prefixes in _BASE:
@@ -93,7 +99,8 @@ for _sym, _u in list(UNITS.items()):
 
 # Single-character symbols must NOT be glued to a number ("112710A", "5A" panels, "1990s"),
 # except kelvin after a number >= 100 ("300K"; "10K polymers" means ten thousand).
-NEED_SPACE = {s for s in UNITS if len(s) == 1} - {"%", "°", "Å", "Å", "‰", "℃", "℉"}
+# ...and ohms glued to a number ("10Ω") are always ohms.
+NEED_SPACE = {s for s in UNITS if len(s) == 1} - {"%", "°", "Å", "Å", "‰", "℃", "℉", "˚", "Ω", "Ω"}
 
 _SYMS_SORTED = sorted(UNITS, key=len, reverse=True)
 _SYM_ALT = "|".join(re.escape(s) for s in _SYMS_SORTED)

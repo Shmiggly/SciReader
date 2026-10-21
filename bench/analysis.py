@@ -57,6 +57,7 @@ def _(ROOT, json, pd):
 
     items = _load("results/results.jsonl")
     units = pd.DataFrame(_load("results/units.jsonl"))
+    units_heldout = pd.DataFrame(_load("results/units_heldout_test.jsonl"))
     _pp = ROOT / "data" / "papers.json"
     papers = json.loads(_pp.read_text(encoding="utf-8")) if _pp.exists() else []
     COND_LABEL = {
@@ -75,7 +76,7 @@ def _(ROOT, json, pd):
                              "label": COND_LABEL.get(cond, cond), "result": r["result"],
                              "exact": r["result"] == "match", "faithful": r["result"] in ("match", "relaxed")})
     long = pd.DataFrame(rows)
-    return COND_LABEL, items, long, papers, units
+    return COND_LABEL, items, long, papers, units, units_heldout
 
 
 @app.cell
@@ -214,6 +215,45 @@ def _(ROOT, mo, plt, units):
         ])
     else:
         _out = mo.md("No units results yet.")
+    _out
+    return
+
+
+@app.cell
+def _(ROOT, mo, plt, units, units_heldout):
+    if len(units_heldout) and len(units):
+        _rows = [("Written by us\n(99 snippets)", units), (f"Held-out, real papers\n({len(units_heldout)} snippets)", units_heldout)]
+        _fig, _ax = plt.subplots(figsize=(6.5, 3.4), dpi=150)
+        for _i, (_name, _df) in enumerate(_rows):
+            _g, _s = 100 * _df.wrong_raw.mean(), 100 * _df.wrong_scireader.mean()
+            _ax.bar(_i - 0.18, _g, width=0.36, color="#9a9a9a", label="generic reader" if _i == 0 else None, zorder=2)
+            _ax.bar(_i + 0.18, _s, width=0.36, color="#2f5d8a", label="SciReader" if _i == 0 else None, zorder=2)
+            _ax.text(_i - 0.18, _g + 1.5, f"{_g:.0f}%", ha="center", fontsize=8.5)
+            _ax.text(_i + 0.18, _s + 1.5, f"{_s:.0f}%", ha="center", fontsize=8.5)
+        _ax.set_xticks([0, 1], [r[0] for r in _rows], fontsize=8.5)
+        _ax.set_ylabel("Mispronounced (%)")
+        _ax.set_ylim(0, 60)
+        _ax.set_title("Units and chemistry by sound: our snippets vs held-out text", fontsize=10.5, loc="left")
+        _ax.spines[["top", "right"]].set_visible(False)
+        _ax.grid(axis="y", color="#e6e6e6", zorder=0)
+        _ax.legend(frameon=False)
+        _fig.tight_layout()
+        _fig.savefig(ROOT / "figures" / "units_heldout.png")
+        _fig.savefig(ROOT / "figures" / "units_heldout.svg")
+        _out = mo.vstack([
+            mo.md(
+                "### Units and chemistry on held-out text\n"
+                f"The 99 snippets above were written by the people who wrote the normalizer, so SciReader's 0 % says little. "
+                f"Here, snippets are sampled automatically from the PDF text of {units_heldout.arxiv.nunique()} benchmark papers "
+                "that are neither app samples nor math papers; references by `phi4:14b`, corrected blind to SciReader's output "
+                "(`data/units_heldout_fixes.json`). A first sample (dev) was used to find and fix normalizer gaps; this one "
+                f"(test) was scored once, after the fixes. Generic reader **{units_heldout.wrong_raw.mean():.0%}** mispronounced, "
+                f"SciReader **{units_heldout.wrong_scireader.mean():.0%}**."
+            ),
+            _fig,
+        ])
+    else:
+        _out = mo.md("No held-out units results yet.")
     _out
     return
 
