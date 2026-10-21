@@ -23,7 +23,7 @@
 
 **2-minute test:** flagship from Recent → click a sentence on page 2 → Shift+→, F → page 5, the "Fig. 3b" sentence: the figure pops up after it ("panel b") → page 13: click equation 22's ✓ badge → ✦ AI → Explain → Aa Pronunciation: ▶ GPJet, type "G P jet", Save → ¶ Text view → ⚙ Export audiobook → ▦ Models: preview a voice. For `E`: open the photopolymerization review sample, play a sentence with "Eq. (2)", press E.
 
-**Your to-dos (~20 min):** (1) 30 blind ratings, from the repo folder `D:\Github\SciReader\SciReader`: `uv run --directory backend marimo run ../bench/rate.py` (don't open `bench/rating/items.json`); (2) skim `docs/writeup.md` and `docs/demo_script.md`; (3) Valency/Adaption prize rules (§9).
+**Done by the user (07:00):** the 30 blind ratings: naive 2.6, rules 3.8, SciReader 4.0 (now in the notebook, README and write-up). **Next:** a fresh session with the "Checkpoint" prompt from `docs/prompts/followups.md` (this session's context grew to ~650K tokens, which made every step expensive); then the user's feedback, polish, and M7 on Thursday. Still open: review of `docs/writeup.md` / `docs/demo_script.md`, Valency/Adaption prize rules (§9).
 
 **Decisions to review (details §5):** author list skipped by default; MinerU dropped; Explain works on the current sentence or a Shift+click range (no free text selection); chemistry spoken "F-E 2 O 3"; benchmark naive condition simulated from MathML glyph order; judge = phi4:14b (third family) because gemma is the gate's checker; I adjudicated the 30-item subset myself (you may want to spot-check `bench/data/adjudication.json`).
 
@@ -294,7 +294,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [x] M4 AI layer (tag `m4-ai`): verified equation narration + badges ✓, figure narration at first mention (panel-aware, popup, D for detail) ✓, Explain (colleague/Simpler) + Ask with citation chips ✓. Not done: summaries (first on the cut list), citation hover popups, E equation-reference popup (M6).
-- [x] M5 SciSpeech-Bench (tag `m5-bench`): 220 eqs / 24 papers, figure + marimo notebook + HTML export, units-by-sound; left: the user's 30 blind ratings, a manually adjudicated subset
+- [x] M5 SciSpeech-Bench (tag `m5-bench`): 220 eqs / 24 papers, figure + marimo notebook + HTML export, units-by-sound, 30-item manual adjudication, the user's 30 blind ratings
 - [x] M6: pronunciation review, E equation popup, citation hover, reflow view, audiobook export, scanned-PDF OCR, auto-pause, arXiv source mode (left: per-section voice/speed)
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
 
