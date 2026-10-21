@@ -204,3 +204,11 @@ select, input[type="text"], input:not([type]) {
 .chip { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); border-color: transparent; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qa-list { display: grid; gap: 10px; margin-bottom: 8px; }
 .qa .q { font-weight: 600; }
+
+/* Pronunciation review */
+.pron-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.pron-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 6px; }
+.pron-table td { border-top: 1px solid var(--border); padding: 6px; vertical-align: middle; }
+.pron-table input { width: 100%; min-width: 120px; }
+.nowrap { white-space: nowrap; }
+.button-like { text-decoration: none; color: inherit; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; }

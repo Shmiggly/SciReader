@@ -185,3 +185,89 @@ def put_app_settings(body: dict) -> dict:
 def _check(doc_id: str) -> None:
     if not re.fullmatch(r"[0-9a-f]{16}", doc_id):
         raise HTTPException(404, "Unknown document")
+
+
+# ---------------------------------------------------------------------------------------------
+# Pronunciation review and the user lexicon
+
+from ..speech.lexicon import Lexicon, LexiconEntry  # noqa: E402
+from ..speech.pipeline import get_lexicon  # noqa: E402
+from ..speech.review import candidates  # noqa: E402
+
+
+@router.get("/docs/{doc_id}/pronunciation")
+def pronunciation(doc_id: str) -> dict:
+    _check(doc_id)
+    doc = store.document(doc_id)
+    if doc is None:
+        raise HTTPException(404, "Not parsed yet")
+    return {"terms": candidates(doc, get_lexicon())}
+
+
+def _user_lexicon() -> Lexicon:
+    s = get_settings()
+    return Lexicon.load(s.lexicon_path, s.user_lexicon_path)
+
+
+@router.get("/lexicon")
+def lexicon_all() -> dict:
+    lx = get_lexicon()
+    return {"entries": [e.to_dict() for e in lx.entries], "user_count": len(lx.user_entries)}
+
+
+class EntryReq(BaseModel):
+    term: str
+    say_as: str
+    ipa: str | None = None
+    case_sensitive: bool = True
+    tags: list[str] = []
+    note: str = ""
+
+
+@router.put("/lexicon/user")
+def lexicon_put(req: EntryReq) -> dict:
+    if not req.term.strip() or not req.say_as.strip():
+        raise HTTPException(400, "Term and pronunciation are required")
+    lx = _user_lexicon()
+    entry = LexiconEntry.from_dict({**req.model_dump(), "source": "user"})
+    lx.add(entry)
+    lx.save_user(get_settings().user_lexicon_path)
+    return entry.to_dict()
+
+
+@router.delete("/lexicon/user/{term}")
+def lexicon_delete(term: str) -> dict:
+    lx = _user_lexicon()
+    ok = lx.remove(term)
+    lx.save_user(get_settings().user_lexicon_path)
+    return {"ok": ok}
+
+
+@router.get("/lexicon/export")
+def lexicon_export() -> FileResponse:
+    s = get_settings()
+    out = s.data_dir / "lexicon-export.json"
+    _user_lexicon().export(out, name="My SciReader pronunciations")
+    return FileResponse(out, media_type="application/json", filename="scireader-lexicon.json")
+
+
+class ImportReq(BaseModel):
+    lexicon: dict
+    decisions: dict[str, str] = {}  # term -> "mine" | "theirs"
+
+
+@router.post("/lexicon/import")
+def lexicon_import(req: ImportReq) -> dict:
+    entries = [LexiconEntry.from_dict(e, default_source="imported") for e in req.lexicon.get("entries", []) if e.get("term")]
+    if not entries:
+        raise HTTPException(400, "No entries found in that file")
+    lx = _user_lexicon()
+    conflicts = lx.merge([e for e in entries if req.decisions.get(e.term) != "mine"])
+    # Merge keeps the user's version on conflict; apply "take theirs" decisions explicitly.
+    for e in entries:
+        if req.decisions.get(e.term) == "theirs":
+            lx.add(e)
+    lx.save_user(get_settings().user_lexicon_path)
+    pending = [c for c in conflicts if c.term not in req.decisions]
+    return {"added": len(entries) - len(conflicts), "conflicts": [
+        {"term": c.term, "mine": c.mine.to_dict(), "theirs": c.theirs.to_dict()} for c in pending]}

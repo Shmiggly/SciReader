@@ -166,6 +166,11 @@ const ttsCache = new Map<string, Promise<TtsResult>>();
 let token = 0;
 let raf = 0;
 
+/** Forget fetched speech (e.g. after a lexicon change): the next play re-renders with the new pronunciations. */
+export function clearSpeechCache() {
+  ttsCache.clear();
+}
+
 function ttsUrl(sid: string): string {
   const { doc, voice, eqMode } = get();
   return `/api/tts/${doc!.id}/${sid}?voice=${encodeURIComponent(voice)}&eq_mode=${eqMode}`;

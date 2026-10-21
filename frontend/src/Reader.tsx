@@ -5,6 +5,7 @@ import { AiPanel } from "./AiPanel";
 import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
+import { Pronunciation } from "./Pronunciation";
 import {
   type EqMode,
   type FigMention,
@@ -32,6 +33,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showModels, setShowModels] = useState(false);
   const [showAi, setShowAi] = useState(false);
+  const [showPron, setShowPron] = useState(false);
 
   // Restore per-paper settings and offer to continue.
   useEffect(() => {
@@ -71,12 +73,14 @@ export function Reader({ onClose }: { onClose: () => void }) {
         </button>
         <div className="doc-title" title={doc.title}>{doc.title}</div>
         <button className="ghost" onClick={() => setShowAi((v) => !v)} aria-pressed={showAi}>✦ AI</button>
+        <button className="ghost" onClick={() => setShowPron(true)}>Aa Pronunciation</button>
         <button className="ghost" onClick={() => setShowModels(true)}>▦ Models</button>
         <button className="ghost" onClick={() => setShowSettings((v) => !v)} aria-pressed={showSettings}>
           ⚙ Reading settings
         </button>
       </header>
       {showModels && <ModelManager onClose={() => setShowModels(false)} />}
+      {showPron && <Pronunciation onClose={() => setShowPron(false)} />}
       <div className="reader-body">
         <Outline />
         <main className="center">
