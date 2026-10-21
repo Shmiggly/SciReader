@@ -98,6 +98,22 @@ def clean_latex(latex: str) -> str:
     return s
 
 
+def is_fragment(number: str | None, label: str | None, latex: str | None, bbox, others) -> bool:
+    """A sliver the parser split off a neighbouring equation (flagship p. 13: a lone "2 2" matrix beside two
+    radicals): no number, no label, nothing readable, and thinner than 20 pt or mostly inside another equation."""
+    if number or label or latex_has_content(latex):
+        return False
+    x0, y0, x1, y1 = bbox
+    if x1 - x0 < 20 or y1 - y0 < 6:
+        return True
+    area = (x1 - x0) * (y1 - y0)
+    for o in others:
+        ix, iy = min(x1, o[2]) - max(x0, o[0]), min(y1, o[3]) - max(y0, o[1])
+        if ix > 0 and iy > 0 and ix * iy >= 0.3 * area:
+            return True
+    return False
+
+
 def latex_has_content(latex: str | None) -> bool:
     if not latex:
         return False

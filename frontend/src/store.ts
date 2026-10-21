@@ -73,6 +73,8 @@ interface State {
   skips: Record<string, boolean>;
   announceSections: boolean;
   scale: number;
+  /** Zoom follows the width of the PDF area (on until the user zooms by hand). */
+  fitWidth: boolean;
   eqResults: Record<string, EqResult>;
   eqState: string;
   eqMessage: string;
@@ -110,6 +112,7 @@ export const useStore = create<State>((set) => ({
   skips: Object.fromEntries(Object.keys(SKIP_LABELS).map((k) => [k, true])),
   announceSections: true,
   scale: 1.4,
+  fitWidth: true,
   eqResults: {},
   eqState: "idle",
   eqMessage: "",
@@ -134,7 +137,7 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null, selection: null });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null, selection: null, fitWidth: true });
     narrated.clear();
   },
   set: (p) => set(p),

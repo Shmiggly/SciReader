@@ -6,7 +6,7 @@ import { ArxivSource } from "./ArxivSource";
 import { AudiobookExport } from "./Audiobook";
 import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
-import { PdfView } from "./PdfView";
+import { PdfView, ZoomBar } from "./PdfView";
 import { ReflowSettings, ReflowView } from "./ReflowView";
 import { Pronunciation } from "./Pronunciation";
 import {
@@ -78,6 +78,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
           ← Papers
         </button>
         <div className="doc-title" title={doc.title}>{doc.title}</div>
+        {view === "pdf" && <ZoomBar />}
         <button className="ghost" onClick={() => useStore.setState({ view: view === "pdf" ? "text" : "pdf" })} title="Switch between the PDF and a clean text view">{view === "pdf" ? "¶ Text view" : "▤ PDF view"}</button>
         <button className="ghost" onClick={() => setShowAi((v) => !v)} aria-pressed={showAi}>✦ AI</button>
         <button className="ghost" onClick={() => setShowPron(true)}>Aa Pronunciation</button>

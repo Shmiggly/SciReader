@@ -86,7 +86,7 @@ select, input[type="text"], input:not([type]) {
 .resume-banner span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .pdf-wrap { position: relative; flex: 1; min-height: 0; }
-.pdf-scroller { position: absolute; inset: 0; overflow: auto; background: var(--viewer-bg); padding: 16px 0 40px; outline: none; }
+.pdf-scroller { position: absolute; inset: 0; overflow: auto; background: var(--viewer-bg); padding: 16px 0 40px; outline: none; overflow-anchor: none; scrollbar-gutter: stable; }
 .pdf-page { position: relative; margin: 0 auto 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); cursor: pointer; overflow: hidden; }
 .pdf-page canvas { display: block; }
 .overlay { position: absolute; inset: 0; pointer-events: none; }
@@ -100,8 +100,8 @@ select, input[type="text"], input:not([type]) {
   border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow); font-size: 13px; line-height: 1.4; pointer-events: none;
 }
 .hover-tip-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 3px; }
-.zoom-bar { position: absolute; right: 18px; top: 10px; display: flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 3px 6px; box-shadow: var(--shadow); }
-.zoom-bar span { min-width: 44px; text-align: center; font-size: 12px; }
+.zoom-bar { display: flex; align-items: center; gap: 4px; }
+.zoom-bar span { min-width: 40px; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
 .zoom-bar button { padding: 2px 9px; }
 .back-to-reading { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--accent); color: #fff; border: none; border-radius: 20px; padding: 8px 18px; box-shadow: var(--shadow); }
 
@@ -162,11 +162,15 @@ select, input[type="text"], input:not([type]) {
 
 /* Equation badges and popover */
 .eq-layer { position: absolute; inset: 0; pointer-events: none; }
+/* Sizes match layoutBadges() in Equations.tsx: 70 x 19 px pills, 18 px icons. */
 .eq-badge {
-  position: absolute; pointer-events: auto; font-size: 11px; line-height: 1; padding: 3px 7px; border-radius: 10px;
+  position: absolute; pointer-events: auto; font-size: 11px; line-height: 1; width: 70px; padding: 3px 4px; border-radius: 10px;
   border: 1px solid #c9c4b8; background: #f4f2ed; color: #444; white-space: nowrap; cursor: pointer; z-index: 3;
 }
-.eq-badge.static { position: static; }
+.eq-badge.static { position: static; width: auto; padding: 3px 7px; }
+.eq-badge.compact { width: 18px; height: 18px; padding: 0; border-radius: 50%; font-weight: 700; }
+.eq-badge.compact .spinner { margin: 0; }
+.eq-target { position: absolute; border: 2px solid rgba(47, 93, 138, 0.55); border-radius: 5px; background: rgba(47, 93, 138, 0.05); pointer-events: none; }
 .eq-badge.verified { background: #e3f4e8; color: #1d5b32; border-color: #9fd3ae; }
 .eq-badge.uncertain { background: #fff4d6; color: #7a5600; border-color: #e8cf86; }
 .eq-badge.fallback { background: #eeeeee; color: #555; border-color: #ccc; }

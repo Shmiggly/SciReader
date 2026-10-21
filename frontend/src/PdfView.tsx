@@ -5,7 +5,7 @@ import * as pdfjs from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
-import { EquationBadge, EquationPopover } from "./Equations";
+import { type BadgeLayout, EquationBadge, EquationPopover, layoutBadges } from "./Equations";
 import { fitInScroller, useFitInScroller } from "./fit";
 import { PRESETS, closeFigure, figureDetail, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
@@ -27,6 +27,7 @@ export function PdfView() {
   const follow = useStore((s) => s.follow);
   const current = useStore((s) => s.current);
   const playing = useStore((s) => s.playing);
+  useStore((s) => s.fitWidth); // re-render, and so refit, when "Fit" is switched back on
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
@@ -43,12 +44,7 @@ export function PdfView() {
     });
     task.promise.then(
       (p) => {
-        if (cancelled) return;
-        setPdf(p);
-        // Fit width on first open.
-        const el = scroller.current;
-        const w = doc.pages[0]?.width ?? 612;
-        if (el) useStore.setState({ scale: Math.max(0.6, Math.min(2.5, (el.clientWidth - 48) / w)) });
+        if (!cancelled) setPdf(p);
       },
       (err) => {
         if (!cancelled) setLoadError(String(err));
@@ -60,11 +56,63 @@ export function PdfView() {
     };
   }, [doc.id]);
 
+  // Fit to width: refit whenever the PDF area changes size until the user zooms by hand. Side panels change it in a
+  // React render (checked after every render, so there is no frame at the old zoom); the window through the observer.
+  const fitNow = () => {
+    const el = scroller.current;
+    if (!el || !useStore.getState().fitWidth) return;
+    const s = Math.max(0.6, Math.min(2.5, (el.clientWidth - 48) / (doc.pages[0]?.width ?? 612)));
+    if (Math.abs(s - useStore.getState().scale) > 0.004) useStore.setState({ scale: s });
+  };
+  useLayoutEffect(fitNow);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => fitNow());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [doc]);
+
+  // A zoom change keeps the sentence being read (if on screen), else the top of the view, at the same place on screen.
+  // The spot is taken when the store changes, while the pages still have the old size.
+  const anchor = useRef<{ page: number; y: number; at: number } | null>(null);
+  useEffect(
+    () =>
+      useStore.subscribe((s, prev) => {
+        const el = scroller.current;
+        if (s.scale === prev.scale || !el) return;
+        const view = el.scrollTop;
+        const r = s.follow && s.current ? sentenceAt(s.current)?.s.rects[0] : undefined;
+        const rPage = r ? pageRefs.current[r[0]] : null;
+        if (r && rPage) {
+          const at = rPage.offsetTop + r[2] * prev.scale - view;
+          if (at >= 0 && at <= el.clientHeight) {
+            anchor.current = { page: r[0], y: r[2], at };
+            return;
+          }
+        }
+        const pages = pageRefs.current;
+        let i = 0;
+        while (i + 1 < pages.length && (pages[i + 1]?.offsetTop ?? Infinity) <= view) i++;
+        anchor.current = pages[i] ? { page: i, y: (view - pages[i]!.offsetTop) / prev.scale, at: 0 } : null;
+      }),
+    [],
+  );
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    const a = anchor.current;
+    anchor.current = null;
+    const pageEl = a ? pageRefs.current[a.page] : null;
+    if (el && a && pageEl) el.scrollTop = pageEl.offsetTop + a.y * scale - a.at;
+  }, [scale]);
+
+  const badges = useMemo(() => layoutBadges(doc, scale), [doc, scale]);
+
   // Hit-test index: page -> sentence rectangles.
   const hits = useMemo(() => {
     const m = new Map<number, HitRect[]>();
     for (const b of doc.blocks) {
-      if (b.type === "figure" || b.type === "table") continue;
+      if (b.type === "figure" || b.type === "table" || b.skip_reason === "junk") continue;
       for (const s of b.sentences) {
         for (const r of s.rects) {
           const arr = m.get(r[0]) ?? [];
@@ -105,7 +153,8 @@ export function PdfView() {
       programmaticScrollUntil = Date.now() + 900;
       el.scrollTo({ top: Math.max(0, top - el.clientHeight * 0.3), behavior: "smooth" });
     }
-  }, [current, follow, scale, pdf]);
+    // Not on zoom changes: the anchor above keeps the place, and a paused reader who scrolled away stays there.
+  }, [current, follow, pdf]);
 
   // Manual scrolling while reading stops following.
   useEffect(() => {
@@ -143,7 +192,7 @@ export function PdfView() {
       if (!ev.ctrlKey) return;
       ev.preventDefault();
       const s = useStore.getState().scale;
-      useStore.setState({ scale: Math.max(0.5, Math.min(3, s * (ev.deltaY < 0 ? 1.1 : 1 / 1.1))) });
+      useStore.setState({ scale: Math.max(0.5, Math.min(3, s * (ev.deltaY < 0 ? 1.1 : 1 / 1.1))), fitWidth: false });
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
@@ -163,11 +212,11 @@ export function PdfView() {
             pdf={pdf}
             hits={hits.get(p.index) ?? []}
             cites={cites.get(p.index) ?? []}
+            badges={badges}
             setRef={(el) => (pageRefs.current[p.index] = el)}
           />
         ))}
       </div>
-      <ZoomBar />
       {!follow && current && (playing || true) && (
         <button className="back-to-reading" onClick={() => useStore.setState({ follow: true })}>
           ↓ Back to reading position
@@ -177,14 +226,24 @@ export function PdfView() {
   );
 }
 
-function ZoomBar() {
+/** Zoom controls (in the top bar, so they never cover the page). */
+export function ZoomBar() {
   const scale = useStore((s) => s.scale);
-  const set = (v: number) => useStore.setState({ scale: Math.max(0.5, Math.min(3, v)) });
+  const fitWidth = useStore((s) => s.fitWidth);
+  const set = (v: number) => useStore.setState({ scale: Math.max(0.5, Math.min(3, v)), fitWidth: false });
   return (
-    <div className="zoom-bar" aria-label="Zoom">
+    <div className="zoom-bar" role="group" aria-label="Zoom">
       <button onClick={() => set(scale / 1.15)} title="Zoom out">−</button>
       <span>{Math.round(scale * 100)}%</span>
       <button onClick={() => set(scale * 1.15)} title="Zoom in">+</button>
+      <button
+        className={fitWidth ? "toggle on" : "toggle"}
+        onClick={() => useStore.setState({ fitWidth: true })}
+        aria-pressed={fitWidth}
+        title="Fit the page to the width of the view (follows the window and side panels)"
+      >
+        Fit
+      </button>
     </div>
   );
 }
@@ -197,10 +256,11 @@ interface PageProps {
   pdf: PDFDocumentProxy | null;
   hits: HitRect[];
   cites: { x0: number; y0: number; x1: number; y1: number; bib: string[] }[];
+  badges: BadgeLayout;
   setRef: (el: HTMLDivElement | null) => void;
 }
 
-function Page({ index, width, height, scale, pdf, hits, cites, setRef }: PageProps) {
+function Page({ index, width, height, scale, pdf, hits, cites, badges, setRef }: PageProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
@@ -322,7 +382,7 @@ function Page({ index, width, height, scale, pdf, hits, cites, setRef }: PagePro
     >
       <canvas ref={canvas} style={{ width: width * scale, height: height * scale }} />
       <Overlay page={index} scale={scale} />
-      <EquationLayer page={index} scale={scale} pageWidth={width * scale} />
+      <EquationLayer page={index} scale={scale} pageWidth={width * scale} badges={badges} />
       <FigureLayer page={index} scale={scale} pageWidth={width * scale} />
       <EqRefLayer page={index} scale={scale} pageWidth={width * scale} />
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
@@ -411,16 +471,20 @@ function HoverTip({ sid, x, y, pageWidth }: { sid: string; x: number; y: number;
   );
 }
 
-function EquationLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
+function EquationLayer({ page, scale, pageWidth, badges }: { page: number; scale: number; pageWidth: number; badges: BadgeLayout }) {
   const doc = useStore((s) => s.doc)!;
   const eqOpen = useStore((s) => s.eqOpen);
-  const eqs = useMemo(() => doc.blocks.filter((b) => b.type === "equation" && b.page === page), [doc, page]);
+  const [hot, setHot] = useState<string | null>(null);
+  const eqs = useMemo(() => doc.blocks.filter((b) => b.type === "equation" && b.page === page && badges.pos.has(b.id)), [doc, page, badges]);
   if (!eqs.length) return null;
   const open = eqs.find((b) => b.id === eqOpen);
+  // The equation a badge belongs to is outlined while the badge is hovered or its details are open.
+  const target = eqs.find((b) => b.id === hot) ?? open;
   return (
     <div className="eq-layer">
+      {target && <div className="eq-target" style={rectStyle([page, ...target.bbox], scale, 3)} />}
       {eqs.map((b) => (
-        <EquationBadge key={b.id} b={b} scale={scale} />
+        <EquationBadge key={b.id} b={b} pos={badges.pos.get(b.id)!} compact={badges.compact} onHover={setHot} />
       ))}
       {open && <EquationPopover b={open} scale={scale} pageWidth={pageWidth} />}
     </div>

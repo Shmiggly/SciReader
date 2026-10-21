@@ -116,7 +116,7 @@ def _verify_document(store: DocStore, doc_id: str, force: bool) -> None:
     models = ollama.models_for_jobs()
     reader, checker = models["reader"], models["checker"]
     blocks = doc["blocks"]
-    eqs = [(i, b) for i, b in enumerate(blocks) if b["type"] == "equation"]
+    eqs = [(i, b) for i, b in enumerate(blocks) if b["type"] == "equation" and b.get("skip_reason") != "junk"]
     res: dict = {} if force else results(store, doc_id)
     todo = [(i, b) for i, b in eqs if b["id"] not in res or res[b["id"]].get("verdict") in (None, "pending")]
     total = len(eqs)

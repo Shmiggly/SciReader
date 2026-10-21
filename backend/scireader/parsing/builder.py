@@ -15,7 +15,7 @@ from typing import Any, Callable
 
 from ..speech.math_speech import get_math_speech
 from ..speech.pipeline import expand_numbers, find_citations, get_lexicon, speak, split_sentences
-from .latex import clean_latex, equation_intro, extract_equation_number, latex_has_content, split_label
+from .latex import clean_latex, equation_intro, extract_equation_number, is_fragment, latex_has_content, split_label
 from .pdfchars import PdfChar, PdfText, align, rects_for_span, restore_hyphens, superscript_mask
 
 Progress = Callable[[str, float], None]
@@ -307,6 +307,10 @@ def build_document(
     section_id: str | None = None
     bib_counter = 0
     eq_counter = 0
+    eq_boxes: dict[int, list] = {}
+    for b in raw:
+        if b.type == "equation":
+            eq_boxes.setdefault(b.page, []).append(b.bbox)
 
     say("Building sentences", 0.78)
     for bi, b in enumerate(raw):
@@ -339,7 +343,10 @@ def build_document(
             if number is None:
                 m = re.search(r"\((\d{1,3}[a-z]?)\)\s*$", b.text.translate(SPRINGER_GLYPHS))
                 number = m.group(1) if m else None
-            eq_counter += 1
+            if is_fragment(number, eq_label, latex, b.bbox, [o for o in eq_boxes[b.page] if o is not b.bbox]):
+                block["skip_reason"] = "junk"  # not read, no badge, not checked
+            else:
+                eq_counter += 1
             block["latex"] = latex
             block["latex_raw"] = latex_raw
             block["eq_number"] = number

@@ -1,4 +1,4 @@
-from scireader.parsing.latex import clean_latex, split_label
+from scireader.parsing.latex import clean_latex, is_fragment, split_label
 
 
 def test_word_runs_join_but_symbol_products_with_subscripts_do_not():
@@ -24,3 +24,16 @@ def test_split_label_leaves_plain_equations_alone():
     # A word in the PDF text that the LaTeX doesn't repeat: nothing is stripped.
     assert split_label("E = m c ^ { 2 }", "Energy E ¼ mc 2") == (None, "E = m c ^ { 2 }")
     assert split_label("a b c = d", "Energy a b c = d") == (None, "a b c = d")
+
+
+def test_equation_fragments_are_recognized():
+    # Flagship p. 13: Docling split a 5.9 pt wide "2 2" matrix off the radicals of equation 9.
+    eq9 = [131.5, 312.1, 291.7, 341.1]
+    junk = r"\begin{matrix} 2 2 \end{matrix}"
+    assert is_fragment(None, None, junk, [239.0, 280.5, 244.9, 344.2], [eq9])
+    # Unreadable but real: a number, a label, or a box of its own keeps the block an equation.
+    assert not is_fragment("11", None, junk, [52.8, 383.2, 291.7, 470.6], [])
+    assert not is_fragment(None, "Electric field", "", [90.4, 271.2, 239.0, 299.7], [eq9])
+    assert not is_fragment(None, None, junk, [90.0, 400.0, 240.0, 430.0], [eq9])
+    assert is_fragment(None, None, "", [140.0, 315.0, 200.0, 335.0], [eq9])
+    assert not is_fragment(None, None, "E = m c ^ { 2 }", [239.0, 280.5, 244.9, 344.2], [eq9])
