@@ -38,9 +38,14 @@
 
 **Decisions to review (details §5):** strict gate; held-out protocol (dev/test, either chemistry convention, 6 non-prose snippets dropped); Valency/Adaption not pursued; author list skipped by default; MinerU dropped; Explain on sentences only; chemistry spoken "F-E 2 O 3"; judge phi4:14b; badge placement and the fragment rule.
 
+**Equations: diagnosis and first experiment (10:00–10:30; the user wants to iterate on equation quality)**
+- Why flagship equations fall back: mostly the parser's formula OCR. K¹ for K⁻¹ (eqs 27, 28, 30, 32; eq 27 is "verified" against the wrong LaTeX), τ_m/τ_r for τ_rr, ρ for p, V_f for V_j, γ and ϵ for y and ∈, "preious", "hgh"; the 3 unreadable are OCR garble. Then narrator slips (an invented fraction in eq 6, "P times e to the power" for Pe, the evaluation bar read as a subscript, "Theta" without "capital"), checker slips ("end exponent" → `^{\exp}`, Bo → B_0, hallucinated tails) and comparator gaps (`\cos(\psi)` vs `\cos\psi`, `\left.\Theta\right|` vs `\Theta|`).
+- Experiment: qwen3.5:9b vision transcribing each equation crop (58 s for 32) agrees with Docling on 12, gives parseable LaTeX for all 3 unreadable, and on most of the 17 disagreements matches the page (K⁻¹, τ_rr, V_j, p, y ∈ R^d, 1:n, high, previous). It errs on eq 3 (θ_ji for θ_jl) and eq 9 ("E l_t" for E′_t). Both readers see "cos cos"/"sin sin" in eqs 18–20, as does the text layer. Scripts and results: `D:\scratch\eq-second-reading\` (`vlm_ocr.py`, `eqdiag.py`, `vlm_qwen3.5_9b.json`).
+- Plan for a fresh session: (1) a second reading of every equation crop by the vision model: agreement means "source confirmed"; on disagreement pick by the PDF text layer's symbols (Springer glyphs mapped), else keep Docling and flag it; (2) comparator equivalences (function-argument parentheses, `\left.X\right|`, evaluation bar); (3) narrator and checker prompt fixes (capital Greek; "end subscript/exponent" are not symbols), which change cached calls, so the benchmark needs a GPU re-run and the docs new numbers; (4) measure OCR accuracy against arXiv source on the sample papers (source-mode alignment gives ground truth).
+
 **Next**
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
-2. Your review: `docs/writeup.md` (913 words, trim to one page), `README.md`, and the privacy question in §9.
+2. **Equation block in a fresh session after 12:10** (the plan above). Your review: `docs/writeup_onepage.md` (574-word draft of the one-pager; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
 3. Later, when you say so: the video (update the demo script numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 
 ---
