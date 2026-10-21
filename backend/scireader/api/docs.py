@@ -284,7 +284,7 @@ from .. import audiobook  # noqa: E402
 
 
 @router.post("/docs/{doc_id}/audiobook")
-def audiobook_start(doc_id: str, voice: str = "af_heart", eq_mode: str = "full") -> dict:
+def audiobook_start(doc_id: str, voice: str = "af_heart", eq_mode: str = "auto") -> dict:
     _check(doc_id)
     if store.document(doc_id) is None:
         raise HTTPException(404, "Not parsed yet")

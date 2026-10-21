@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import threading
 from collections import OrderedDict
+from functools import lru_cache
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from ..parsing.latex import equation_intro
 from ..speech.lexicon import strip_markup
+from ..speech.math_speech import get_math_speech
+from ..speech.math_words import natural, prepare_for_rules
 from ..speech.pipeline import speak
 from ..tts.engine import audio_path, get_engine, registry, synth_cached
 from .docs import _check, store
@@ -49,8 +52,22 @@ def invalidate(doc_id: str | None = None) -> None:
             _cache.pop(doc_id, None)
 
 
+LONG_WORDS = 50  # in Auto mode, a longer reading is replaced by the labeled AI summary (user: "too long to follow")
+
+
+@lru_cache(maxsize=4096)
+def _rules_natural(latex: str) -> str | None:
+    """The rule-based reading of LaTeX prepared for natural wording (an explicit product after a fraction)."""
+    prepared = prepare_for_rules(latex)
+    return get_math_speech().speak(prepared) if prepared != latex else None
+
+
 def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
-    """Full: verified AI narration if available, else the rule-based reading. Brief: labeled AI summary.
+    """What is said for an equation in a reading mode.
+
+    auto (default): the natural wording of the verified AI narration, else of the rule-based reading; a reading longer
+    than LONG_WORDS words is replaced by the labeled AI summary. full: the same without the length limit. precise:
+    the explicit wording ("sub", "open paren"), exactly as checked. brief: the labeled AI summary. skip: the label.
 
     Only an exact round trip ("verified") is spoken as AI. "Uncertain" means the grouping differs, which is
     where LLM narrations go silently wrong, so it gets the rule-based reading like a failed check."""
@@ -60,17 +77,41 @@ def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
         return f"{label}."
     if mode == "brief" and ai.get("brief"):
         return f"{label}. AI summary: {ai['brief'].rstrip('.')}."
-    if ai.get("verdict") == "verified" and ai.get("speech_ai"):
-        return f"{label}: {ai['speech_ai'].rstrip('.')}."
+    verified = ai.get("speech_ai") if ai.get("verdict") == "verified" else None
     # The rule-based reading of the source LaTeX chosen after the second reading of the page, once there is one.
-    speech = ai["speech_rules"] if "source" in ai else block.get("speech_rules")
-    if not speech:
+    rules = ai["speech_rules"] if "source" in ai else block.get("speech_rules")
+    if mode == "precise":
+        speech = verified or rules
+        return f"{label}: {speech.rstrip('.')}." if speech else f"{label}."
+    latex = (ai.get("latex") if "source" in ai else block.get("latex")) or ""
+    if verified:
+        speech = natural(verified, latex)
+    elif rules:
+        speech = natural(_rules_natural(latex) or rules, latex)
+    else:
         return f"{label}."
+    speech = speech.rstrip(".")
+    if mode == "auto" and len(speech.split()) > LONG_WORDS:
+        if ai.get("brief"):
+            return f"{label}, a long equation. AI summary: {ai['brief'].rstrip('.')}."
+        return f"{label}, a long equation; it is shown on the page."
     return f"{label}: {speech}."
 
 
+@router.get("/docs/{doc_id}/equations/{block_id}/spoken")
+def equation_spoken_text(doc_id: str, block_id: str, eq_mode: str = "auto") -> dict:
+    """The words an equation gets in a reading mode, without synthesizing them (for the equation popover)."""
+    _check(doc_id)
+    doc = store.document(doc_id)
+    block = next((b for b in (doc or {}).get("blocks", []) if b["id"] == block_id and b["type"] == "equation"), None)
+    if block is None:
+        raise HTTPException(404, "Unknown equation")
+    ai = (store.read_json(doc_id, "equations.json") or {}).get(block_id)
+    return {"spoken": strip_markup(equation_spoken(block, eq_mode, ai))}
+
+
 @router.get("/tts/{doc_id}/{sentence_id}")
-def tts(doc_id: str, sentence_id: str, voice: str = "af_heart", eq_mode: str = "full") -> dict:
+def tts(doc_id: str, sentence_id: str, voice: str = "af_heart", eq_mode: str = "auto") -> dict:
     _check(doc_id)
     by_id, speech = _indexed(doc_id)
     if sentence_id not in by_id:

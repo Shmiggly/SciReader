@@ -212,9 +212,15 @@ CASES = [
     ("Eq. (3)", "Equation 3"),
     ("Eqs. (3) and (4)", "Equations 3 and 4"),
     ("Eq. 3", "Equation 3"),
-    ("Fig. 3b", "Figure 3 b"),
-    ("Figure 3(b)", "Figure 3 b"),
-    ("Fig. 3a–c", "Figure 3 a to c"),
+    ("Fig. 3b", "Figure 3 B"),
+    ("Figure 3(b)", "Figure 3 B"),
+    ("Fig. 3a–c", "Figure 3 A to C"),  # panel letters as letter names: a lone "a" is read as the article
+    ("additive manufacturing (AM) technologies", "additive manufacturing, AM, technologies"),
+    ("known as melt electro-writing (MEW).", "known as melt electro-writing, MEW."),
+    ("Stress (MPa)", "Stress (megapascals)"),
+    ("most type-I photoinitiators", "most type-one photoinitiators"),
+    ("Phase II and Class IV", "Phase two and Class four"),
+    ("formula [-(CH2)11C(O)NH-]n as shown", "formula C H 2, 11, C, O, N H, n as shown"),
     ("Table 2", "Table 2"),
     ("Sec. 2.3", "Section 2.3"),
     ("as in Ref. [12]", "as in Reference [12]"),
@@ -386,3 +392,18 @@ def test_speed_400_sentences():
     r = normalize(text)
     assert time.perf_counter() - t0 < 1.0
     assert "gigapascals" in r.spoken
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("additive manufacturing (AM) technologies", "additive manufacturing, A-M, technologies"),
+        ("a (meth)acrylate monomer", "a methacrylate monomer"),
+        ("SMILES strings in log10Hz at 50 Hz", "smiles strings in log ten hertz at 50 hertz"),
+        ("NVK = N-vinylcarbazole", "NVK equals N vinyl carbazole"),
+    ],
+)
+def test_shipped_lexicon_cases(text, expected):
+    from scireader.speech.lexicon import Lexicon
+
+    assert normalize(text, lexicon=Lexicon.load()).spoken == expected

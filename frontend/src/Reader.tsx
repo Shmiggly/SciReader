@@ -48,7 +48,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
         const p: Partial<ReturnType<typeof useStore.getState>> = {};
         if (st.speed) p.speed = st.speed;
         if (st.voice) p.voice = st.voice;
-        if (st.eq_mode) p.eqMode = st.eq_mode as EqMode;
+        if (st.eq_mode) p.eqMode = (st.eq_mode === "full" ? "auto" : st.eq_mode) as EqMode;
         useStore.setState(p);
         if (st.position?.sentence_id && sentenceAt(st.position.sentence_id)) {
           setResume(st.position);
@@ -214,7 +214,9 @@ function PlaybackBar() {
         <label title="How display equations are read">
           <span className="ctl-label">Equations</span>
           <select value={eqMode} onChange={(ev) => setVoiceOrMode({ eqMode: ev.target.value as EqMode })}>
-            <option value="full">Full</option>
+            <option value="auto">Auto (long ones summarized)</option>
+            <option value="full_all">Full</option>
+            <option value="precise">Precise (as checked)</option>
             <option value="brief">Brief (AI)</option>
             <option value="skip">Skip</option>
           </select>

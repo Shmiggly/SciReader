@@ -3,7 +3,9 @@ import { create } from "zustand";
 import { api, type Block, type Doc, type Sentence, type TtsResult, type TtsWord } from "./api";
 import type { EqResult } from "./Equations";
 
-export type EqMode = "full" | "brief" | "skip";
+// "auto": natural wording, long equations as their AI summary; "full_all": natural wording at any length;
+// "precise": the explicit wording the gate checks ("sub", "open paren"). A saved "full" (the old default) loads as "auto".
+export type EqMode = "auto" | "full_all" | "precise" | "brief" | "skip";
 
 export const SKIP_LABELS: Record<string, string> = {
   page_furniture: "Page headers, footers, page numbers",
@@ -105,7 +107,7 @@ export const useStore = create<State>((set) => ({
   speed: 1,
   voice: "af_heart",
   volume: 1,
-  eqMode: "full",
+  eqMode: "auto",
   focus: true,
   follow: true,
   preset: "sun",

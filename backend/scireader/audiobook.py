@@ -26,7 +26,7 @@ def status(doc_id: str) -> dict:
         return dict(_status.get(doc_id, {"state": "idle"}))
 
 
-def start(store: DocStore, doc_id: str, voice: str, eq_mode: str = "full") -> dict:
+def start(store: DocStore, doc_id: str, voice: str, eq_mode: str = "auto") -> dict:
     with _lock:
         if _status.get(doc_id, {}).get("state") == "running":
             return dict(_status[doc_id])

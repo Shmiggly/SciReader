@@ -424,6 +424,11 @@ def build_document(
                     drop.append((c0 - s0, c1 - s0))
                     citations.append({"sentence_id": sid, "span": [c0 - s0, c1 - s0], "bib_ids": [f"bib{n}" for n in nums],
                                       "rects": _rects(mapped, c0, c1)})
+            lead = _leading_citation(stext, text[:s0]) if b.type in ("paragraph", "abstract", "list_item") else None
+            if lead and not any(a < lead[1] and lead[0] < z for a, z in drop):
+                drop.append(lead[:2])
+                citations.append({"sentence_id": sid, "span": list(lead[:2]), "bib_ids": [f"bib{n}" for n in lead[2]],
+                                  "rects": _rects(mapped, s0 + lead[0], s0 + lead[1])})
             if b.skip_reason is None or b.type == "caption":
                 norm = speak(stext, drop, lexicon)
                 spoken = norm.spoken
@@ -505,6 +510,24 @@ def _word_boxes(stext: str, mapped: list[PdfChar | None], s0: int) -> list:
     return out
 
 
+_LEAD_CITE = re.compile(r"^(\d{1,3}(?:\s?[,–-]\s?\d{1,3})*)\s+(?=([A-Z][a-z]+)\b)")
+
+
+def _leading_citation(stext: str, before: str) -> tuple[int, int, list[int]] | None:
+    """A citation marker the splitter moved to the start of the next sentence ("…language processing.19 Another
+    approach…" or "data.1-3 The result"): a bare number or range, after a sentence end, before a capitalized word
+    that is not a unit."""
+    from ..speech.en.units import UNITS
+
+    m = _LEAD_CITE.match(stext)
+    if not m or not re.search(r"[.?!][)\]]?\s*$", before) or m.group(2) in UNITS:
+        return None
+    nums = expand_numbers(m.group(1).replace(" ", ""))
+    if not nums or not all(0 < x < 1000 for x in nums):
+        return None
+    return 0, m.end(), nums
+
+
 def _superscript_citations(text: str, sup: list[bool]) -> list[tuple[int, int, list[int]]]:
     """Runs of superscripted digits/commas/dashes (e.g. 'printing12,13' or 'level 18 .') → citation spans."""
     out = []
@@ -513,8 +536,16 @@ def _superscript_citations(text: str, sup: list[bool]) -> list[tuple[int, int, l
     while i < n:
         if sup[i] and text[i].isdigit():
             j = i
-            while j < n and (sup[j] and (text[j].isdigit() or text[j] in ",–-") or (text[j] == " " and j + 1 < n and sup[j + 1])):
+            # A dash or comma between superscript digits belongs to the marker even when its own glyph sits on the
+            # baseline ("12-16" was spoken "to").
+            while j < n and (sup[j] and (text[j].isdigit() or text[j] in ",–-") or (text[j] == " " and j + 1 < n and sup[j + 1])
+                             or (text[j] in ",–-" and j + 1 < n and sup[j + 1] and text[j + 1].isdigit())):
                 j += 1
+            # ...and so do digits glued before it ("1-3" with only the 3 detected was spoken "1 to").
+            while i >= 2 and text[i - 1] in ",–-" and text[i - 2].isdigit():
+                i -= 2
+                while i > 0 and text[i - 1].isdigit():
+                    i -= 1
             run = text[i:j].strip(" ,–-")
             nums = expand_numbers(run.replace(" ", ""))
             if nums and all(0 < x < 1000 for x in nums):

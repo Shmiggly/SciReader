@@ -1150,6 +1150,130 @@
       ],
       "source": "shipped",
       "note": "Element symbol used as a word (\"Si wafer\"); the voice would say 'see'."
+    },
+    {
+      "term": "SMILES",
+      "say_as": "smiles",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "cheminformatics"
+      ],
+      "source": "shipped",
+      "note": "said as the word (user, 2026-10-21 listening check)"
+    },
+    {
+      "term": "Hz",
+      "say_as": "hertz",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": "also without a number"
+    },
+    {
+      "term": "kHz",
+      "say_as": "kilohertz",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": ""
+    },
+    {
+      "term": "MHz",
+      "say_as": "megahertz",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": ""
+    },
+    {
+      "term": "GHz",
+      "say_as": "gigahertz",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": ""
+    },
+    {
+      "term": "log10Hz",
+      "say_as": "log ten hertz",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "units"
+      ],
+      "source": "shipped",
+      "note": "a frequency axis in log10(Hz)"
+    },
+    {
+      "term": "(meth)acrylate",
+      "say_as": "methacrylate",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "polymers",
+        "monomers"
+      ],
+      "source": "shipped",
+      "note": "one word (user)"
+    },
+    {
+      "term": "(meth)acrylates",
+      "say_as": "methacrylates",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "polymers",
+        "monomers"
+      ],
+      "source": "shipped",
+      "note": "one word (user)"
+    },
+    {
+      "term": "(meth)acrylic",
+      "say_as": "methacrylic",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "polymers",
+        "monomers"
+      ],
+      "source": "shipped",
+      "note": ""
+    },
+    {
+      "term": "N-vinylcarbazole",
+      "say_as": "N vinyl carbazole",
+      "ipa": null,
+      "case_sensitive": true,
+      "tags": [
+        "monomers"
+      ],
+      "source": "shipped",
+      "note": "vinyl with a long i (user)"
+    },
+    {
+      "term": "multifidelity",
+      "say_as": "multi-fidelity",
+      "ipa": null,
+      "case_sensitive": false,
+      "tags": [
+        "ml"
+      ],
+      "source": "shipped",
+      "note": "the joined word was mispronounced (user)"
     }
   ]
 }

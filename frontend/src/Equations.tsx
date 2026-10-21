@@ -1,5 +1,5 @@
 // Verified equation narration in the UI: background polling, badges on the PDF, and the detail popover.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import { api, type Block, type Doc } from "./api";
@@ -225,6 +225,21 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
   }
   const label = (b.eq_number ? `Equation ${b.eq_number}` : "Equation") + (b.eq_label ? ` · ${b.eq_label}` : "");
   const used = st === "verified" ? res?.speech_ai : eqRules(b, res);
+  // The words actually spoken in the current reading mode (natural wording, long equations summarized in Auto).
+  const docId = useStore((s) => s.doc?.id);
+  const eqMode = useStore((s) => s.eqMode);
+  const [spoken, setSpoken] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (docId)
+      api.get<{ spoken: string }>(`/api/docs/${docId}/equations/${b.id}/spoken?eq_mode=${eqMode}`).then(
+        (r) => live && setSpoken(r.spoken),
+        () => live && setSpoken(null),
+      );
+    return () => {
+      live = false;
+    };
+  }, [docId, b.id, eqMode, res?.verdict, res?.speech_ai]);
   const left = Math.max(8, Math.min(b.bbox[0] * scale, pageWidth - 470));
   const last = res?.attempts?.[res.attempts.length - 1];
   const src = res?.source;
@@ -238,7 +253,7 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
       <div className="eq-katex" dangerouslySetInnerHTML={{ __html: html }} />
       <div className="eq-field">
         <div className="eq-field-label">Spoken now {st === "verified" ? "(AI narration, checked)" : "(rule-based reading)"}</div>
-        <div>{used || "“" + label + "” only: no reading could be produced."}</div>
+        <div>{spoken ?? (used || "“" + label + "” only: no reading could be produced.")}</div>
       </div>
       {st === "verified" && <div className="muted small">An independent model ({res?.models?.checker}) wrote this narration back as LaTeX, and it matched the equation exactly.</div>}
       {st === "uncertain" && (

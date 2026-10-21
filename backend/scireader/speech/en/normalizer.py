@@ -116,6 +116,8 @@ def _speak_ref_body(body: str) -> str:
     s = s.replace("(", " ").replace(")", " ").replace("&", "and")
     s = re.sub(r"(?<=\d)(?=[a-zA-Z])", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
+    # Panel letters are letter names: the voice reads a lone "a" as the article ("Figure 1 uh").
+    s = re.sub(r"(?<![\w])([a-z])(?![\w])", lambda m: m.group(1).upper(), s)
     return s.replace(" ,", ",")
 
 
@@ -197,6 +199,63 @@ def _rule_chemistry(text: str, sp: _Spans) -> None:
         spoken = CH.speak_formula(m.group("body"), m.group("charge") or "")
         if spoken and spoken != m.group():
             sp.add(m.start(), m.end(), spoken)
+
+
+# A polymer repeat unit such as "[-(CH2)11C(O)NH-]n": each group is followed by a short pause (a comma) before the
+# reading goes on ("C H 2, 11, C, O, N H, n"); bond dashes and the brackets are not spoken.
+_REPEAT_UNIT_RE = re.compile(r"(?<!\S)\[?[-–—]?(?:\([A-Za-z0-9]+\)\d*|[A-Z][a-z]?\d*|[-–—=])+[-–—]?\]?n?(?=[\s,.;:]|$)")
+_REPEAT_PART_RE = re.compile(r"\(([A-Za-z0-9]+)\)(\d*)|([A-Z][a-z]?\d*)|(n)$")
+
+
+def _rule_repeat_units(text: str, sp: _Spans) -> None:
+    for m in _REPEAT_UNIT_RE.finditer(text):
+        tok = m.group().rstrip()
+        if "(" not in tok or sum(c.isupper() for c in tok) < 2 or not ("[" in tok or tok.startswith(("-", "–"))):
+            continue
+        words: list[str] = []
+        run: list[str] = []
+        for p in _REPEAT_PART_RE.finditer(tok):
+            if p.group(3):
+                run.append(p.group(3))
+                continue
+            if run:
+                words.append(CH.speak_formula("".join(run), "") or " ".join(run))
+                run = []
+            if p.group(1):
+                words.append(CH.speak_formula(p.group(1), "") or p.group(1))
+                if p.group(2):
+                    words.append(p.group(2))
+            elif p.group(4):
+                words.append("n")
+        if run:
+            words.append(CH.speak_formula("".join(run), "") or " ".join(run))
+        if len(words) >= 2:
+            sp.add(m.start(), m.start() + len(tok), ", ".join(words))
+
+
+# "type-I photoinitiators", "Phase II": Roman numerals after a kind word are numbers.
+_ROMAN_KIND_RE = re.compile(r"(?<![\w])(?:[Tt]ype|[Cc]lass|[Gg]rade|[Ss]tage|[Pp]hase)[- ](?P<num>IV|I{1,3})(?![\w])")
+_ROMAN = {"I": "one", "II": "two", "III": "three", "IV": "four"}
+
+
+def _rule_roman_kinds(text: str, sp: _Spans) -> None:
+    for m in _ROMAN_KIND_RE.finditer(text):
+        sp.add(m.start("num"), m.end("num"), _ROMAN[m.group("num")])
+
+
+# "additive manufacturing (AM) technologies": a spoken pause around a parenthesized acronym, as a speaker would make.
+_PAREN_ACRONYM_RE = re.compile(r"(?P<open> \()(?P<acro>[A-Z][A-Za-z0-9\-]{1,9})(?P<close>\))(?=[\s,.;:]|$)")
+
+
+def _rule_paren_acronyms(text: str, sp: _Spans) -> None:
+    for m in _PAREN_ACRONYM_RE.finditer(text):
+        acro = m.group("acro")
+        # Acronyms are capitals (a plural "s" allowed); "MPa" or "kHz" in parentheses is a unit.
+        if sum(c.isupper() for c in acro) < 2 or not re.fullmatch(r"[A-Z0-9\-]+s?", acro):
+            continue
+        after = text[m.end():m.end() + 1]
+        sp.add_group([(m.start("open"), m.end("open"), ", "),
+                      (m.start("close"), m.end("close"), "" if after in ",.;:" else ",")])
 
 
 _NUM_BEFORE_RE = re.compile(
@@ -466,8 +525,11 @@ def _rule_greek(text: str, sp: _Spans) -> None:
 _RULES = (
     _rule_refs,
     _rule_abbreviations,
+    _rule_roman_kinds,
+    _rule_paren_acronyms,
     _rule_scientific,
     _rule_isotopes,
+    _rule_repeat_units,
     _rule_chemistry,
     _rule_units,
     _rule_ranges,

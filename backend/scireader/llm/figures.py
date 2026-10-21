@@ -153,11 +153,9 @@ def describe(store: DocStore, doc_id: str, doc: dict, key: str, detail: bool = F
 def spoken_for(entry: dict) -> str:
     panels = entry.get("panels") or []
     who = f"{entry['label']}, panel{'s' if len(panels) > 1 else ''} {' and '.join(panels)}" if panels else entry["label"]
-    cap = entry.get("caption_part") or ""
     desc = entry.get("description")
-    parts = [f"{who}. {cap}".strip()]
-    if desc:
-        parts.append(f"AI description of {who}: {desc}")
+    # With a description, go straight to it after the label (user's listening check); the caption is the fallback.
+    parts = [f"{who}.", f"AI description: {desc}"] if desc else [f"{who}. {entry.get('caption_part') or ''}".strip()]
     return " ".join(p if p.endswith(".") else p + "." for p in parts)
 
 
