@@ -45,3 +45,4 @@ Thumbs.db
 .idea/
 *.log
 bench/rating/audio/
+bench/__marimo__/
