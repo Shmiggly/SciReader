@@ -4,36 +4,36 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 03:00 EDT (M5 running, M6 mostly done)
+**Last updated:** 2026-10-21 03:25 EDT (M0–M6 done; paused)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written ~03:00 EDT Wed (unattended run since 00:21; paused 01:00–02:10).**
+**Written 03:25 EDT Wed. Everything is pushed; tags `m0-setup`, `m2-slice`, `m3`, `m4-ai`, `m5-bench`, `m6-depth`.**
 
 **Summary**
-1. **Reader core (M0–M3, tag `m3`):** open (drop/pick, arXiv, samples, recent) → Docling parse (~100 s first time, cached) → real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume; science normalizer (284 tests) + your lexicon; page furniture, citations, references skipped.
-2. **AI layer (M4, tag `m4-ai`), all local through Ollama:** verified equation narration with badges (checking… / ✓ / ? / ✗ rules / unreadable) and a detail popover; figures pop up at first mention with panel-aware AI descriptions ("Fig. 3b" → only panel b), `D` for more detail; Explain (colleague / Simpler) and Ask with citation chips; spoken summaries (paper or section).
-3. **M6 so far:** pronunciation review screen (hear → type → preview → save, export/import with conflicts), `E` cited-equation popup, citation hover with the reference entry, clean text view (Atkinson Hyperlegible / OpenDyslexic), audiobook export (MP3 per section + playlist).
-4. **M5 SciSpeech-Bench (tag `m5-bench`):** 220 equations / 24 arXiv papers, judge phi4:14b. **Unverified LLM narration silently changes ~1 in 3 equations; the gate catches ~4 in 5 of those errors (faithful 64 % → 89 % on the 63 judge-capable equations; 4B 57 % → 87 %).** Units by sound: generic 47 % vs SciReader 0 % mispronounced. Figure `bench/figures/faithfulness.png`, marimo notebook `bench/analysis.py` + `bench/analysis.html`. Caveat: the judge is the ceiling over all 220 (naive 24 / rules 29 / LLM 32 / verified 38 %).
-5. **Your 15 minutes:** blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (30 clips are ready in `bench/rating/`; don't open `items.json`, it reveals which pipeline is which).
+1. **Reader (M0–M3):** open (drop/pick, arXiv, samples, recent) → Docling parse (flagship ~100 s first time, cached) → the real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume; science normalizer (284 tests) + your lexicon; furniture, citations, references skipped; scanned PDFs go through OCR automatically.
+2. **AI layer (M4), all local:** verified equation narration with badges and a detail popover; figures pop up at first mention with panel-aware descriptions (`D` = more detail); `E` reads a cited equation and resumes; Explain (colleague/Simpler), Ask, spoken summaries, all with citation chips.
+3. **Depth (M6):** pronunciation review screen (hear → type → preview → save; export/import), citation hover, clean text view (Atkinson Hyperlegible / OpenDyslexic), audiobook export (MP3 per section), auto-pause, arXiv source mode (exact LaTeX for equations).
+4. **SciSpeech-Bench (M5):** 220 equations / 24 arXiv papers. **Unverified local LLM narration silently changes ~1 in 3 equations; the gate catches ~4 in 5 errors (faithful 64 % → 89 %; 4B 57 % → 87 %); in a manual check of 30 narrations none of the gate-verified ones was wrong.** Units by sound: generic 47 % vs SciReader 0 % mispronounced. Figure `bench/figures/faithfulness.png`; marimo `bench/analysis.py` + `bench/analysis.html`.
+5. **Docs drafted for you to edit:** `README.md`, `docs/writeup.md`, `docs/demo_script.md`, `bench/README.md`.
 
-**How to launch:** `./scripts/dev.ps1` (Edge app window; not yet run by hand) or dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
+**How to launch:** `./scripts/dev.ps1` (Edge app window; tested headless with `-NoBrowser`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173. After pulling new frontend code for `dev.ps1`, add `-Rebuild`.
 
-**2-minute test:** flagship from Recent → click a sentence on page 2 → Shift+→, F → page 5 "Fig. 3b" sentence: the figure pops up after it with "panel b" → page 13, click equation 22's ✓ badge → ✦ AI → Explain (current sentence) → Aa Pronunciation: ▶ "GPJet", type "G P jet", Save → ¶ Text view → ⚙: Export audiobook → ▦ Models: preview a voice.
+**2-minute test:** flagship from Recent → click a sentence on page 2 → Shift+→, F → page 5, the "Fig. 3b" sentence: the figure pops up after it ("panel b") → page 13: click equation 22's ✓ badge → ✦ AI → Explain → Aa Pronunciation: ▶ GPJet, type "G P jet", Save → ¶ Text view → ⚙ Export audiobook → ▦ Models: preview a voice. For `E`: open the photopolymerization review sample, play a sentence with "Eq. (2)", press E.
 
-**Decisions to review (details §5):** author list skipped by default; MinerU dropped (cloud-first v4); Explain works on the current sentence or a Shift+click range (no free text selection); chemistry spoken "F-E 2 O 3"; the benchmark's naive condition is simulated from MathML glyph order (no TeX installed to render PDFs); the in-app verifier and the benchmark's gate both use gemma4:12b, so the benchmark judges with phi4:14b (third model family).
+**Your to-dos (~20 min):** (1) 30 blind ratings: `uv run --directory backend marimo run ../bench/rate.py` (don't open `bench/rating/items.json`); (2) skim `docs/writeup.md` and `docs/demo_script.md`; (3) Valency/Adaption prize rules (§9).
 
-**Known issues:** flagship equation OCR is noisy (5 of 33 verified); some acronyms still spelled letter by letter; `dev.ps1` untested; summaries take ~10–20 s.
+**Decisions to review (details §5):** author list skipped by default; MinerU dropped; Explain works on the current sentence or a Shift+click range (no free text selection); chemistry spoken "F-E 2 O 3"; benchmark naive condition simulated from MathML glyph order; judge = phi4:14b (third family) because gemma is the gate's checker; I adjudicated the 30-item subset myself (you may want to spot-check `bench/data/adjudication.json`).
 
-**Questions:** Valency / Adaption prize rules (§9).
+**Known issues:** flagship equation OCR is noisy (5/33 verified; the gate correctly refuses the rest); the in-app checker also rejects ~25 % of correct narrations (they fall back to rules); OCR'd papers highlight per paragraph; summaries take 10–20 s; per-section voice/speed not done.
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M5 done (tag `m5-bench`); M6 done except per-section voice; next M7 polish.**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M4 done (tags `m3`, `m4-ai`); M0–M6 done (tags through `m6-depth`); next: the user's review, ratings, M7 ship (freeze Thu 14:00).**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`, `m4-ai`.

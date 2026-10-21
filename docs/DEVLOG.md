@@ -54,3 +54,10 @@ Append-only history: what was done and what was learned, newest at the bottom. C
 ewcommand` expansion; 220 equations from 24 papers. Units by sound with misaki + espeak fallback (exactly the voice's G2P): generic 47 % vs SciReader 0 % mispronounced on 99 snippets (caveat: snippets written by us, knowing the rules).
 - Benchmark design issue caught: the in-app checker (gemma4:12b) can't also be the faithfulness judge, so the benchmark uses phi4:14b (third model family) as judge. Two judges at ~0.4 calls/s would take 2.5 h, so the secondary judge was dropped.
 - With a ~500K-token context every step is expensive; big batched steps matter.
+
+## 2026-10-21 03:00–03:25 EDT: benchmark results, M6 finish, M7 drafts
+
+- First scoring of SciSpeech-Bench said every pipeline was ~15 % faithful, even the naive glyph string. The cause was measurement: the judge wrapped answers in `\( \)`, added stray "-" lines and repeated equations, and the comparator treated `	ext{MAE}` and `MAE` as different. Fixing extraction and comparing text letter by letter gave a sensible order (naive 24 < rules 29 < LLM 32 < verified 38 % over all 220), with the judge as the ceiling.
+- Controlling for the judge (the 63 equations whose rule-based reading it reconstructs): unverified qwen3.5:9b 64 % faithful, with the gate 89 %; 4B 57 % → 87 %; naive 41 %. A manual check of 30 narrations: the judge's "faithful" calls were right 14/15, its "error" calls only 7/15; none of the 15 gate-verified narrations was wrong, and all 8 real errors were rejected or flagged. Typical silent LLM errors: an invented fraction, a factor moved into a denominator, a superscript index read as a plain number, ambiguous fraction or exponent extents.
+- M6 finished: E equation popup, citation hover, text view with dyslexia-friendly fonts, audiobook export (libsndfile's MP3 encoder, no new dependency), auto-pause, scanned-PDF OCR (RapidOCR on torch, detected automatically), arXiv source mode (7 of 11 equations aligned on the GNN paper).
+- Verified the production path: the backend serves the built UI on one port with zero non-localhost requests; `dev.ps1 -NoBrowser` starts and serves it.
