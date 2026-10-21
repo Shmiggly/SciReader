@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { api, type PaperState, type Voice } from "./api";
 import { AiPanel } from "./AiPanel";
+import { AudiobookExport } from "./Audiobook";
 import { useEquationChecks } from "./Equations";
 import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
@@ -255,6 +256,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
         </label>
       </section>
       <ReflowSettings />
+      <AudiobookExport />
       <section>
         <div className="panel-sub">Highlight colors</div>
         <div className="presets">

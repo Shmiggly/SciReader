@@ -271,3 +271,36 @@ def lexicon_import(req: ImportReq) -> dict:
     pending = [c for c in conflicts if c.term not in req.decisions]
     return {"added": len(entries) - len(conflicts), "conflicts": [
         {"term": c.term, "mine": c.mine.to_dict(), "theirs": c.theirs.to_dict()} for c in pending]}
+
+
+# ---------------------------------------------------------------------------------------------
+# Audiobook export
+
+from .. import audiobook  # noqa: E402
+
+
+@router.post("/docs/{doc_id}/audiobook")
+def audiobook_start(doc_id: str, voice: str = "af_heart", eq_mode: str = "full") -> dict:
+    _check(doc_id)
+    if store.document(doc_id) is None:
+        raise HTTPException(404, "Not parsed yet")
+    return audiobook.start(store, doc_id, voice, eq_mode)
+
+
+@router.get("/docs/{doc_id}/audiobook/status")
+def audiobook_status(doc_id: str) -> dict:
+    _check(doc_id)
+    st = audiobook.status(doc_id)
+    if st.get("state") == "idle" and audiobook.output_path(store, doc_id).exists():
+        st = {"state": "done", "progress": 1.0, "message": "Ready"}
+    return st
+
+
+@router.get("/docs/{doc_id}/audiobook/download")
+def audiobook_download(doc_id: str) -> FileResponse:
+    _check(doc_id)
+    p = audiobook.output_path(store, doc_id)
+    if not p.exists():
+        raise HTTPException(404, "No audiobook yet")
+    title = re.sub(r"[^A-Za-z0-9 -]+", "", (store.meta(doc_id).get("title") or "paper"))[:50].strip() or "paper"
+    return FileResponse(p, media_type="application/zip", filename=f"{title} - SciReader audiobook.zip")
