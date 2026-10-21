@@ -127,7 +127,7 @@ select, input[type="text"], input:not([type]) {
 .controls button { padding: 3px 8px; }
 .toggle.on { background: var(--accent-soft); border-color: var(--accent); }
 @media (max-width: 1100px) {
-  .reader-body { grid-template-columns: 0 1fr auto; }
+  .reader-body { grid-template-columns: 1fr auto; }
   .outline { display: none; }
   .playbar { grid-template-columns: auto 1fr; }
   .controls { grid-column: 1 / -1; justify-content: flex-start; }

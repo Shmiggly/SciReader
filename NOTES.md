@@ -4,24 +4,27 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-20 (evening before the hackathon, prep only)
+**Last updated:** 2026-10-21 00:47 EDT (M2 vertical slice working)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-_Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-minute test script · decisions to review · questions._
+**Interim note (00:47 EDT).**
+- **Works now:** open a paper (drop/pick, arXiv, sample list, recent list) → Docling parse (~100 s first time, cached after) → PDF with click-to-read, sentence + word highlight, focus mode (on by default), auto-follow with "Back to reading position", prefetch + disk audio cache, outline sidebar, skipping of page furniture/affiliations/bibliography, superscript and bracket citation markers dropped from speech, equations spoken with SRE (from Docling's OCR LaTeX). Screenshot: `docs/screenshots/m2-reader-focus-highlight.jpg`.
+- **In progress:** science normalizer + sentence splitter + lexicon (a subagent is writing them with ~100+ tests; a minimal fallback is in place until then).
+- **How to launch (dev):** two terminals: `uv run --directory backend uvicorn scireader.main:app --port 8765` and `npm --prefix frontend run dev`, then open http://localhost:5173. (`scripts/dev.ps1` comes in M3.)
+- **Decisions to review:** author list skipped by default along with affiliations (toggle in ⚙ Reading settings); captions are read at their layout position until figure narration (M4) moves them to first mention; speed uses the browser's pitch-preserving playbackRate (instant, no re-synthesis).
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon started (Wed 2026-10-21 00:21 EDT, earlier than the planned 6:30), M0 in progress.**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT, earlier than the planned 6:30). M0 done, M2 vertical slice works end to end; M1 normalizer being finished.**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
-- **Toolchain:** installed and verified 2026-10-20 (§3). GPU + Kokoro TTS smoke test passed the same night (§3).
-- **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work. Both tested on this machine (§3).
-- **GitHub:** private repo https://github.com/Shmiggly/SciReader (prep committed and pushed).
-- **Next actions (user):** finish §4 tonight. **Wed 6:30 AM:** follow "How to start" at the top of `docs/prompts/kickoff.md` (new session on the repo folder, Auto, Opus 5.5, effort Max, then a short message pointing at the brief).
+- **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`.
+- **Pacing:** fresh session per block, at most one subagent, small outputs.
 
 ---
 
@@ -107,6 +110,16 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 ---
 
 ## 5. Decision log (newest first; one line of reasoning each)
+
+- **2026-10-21 · Build decisions (agent, during M0–M2):**
+  - **Sentence/word rects from PDFium chars, not Docling:** Docling has block boxes only; we align block text to PDFium characters (difflib, whitespace ignored), which also gives superscript detection for numeric citations (loose box height + raised baseline; `FPDFText_GetFontSize` returns 1.0 in Nature PDFs because of the text matrix).
+  - **Springer Nature glyph fix:** their PDFs encode inline-math glyphs wrongly (`¼` → `=`, `ð…Þ` → `( )`, `þ` → `+`); applied per document when ≥ 6 such glyphs appear.
+  - **Equation LaTeX cleanup:** Docling CodeFormulaV2 emits tokenized LaTeX (`J e t \ R a d i u s … \quad ( 1 )`); we strip the equation number (it becomes "Equation 1:"), join runs of ≥ 3 single letters into `\mathrm{word}`, and drop junk formulas (e.g. `\begin{matrix} 2 \\ 2 \end{matrix}`).
+  - **TTS endpoint recomputes spoken text** (normalizer + current lexicon) on each request; the audio cache is keyed by spoken text, so lexicon edits apply everywhere automatically. Citation spans per sentence live in `speech.json` next to `document.json`.
+  - **Speed** via the browser's pitch-preserving `playbackRate` (instant changes, cache reuse) instead of Kokoro's speed parameter.
+  - **Author list skipped by default** together with affiliations (toggle in Reading settings).
+  - **Data dir** defaults to `<repo>/.data` (gitignored; on D: here). HF models stay in `HF_HOME` (Docling downloaded layout-heron, TableFormer and CodeFormulaV2 there, ~1.5 GB with Kokoro).
+  - **Preview tool gotcha:** the session's preview reads `.claude/launch.json` from the folder the session was opened on. This session was opened on the outer `D:\Github\SciReader`, so a copy lives there too (outside the repo).
 
 - **2026-10-21 · Plan walkthrough, step 9 (schedule, cuts, submission):**
   - **Kickoff** Wed 6:30 AM Eastern. The first ~3 h run unattended.
@@ -211,10 +224,13 @@ All are in the demo domain. Licenses and counts were checked on arXiv and journa
 
 ## 7. Architecture (current truth; update as it gets built)
 
-_Planned, not built yet:_ `backend/` (FastAPI; parsing, speech, tts, llm, api, store) · `frontend/` (React + pdf.js) · `tools/math-speech/` (Node SRE helper) · `bench/` (SciSpeech-Bench) · `scripts/` (dev.ps1, setup.ps1) · `docs/` (DEVLOG, screenshots, writeup, demo script, prompts) · `samples/` (test PDFs, mostly gitignored).
-Model dir: `D:\models\scireader`. HF cache: `D:\models\hf`.
+- `backend/scireader/`: `config.py` (env/.env), `main.py` (FastAPI app, serves `frontend/dist` if built, warms Kokoro at startup), `parsing/` (`docling_parser.py` → `builder.py` heuristics + sentences; `pdfchars.py` PDFium chars/alignment/superscripts; `latex.py` OCR LaTeX cleanup; `inspect_doc.py` CLI), `speech/` (`pipeline.py` citations + normalize; `math_speech.py` Node client; normalizer/splitter/lexicon from the subagent), `tts/` (`engine.py` Kokoro + audio cache, `registry.json` voices), `api/` (`docs.py`, `tts.py`, `jobs.py`), `store/docs.py` (doc cache by SHA-256 prefix, reading state in `state.json`).
+- `frontend/src/`: `App.tsx` (start screen + parse progress), `Reader.tsx` (layout, outline, playback bar, settings, keyboard), `PdfView.tsx` (pdf.js pages, overlays, hit testing, follow), `store.ts` (zustand + audio engine), `api.ts` (types).
+- `tools/math-speech/index.js`: JSON lines over stdin/stdout, MathJax 3 (mathjax-full) + SRE 5.0-rc (ClearSpeak).
+- Data per paper in `.data/docs/<id>/`: `source.pdf`, `docling.json` (cache), `document.json`, `speech.json`, `meta.json`. Audio cache `.data/audio/<key>.wav|.json`.
+- Not built yet: `scripts/dev.ps1`, `setup.ps1`, `bench/`, model manager, LLM layer.
 
-**How to run:** _not yet._
+**How to run (dev):** `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173. Inspect a parse: `uv run --directory backend python -m scireader.parsing.inspect_doc ../samples/<file>.pdf`.
 
 ---
 
@@ -254,9 +270,9 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - a minimal benchmark (100 equations, 4 main conditions) with its marimo figure;
 - the video and write-up.
 
-- [ ] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads
-- [ ] M1 (0:20–1:15) Parse → Document JSON, sentence split, normalizer + tests, Kokoro synth, MinerU bake-off
-- [ ] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping
+- [x] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads (tag `m0-setup`)
+- [ ] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (not started)
+- [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
 - [ ] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [ ] M4 AI layer: verified equation narration, figure narration, explain/ask with citations, summaries
 - [ ] M5 SciSpeech-Bench + figure

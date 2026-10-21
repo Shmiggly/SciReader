@@ -48,7 +48,9 @@ export function PdfView() {
         const w = doc.pages[0]?.width ?? 612;
         if (el) useStore.setState({ scale: Math.max(0.6, Math.min(2.5, (el.clientWidth - 48) / w)) });
       },
-      (err) => setLoadError(String(err)),
+      (err) => {
+        if (!cancelled) setLoadError(String(err));
+      },
     );
     return () => {
       cancelled = true;
