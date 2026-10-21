@@ -31,7 +31,7 @@ Researchers with dyslexia, ADHD or low vision, non-native readers, and anyone li
 4. On a mismatch the narrator gets one repair round ("'k_B T' came back as 'k_B' times 'T'"). If it still fails, SciReader falls back to the rule-based reading, and if even that is impossible it says only "Equation 3".
 5. Only an exact round trip is spoken as AI narration. "Uncertain" (same symbols, different grouping) gets the rule-based reading too, because grouping is exactly where AI readings go silently wrong.
 
-Each equation gets a badge on the PDF: *checking…*, ✓ verified, ? uncertain, ✗ rules, unreadable. Clicking it shows the equation (KaTeX), exactly what is spoken, and the check's attempts. Playback never waits for the AI.
+Each equation gets a badge in the PDF's margin: *checking*, ✓ verified, ? uncertain, ✗ rules, unreadable (icons only when the margin is narrow; hovering a badge outlines its equation). Clicking it shows the equation (KaTeX), exactly what is spoken, and the check's attempts. Playback never waits for the AI.
 
 **Start anywhere, keep your place**
 - Click any sentence or section heading to start reading there; sentence and word highlight on the PDF; auto-follow with "Back to reading position"; focus mode dims everything but the current paragraph.
