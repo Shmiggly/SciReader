@@ -64,6 +64,7 @@ An open benchmark of how faithfully read-aloud pipelines speak math, with an ana
 - **A generic reader's text-layer reading** is faithful for only 43 % of those equations.
 - **Naturalness (blind ratings by the author, 10 equations × 3 readings, 1–5):** naive 2.6, rules 3.8, AI narration as rated 4.0. Three of the ten rated AI narrations were uncertain, which SciReader no longer speaks; with the rules reading in their place, SciReader as shipped scores 3.8, the same as rules. So verified AI narration is about as easy to follow as the rule-based reading, and both are far above a generic reader (n = 10, one rater).
 - Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 25 % < rules 32 % < LLM 33 % < **LLM + verify 40 %**.
+- **Prompt fixes didn't help.** Telling the narrator to say "capital Theta" and "evaluated at", and the checker that "end exponent" is not a symbol, fixed some equations on the flagship paper but made 9B narrations less faithful on the benchmark (61 → 53 % before the gate); changing only the checker let more errors through the gate. The shipped prompts are unchanged; the side-by-side numbers are in [`bench/README.md`](bench/README.md).
 
 ![Units and chemistry by sound: our own snippets vs held-out text](bench/figures/units_heldout.png)
 

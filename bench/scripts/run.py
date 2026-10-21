@@ -57,9 +57,17 @@ def narrate(model: str, latex: str) -> str:
     return _clean_speech(ollama.chat(model, narrate_messages(latex, ""), num_predict=400))
 
 
-def transcribe(model: str, speech: str) -> str:
-    return ollama.chat(model, [{"role": "system", "content": TRANSCRIBE_SYSTEM}, {"role": "user", "content": speech}],
+def transcribe(model: str, speech: str, system: str = TRANSCRIBE_SYSTEM) -> str:
+    return ollama.chat(model, [{"role": "system", "content": system}, {"role": "user", "content": speech}],
                        num_predict=500)
+
+
+# The judge's prompt is frozen: the gate's checker prompt is part of the pipeline under test and changes with it,
+# the judge must not (otherwise a pipeline change also changes how every condition is scored).
+JUDGE_SYSTEM = (
+    "You transcribe spoken mathematics into LaTeX. Write exactly the equation the words describe, nothing more "
+    "and nothing less. Output only the LaTeX code, without dollar signs, code fences or explanation."
+)
 
 
 def log(msg: str) -> None:
@@ -142,7 +150,7 @@ def main() -> int:
         log(f"judging with {judge}")
         for it in items:
             for cond in conds:
-                back = transcribe(judge, it[cond])
+                back = transcribe(judge, it[cond], JUDGE_SYSTEM)
                 c = compare(it["latex"], back)
                 it.setdefault("judge", {}).setdefault(judge, {})[cond] = {"back": back, "result": c.status,
                                                                          "ratio": round(c.ratio, 3), "diff": c.diff}

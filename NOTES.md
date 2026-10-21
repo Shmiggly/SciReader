@@ -4,13 +4,13 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 13:45 EDT (equation-quality block done; tag `m6.3-equations`)
+**Last updated:** 2026-10-21 16:45 EDT (prompt-fix experiment done, not shipped; tag `m6.4-prompts`)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you.**
+**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you. Updated 16:45 after the prompt-fix experiment (item 8, tag `m6.4-prompts`).**
 
 **Done this block**
 1. **Second reading of the page.** In the background equation job, before narration, `qwen3.5:9b` (the reader model, as a vision model) transcribes each equation's crop. If it agrees with Docling's LaTeX, the source is confirmed. If not, the PDF text layer decides: its glyph order is useless but its symbols are what is printed, so both readings are compared with it as bags of symbols (Springer glyphs mapped, radical bars, TeX tall-delimiter pieces, label and number removed). A tie keeps Docling's reading and marks it disputed. The chosen LaTeX drives the rules reading, the narration and the gate; both readings are kept (`equations.json` → `source`). The popover has a Source line (which reading, whether they agreed) and both readings under Check details. Code: `backend/scireader/llm/page_reading.py`, `_source()` in `equations.py`.
@@ -20,6 +20,7 @@
 5. **Comparator equivalences** (`verify.py`, with tests): `\cos(\psi)` = `\cos\psi` (one-token argument of an operator name), `\left.X\right|_{a}` = `X|_{a}`, a script on a closing bracket = on the group (`\left(x\right)^2` = `(x)^2`), `\det` = `\operatorname{det}`. Evaluation bar vs "(Z=0)" not added: a different notation, not clearly safe.
 6. **Benchmark re-scored from cached calls** (plus a few new repair and judge calls): no 9B verdict changed, none of the 8 adjudicated wrong narrations is spoken, and the 3 newly gate-accepted narrations were checked by hand (faithful). New numbers, docs updated: judge-capable subset 70 (was 66): naive 43 %, 9B 61 → 89 % with the gate, 4B 57 → 90 %, gate recall 78/77 %; all 220: naive 25, rules 32, LLM 33, verified 40 %. AI narration is still spoken for 81 of 220. "About 1 in 3" became "more than 1 in 3" (39 %).
 7. **Bug fixed:** the backend served `.mjs` as text/plain (this machine's registry maps .mjs to text/plain), so the built app (`dev.ps1`) couldn't load the pdf.js worker and no PDF opened. If an Edge app window still fails, it cached the old response: Ctrl+F5 once.
+8. **Prompt fixes tried, not shipped (14:25–16:45, your go-ahead).** v2: the narrator says "capital" before uppercase Greek, "prime" for a prime, "evaluated at" for an evaluation bar; the checker is told "end exponent" and similar are not symbols. v1b: the checker change only. Same judge for all three (its prompt is now frozen in `run.py`: it had shared the checker's, so the first rerun changed how every condition was scored). Judge-capable subset: 9B unverified 61 % (v1) / 53 % (v2) / 61 % (v1b); 9B + gate 89 / 87 / 87 %; 4B + gate 90 / 94 / 86 %; gate recall 9B 78 / 73 / 74 %; 9B narrations spoken 81 / 77 / 85 of 220; all 220, 9B + gate 40 / 37 / 40 %. v2's narrator over-applied the rules ("capital" before Latin and calligraphic letters, "evaluated at" for f(x)); v1b let more errors through. **The shipped prompts are unchanged (v1)**, so the 30-item check and your ratings still describe what the app speaks. On the flagship v2 had verified 10 instead of 7. Table in `bench/README.md`; raw results `bench/results/results_prompts_v2.jsonl`, `results_checker_v1b.jsonl`; the app's equation results are back to v1.
 
 **How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
@@ -43,7 +44,7 @@
 
 **Next**
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
-2. **Prompt fixes (step 4 of the equation plan, not done; your call):** the narrator says "capital" for uppercase Greek; the checker treats "end subscript/exponent" as structure, not symbols. They change every cached narration and back-transcription: a GPU benchmark re-run (~1 h, background), new numbers in README, both write-ups and the bench README, and a re-run of the app's equation jobs. Caveat: the 30-item adjudication and your 10-equation ratings describe the current narrations; after a prompt change, report them as the previous version or redo them.
+2. **Prompt fixes: tried, not shipped** (item 8). What is left on the flagship is narrator and checker variance (eq 23 lost its ✓ on a reworded narration); more prompt rules made things worse on the benchmark.
 3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
 4. Later, when you say so: the video (update the demo script's numbers first). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted.
@@ -150,7 +151,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - **2026-10-21 · Equation-quality block (agent):**
   - **Second reading of the page:** the reader model transcribes each equation crop; agreement confirms Docling's LaTeX; on disagreement the PDF text layer's bag of symbols picks the reading with fewer symbols off; a tie keeps Docling's and marks it disputed (same symbols = structure only). A reading only the vision model produced is used only when it is within 20 % (at least 2 symbols) of the text layer's bag. Springer-only confusables: 0 = prime, ϵ = ∈ (their fonts encode them so).
   - **Comparator equivalences, only for what prints the same:** parentheses around a one-token argument of an operator name, where an evaluation bar's or a bracket's script attaches, operator names vs `\operatorname`/`\mathrm`. Not added: `X|_{Z=0}` vs `X(Z=0)` (a different notation).
-  - **Prompt fixes deferred:** they would change every narration, so the 30-item adjudication and the user's ratings would describe a previous version; the user decides.
+  - **Prompt fixes not shipped (16:45):** with the same judge, the v2 narrator + checker prompts lowered 9B faithfulness (61 → 53 % unverified, 89 → 87 % gated) and the checker-only change lowered gate recall (78 → 74 %); v1 prompts kept. The benchmark judge's prompt is frozen separately from the checker's.
 - **2026-10-21 · User: nothing goes public until they say so** (repo visibility, posts, uploads). Agents push only to the private repo.
 - **2026-10-21 · UI polish block (agent):**
   - **Badges go in the margins:** a left-column equation's right edge is the gutter (12 pt on the flagship), where a badge covers the other column. So left-column badges on two-column pages go in the left margin; the rest go right of the equation. They are fixed-width pills (exact layout), icons on every page when any margin is too narrow, and hovering one outlines its equation.

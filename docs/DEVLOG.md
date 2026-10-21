@@ -99,3 +99,9 @@ ewcommand` expansion; 220 equations from 24 papers. Units by sound with misaki +
 - **Variance is real.** One flagship equation lost its ✓ only because its context sentence had changed in an earlier rebuild, so its narration was redone and came back with μ for m. Same LaTeX, different wording, different verdict.
 - **The built app couldn't open PDFs on this machine:** the Windows registry maps .mjs to text/plain, and Python's mimetypes believes it, so the pdf.js worker module was refused. Invisible in the Vite dev server.
 - **Not done:** the narrator/checker prompt fixes ("capital Theta", "end exponent" is not a symbol). They would change every narration and so detach the manual adjudication and the ratings from what the app speaks; left for the user to decide.
+
+## 2026-10-21 14:25–16:45 EDT: prompt fixes, tried and not shipped
+
+- **The judge shared the checker's prompt.** `run.py` used the gate's transcription prompt for the independent judge too, so changing the checker silently changed how every pipeline was scored (even the rules reading moved). The judge's prompt is frozen in `run.py` now; all variants were re-judged with it.
+- **More rules made the narrator worse.** Telling `qwen3.5:9b` to say "capital" before uppercase Greek and "evaluated at" for evaluation bars fixed the flagship cases it was written for (eq 14 verified at last), but on the 220-equation benchmark it said "capital" before Latin and calligraphic letters and "evaluated at" for ordinary function arguments: unverified faithfulness fell from 61 to 53 %, gated from 89 to 87 %. Changing only the checker ("end exponent" is not a symbol) made the gate more lenient: 4 more narrations spoken, recall down from 78 to 74 %.
+- **One paper is not a benchmark.** On the flagship the v2 prompts verified 10 equations instead of 7; on the benchmark they lost. We kept the original prompts, so the manual check and the ratings still describe what the app speaks.

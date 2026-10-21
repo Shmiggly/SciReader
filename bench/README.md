@@ -59,6 +59,19 @@ Add queries in `scripts/collect.py` (field, search text) or arXiv IDs to `SAMPLE
 
 **Manual adjudication (30 narrations, `bench/data/adjudication.json`).** The agent that built the pipeline checked 30 unverified 9B narrations by hand (15 the judge accepted, 15 it rejected), so treat this as a sanity check, not an independent audit. The judge's "faithful" calls were right 14/15 times, but its "error" calls only 7/15 times: it often fails to transcribe correct long readings. So the judge underestimates every pipeline; correcting for that, unverified narration still changes about a third of equations. The gate verified 15 of the 30 narrations and **none of them was wrong**; it rejected or marked uncertain all 8 real errors, and rejected 6 correct narrations, which then fall back to the rule-based reading. One of the 2 uncertain narrations was a real error (Lorentz–Lorenz, Nα moved into the denominator), which is why uncertain narrations are not spoken.
 
+**Prompt variants (tried, not shipped).** To fix slips seen on the flagship paper, v2 told the narrator to say "capital" before uppercase Greek, "prime" for a prime and "evaluated at" for an evaluation bar, and told the checker that "end exponent" and similar phrases are not symbols; v1b changed only the checker. All three are scored by the same judge (its prompt is now frozen in `run.py`, apart from the checker's):
+
+| | v1 (shipped) | v2: narrator + checker | v1b: checker only |
+|---|---|---|---|
+| Judge-capable subset (70): 9B unverified | 61 % | 53 % | 61 % |
+| Judge-capable subset: 9B + gate | 89 % | 87 % | 87 % |
+| Judge-capable subset: 4B + gate | 90 % | 94 % | 86 % |
+| Gate recall, 9B / 4B | 78 / 77 % | 73 / 91 % | 74 / 70 % |
+| 9B narrations spoken as AI (of 220) | 81 | 77 | 85 |
+| All 220: 9B + gate | 40 % | 37 % | 40 % |
+
+The v2 narrator over-applied its new rules ("capital" before Latin and calligraphic letters, "evaluated at" for ordinary function arguments), and the v1b checker let more wrong narrations through. On the flagship, v2 verified 10 equations instead of 7: one paper is not a benchmark. Raw results: `results/results_prompts_v2.jsonl`, `results/results_checker_v1b.jsonl`.
+
 **Blind ratings (`results/ratings.json`).** The author rated 30 clips (10 equations × naive / rules / SciReader, random order, pipeline hidden) from 1 to 5: naive 2.6, rules 3.8, AI narration as rated 4.0. Three of the ten AI clips were uncertain narrations that SciReader no longer speaks; with the rules clip's score in their place (rated in the same session), SciReader as shipped scores 3.8, the same as rules. One rules clip still used older wording ("sub normal Gamma").
 
 ## Caveats
