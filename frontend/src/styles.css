@@ -188,6 +188,11 @@ select, input[type="text"], input:not([type]) {
 .eq-field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 .eq-attempt { border-top: 1px solid var(--border); padding: 6px 0; display: grid; gap: 2px; }
 .eq-attempt code, .eq-pop code { font-size: 11px; word-break: break-all; }
+/* Where the narrated LaTeX came from (second reading of the page); amber when the readings disagree unresolved. */
+.eq-source { border-left: 3px solid var(--border); padding-left: 8px; color: var(--muted); }
+.eq-source.agree, .eq-source.arxiv { border-left-color: #9fd3ae; }
+.eq-source.page, .eq-source.vision_only { border-left-color: #b9cfea; }
+.eq-source.disputed, .eq-source.single, .eq-source.unreadable { border-left-color: #e8cf86; }
 .eq-actions { display: flex; justify-content: flex-end; }
 
 /* Figure popup */

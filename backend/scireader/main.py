@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import mimetypes
 import os
 import threading
 
@@ -10,6 +11,9 @@ from .config import get_settings
 settings = get_settings()
 # Models are cached locally; never reach for the network at runtime unless asked to download.
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
+# Python takes MIME types from the Windows registry, which can map .mjs to text/plain; browsers then refuse to run
+# pdf.js's worker module and no PDF opens.
+mimetypes.add_type("text/javascript", ".mjs")
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402

@@ -7,6 +7,16 @@ import { useFitInScroller } from "./fit";
 import { playSentence, useStore } from "./store";
 
 export interface EqAttempt { speech: string; back: string; result: string; diff: string }
+/** Second reading of the page (backend llm/page_reading.py): which LaTeX is narrated, checked and read by rules. */
+export interface EqSource {
+  status: "agree" | "page" | "disputed" | "vision_only" | "single" | "unreadable" | "arxiv";
+  used: "parser" | "vision" | "arxiv";
+  parser?: string;
+  vision?: string | null;
+  off?: { parser: number | null; vision: number | null } | null;
+  model?: string;
+  error?: string | null;
+}
 export interface EqResult {
   verdict: "verified" | "uncertain" | "fallback" | "unreadable" | "pending";
   speech_ai: string | null;
@@ -14,6 +24,45 @@ export interface EqResult {
   reason: string | null;
   attempts: EqAttempt[];
   models?: { reader: string; checker: string };
+  source?: EqSource | null;
+  latex?: string | null;
+  speech_rules?: string | null;
+}
+
+/** The equation's LaTeX and rule-based reading after the second reading (the parser's until it has run). */
+export function eqLatex(b: Block, res: EqResult | undefined): string {
+  return res?.source ? res.latex ?? "" : b.latex ?? "";
+}
+function eqRules(b: Block, res: EqResult | undefined): string | null | undefined {
+  return res?.source ? res.speech_rules : b.speech_rules;
+}
+
+function symbolsOff(n: number | null | undefined): string {
+  return n === 1 ? "1 symbol" : `${n ?? "?"} symbols`;
+}
+
+/** One sentence on where the narrated LaTeX came from and whether the two readings agreed. */
+function sourceNote(src: EqSource): string {
+  const m = src.model ?? "the vision model";
+  const off = src.off;
+  switch (src.status) {
+    case "agree":
+      return `Two independent readings agree: the PDF parser's formula OCR and ${m} reading the page.`;
+    case "page":
+      return src.used === "vision"
+        ? `The parser and ${m} read this differently. The PDF's text layer matches ${m}'s reading of the page better (${symbolsOff(off?.vision)} off, the parser's ${symbolsOff(off?.parser)}), so that reading is used.`
+        : `The parser and ${m} read this differently. The PDF's text layer matches the parser's reading better (${symbolsOff(off?.parser)} off, ${m}'s ${symbolsOff(off?.vision)}), so it is used.`;
+    case "disputed":
+      return `Source uncertain: the parser and ${m} read this differently, and the PDF's text layer can't tell which is right. The parser's reading is used.`;
+    case "vision_only":
+      return `The parser's formula OCR was unusable; ${m} read this from the page, and the PDF's text layer backs that reading (${symbolsOff(off?.vision)} off).`;
+    case "single":
+      return `Only the parser's reading: the second reading of the page failed${src.error ? ` (${src.error})` : ""}.`;
+    case "unreadable":
+      return `Neither the parser nor ${m} produced a reading that the PDF's text layer backs.`;
+    case "arxiv":
+      return "The paper's own LaTeX (arXiv source), not OCR.";
+  }
 }
 interface EqStatus { state?: string; message?: string; done?: number; total?: number }
 
@@ -126,7 +175,7 @@ export function layoutBadges(doc: Doc, scale: number): BadgeLayout {
 
 export function badgeState(b: Block, res: EqResult | undefined, eqState: string): string {
   if (res && res.verdict !== "pending") return res.verdict;
-  if (!b.speech_rules) return "unreadable";
+  if (!eqRules(b, res)) return "unreadable";
   if (eqState === "queued" || eqState === "running") return "checking";
   return "fallback";
 }
@@ -151,7 +200,7 @@ export function EquationBadge({ b, pos, compact, onHover }: {
       }}
       onMouseEnter={() => onHover(b.id)}
       onMouseLeave={() => onHover(null)}
-      title={`${name}: ${LABEL[st] ?? st}. Click for details.`}
+      title={`${name}: ${LABEL[st] ?? st}.${res?.source?.status === "disputed" ? " Source uncertain: two readings of the page disagree." : ""} Click for details.`}
     >
       {st === "checking" && <span className="spinner" />}
       {compact ? GLYPH[st] : LABEL[st] ?? st}
@@ -167,14 +216,15 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
   const st = badgeState(b, res, eqState);
   let html = "";
   try {
-    html = katex.renderToString(b.latex || "", { displayMode: true, throwOnError: false, strict: "ignore" });
+    html = katex.renderToString(eqLatex(b, res), { displayMode: true, throwOnError: false, strict: "ignore" });
   } catch {
     html = "";
   }
   const label = (b.eq_number ? `Equation ${b.eq_number}` : "Equation") + (b.eq_label ? ` · ${b.eq_label}` : "");
-  const used = st === "verified" ? res?.speech_ai : b.speech_rules;
+  const used = st === "verified" ? res?.speech_ai : eqRules(b, res);
   const left = Math.max(8, Math.min(b.bbox[0] * scale, pageWidth - 470));
   const last = res?.attempts?.[res.attempts.length - 1];
+  const src = res?.source;
   return (
     <div className="eq-pop" ref={ref} style={{ left, top: b.bbox[3] * scale + 8 }} onClick={(e) => e.stopPropagation()}>
       <div className="eq-pop-head">
@@ -193,10 +243,11 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
           Not spoken: the AI narration (“{res?.speech_ai}”) was written back with the same symbols but a different grouping ({res?.reason}), and grouping is where AI readings go silently wrong. The rule-based reading is used instead.
         </div>
       )}
-      {st === "fallback" && res && (
+      {st === "fallback" && res && res.attempts.length > 0 && (
         <div className="muted small">The AI narration didn't survive the check ({res.reason || "mismatch"}), so the rule-based reading is used.</div>
       )}
-      {last && (
+      {src && <div className={`eq-source small ${src.status}`}><b>Source.</b> {sourceNote(src)}</div>}
+      {(last || src) && (
         <details>
           <summary className="small">Check details</summary>
           {res!.attempts.map((a, i) => (
@@ -207,7 +258,18 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
               {a.diff && <div className="muted">{a.diff}</div>}
             </div>
           ))}
-          <div className="small muted">Source LaTeX (from the PDF parser): <code>{b.latex}</code></div>
+          {src && src.status !== "arxiv" ? (
+            <>
+              <div className="small muted">
+                PDF parser's reading{src.used === "parser" ? " (used)" : ""}: <code>{src.parser || "none"}</code>
+              </div>
+              <div className="small muted">
+                {src.model ?? "Vision model"} reading the page{src.used === "vision" ? " (used)" : ""}: <code>{src.vision || "none"}</code>
+              </div>
+            </>
+          ) : (
+            <div className="small muted">Source LaTeX{src ? " (arXiv source)" : " (from the PDF parser)"}: <code>{eqLatex(b, res)}</code></div>
+          )}
           {res?.brief && <div className="small">AI summary (Brief mode): {res.brief}</div>}
         </details>
       )}

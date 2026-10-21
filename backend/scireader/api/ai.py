@@ -38,6 +38,9 @@ def _public(res: dict) -> dict:
             "reason": r.get("reason"),
             "attempts": r.get("attempts", []),
             "models": r.get("models"),
+            "source": r.get("source"),
+            "latex": r.get("latex"),
+            "speech_rules": r.get("speech_rules"),
         }
         for bid, r in res.items()
     }

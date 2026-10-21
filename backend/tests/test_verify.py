@@ -23,6 +23,11 @@ pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="Node.js is
         (r"\left( a + b \right) c", r"(a+b)c"),
         (r"a \times b", r"a b"),
         (r"f(x) = \sin x", r"f(x)=\sin x"),
+        (r"r' = \cos(\theta - \psi) + \cos(\psi)", r"r' = \cos(\theta - \psi) + \cos\psi"),
+        (r"\exp(x) + \log(2)", r"\exp x + \log 2"),
+        (r"\left.\Theta\right|_{Z=0} = 0", r"\Theta|_{Z=0} = 0"),
+        (r"\left. \frac{dx}{dt} \right|_{t=0}", r"\frac{dx}{dt}\Big|_{t=0}"),
+        (r"\left|x\right|_2", r"|x|_2"),
     ],
 )
 def test_equivalent_forms_match(src, back):
@@ -37,6 +42,9 @@ def test_equivalent_forms_match(src, back):
         (r"\sigma^2", r"\sigma_2"),
         (r"a - b", r"a + b"),
         (r"\Theta = 1", r"\theta = 1"),  # case matters
+        (r"f(x) = 1", r"f x = 1"),  # a plain function keeps its parentheses: f x is f times x
+        (r"\cos(\theta - \psi)", r"\cos\theta - \psi"),  # a longer argument keeps them too
+        (r"\Theta|_{Z=0} = 0", r"\Theta_{Z=0} = 0"),  # evaluation bar dropped, subscript kept
     ],
 )
 def test_changed_math_is_caught(src, back):

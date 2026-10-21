@@ -3,7 +3,9 @@
 SymPy's LaTeX parser fails on most physics notation and plain string similarity is misleading, so we
 compare MathML trees after normalizing away differences that don't change the math as heard:
 mrow nesting, styles/attributes, ε/ϵ-style variants, \\mathrm{A} vs A, \\dfrac vs \\frac, implicit vs
-explicit multiplication, bracket shapes, spacing, msubsup vs nested scripts.
+explicit multiplication, bracket shapes, spacing, msubsup vs nested scripts, parentheses around a
+one-symbol function argument (\\cos(\\psi) vs \\cos\\psi), and where an evaluation bar's subscript attaches
+(\\left.\\Theta\\right|_{Z=0} vs \\Theta|_{Z=0}).
 """
 
 from __future__ import annotations
@@ -33,14 +35,40 @@ def _norm_text(t: str | None) -> str:
     return "".join(VARIANTS.get(ch, ch) for ch in t)
 
 
+FN = "fn"  # MathJax's function application (U+2061) after \sin, \log, \operatorname...; folded away by _fold
+
+
 def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
+    return _fold(_tokens(el, relaxed))
+
+
+def _fold(tokens: list[str]) -> list[str]:
+    """Drop the parentheses around a one-token argument of a function name (\\cos(\\psi) is \\cos\\psi), then the
+    function-application markers. f(x) keeps its parentheses: MathJax marks only operator names."""
+    out: list[str] = []
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t == FN:
+            if tokens[i + 1:i + 2] == ["("] and tokens[i + 3:i + 4] == [")"] and tokens[i + 2][:2] in ("i:", "n:"):
+                out.append(tokens[i + 2])
+                i += 4
+                continue
+            i += 1
+            continue
+        out.append(t)
+        i += 1
+    return out
+
+
+def _tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
     tag = _local(el.tag)
     if tag in ("mspace", "none", "mprescripts", "annotation", "annotation-xml"):
         return []
     if tag in TRANSPARENT:
         out: list[str] = []
         for ch in el:
-            out.extend(canon_tokens(ch, relaxed))
+            out.extend(_tokens(ch, relaxed))
         return out
     if tag == "mi":
         return [f"o:{c}" if c == "'" else f"i:{c}" for c in _norm_text(el.text) if not c.isspace()]
@@ -51,6 +79,8 @@ def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
         return [f"i:{c}" for c in _norm_text(el.text) if c.isalnum()]
     if tag in ("mo", "ms"):
         t = _norm_text(el.text)
+        if t == "\u2061":
+            return [FN]
         if t in DROP_MO:
             return []
         if t in OPEN:
@@ -61,23 +91,29 @@ def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
     if tag in UNDER_OVER:
         tag = UNDER_OVER[tag]
     kids = list(el)
-    if tag == "msubsup" and len(kids) == 3:
-        base, sub, sup = (canon_tokens(k, relaxed) for k in kids)
-        return ["msup(", "msub(", *base, ",", *sub, ")", ",", *sup, ")"]
+    if tag in ("msub", "msubsup") and len(kids) == (2 if tag == "msub" else 3):
+        parts = [_tokens(k, relaxed) for k in kids]
+        base, lead = parts[0], []
+        if len(base) > 1 and base[-1] == "o:|":
+            # An evaluation bar carries the subscript, wherever MathJax attaches it: \left.X\right|_{a} is X|_{a}.
+            lead, base = base[:-1], ["o:|"]
+        if tag == "msub":
+            return [*lead, "msub(", *base, ",", *parts[1], ")"]
+        return [*lead, "msup(", "msub(", *base, ",", *parts[1], ")", ",", *parts[2], ")"]
     if tag == "mfrac" and relaxed and len(kids) == 2:
-        num, den = (canon_tokens(k, relaxed) for k in kids)
+        num, den = (_tokens(k, relaxed) for k in kids)
         return [*num, "o:/", *den]
     if tag in SCRIPTS:
         out = [f"{tag}("]
         for i, k in enumerate(kids):
             if i:
                 out.append(",")
-            out.extend(canon_tokens(k, relaxed))
+            out.extend(_tokens(k, relaxed))
         out.append(")")
         return out
     out = []
     for ch in el:
-        out.extend(canon_tokens(ch, relaxed))
+        out.extend(_tokens(ch, relaxed))
     return out
 
 

@@ -5,7 +5,7 @@ import katex from "katex";
 import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/opendyslexic/400.css";
-import { badgeState } from "./Equations";
+import { badgeState, eqLatex } from "./Equations";
 import { isReadable, playSentence, useStore } from "./store";
 
 export const REFLOW_FONTS: Record<string, string> = {
@@ -61,7 +61,7 @@ export function ReflowView() {
             const s = b.sentences[0];
             let html = "";
             try {
-              html = katex.renderToString(b.latex || "", { displayMode: true, throwOnError: false, strict: "ignore" });
+              html = katex.renderToString(eqLatex(b, eqResults[b.id]), { displayMode: true, throwOnError: false, strict: "ignore" });
             } catch {
               html = "";
             }

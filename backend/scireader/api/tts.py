@@ -62,7 +62,8 @@ def equation_spoken(block: dict, mode: str, ai: dict | None = None) -> str:
         return f"{label}. AI summary: {ai['brief'].rstrip('.')}."
     if ai.get("verdict") == "verified" and ai.get("speech_ai"):
         return f"{label}: {ai['speech_ai'].rstrip('.')}."
-    speech = block.get("speech_rules")
+    # The rule-based reading of the source LaTeX chosen after the second reading of the page, once there is one.
+    speech = ai["speech_rules"] if "source" in ai else block.get("speech_rules")
     if not speech:
         return f"{label}."
     return f"{label}: {speech}."

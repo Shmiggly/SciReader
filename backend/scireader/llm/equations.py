@@ -1,5 +1,7 @@
 """Verified equation narration.
 
+0. The reader model, as a vision model, reads each equation again from the page; the parser's LaTeX is confirmed,
+   corrected or marked disputed against that second reading and the PDF text layer (page_reading.py).
 1. The reader model narrates each equation (LaTeX + the sentence before it) in natural speech.
 2. The checker model, which never sees the LaTeX, transcribes that speech back into LaTeX.
 3. Both LaTeX strings are compared as canonical MathML trees (verify.py).
@@ -16,8 +18,10 @@ import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
+from ..parsing.latex import latex_has_content
+from ..speech.math_speech import get_math_speech
 from ..store.docs import DocStore
-from . import ollama
+from . import ollama, page_reading
 from .verify import compare
 
 NARRATE_SYSTEM = (
@@ -118,21 +122,33 @@ def _verify_document(store: DocStore, doc_id: str, force: bool) -> None:
     blocks = doc["blocks"]
     eqs = [(i, b) for i, b in enumerate(blocks) if b["type"] == "equation" and b.get("skip_reason") != "junk"]
     res: dict = {} if force else results(store, doc_id)
-    todo = [(i, b) for i, b in eqs if b["id"] not in res or res[b["id"]].get("verdict") in (None, "pending")]
+    # Results from before the second reading existed are redone (model calls are cached: only new work costs).
+    todo = [(i, b) for i, b in eqs
+            if b["id"] not in res or res[b["id"]].get("verdict") in (None, "pending") or "source" not in res[b["id"]]]
     total = len(eqs)
-    _set(doc_id, state="running", message="Narrating equations", done=total - len(todo), total=total, started=time.time())
+    _set(doc_id, state="running", message="Reading equations from the page", done=total - len(todo), total=total,
+         started=time.time())
 
     def save() -> None:
         store.write_json(doc_id, "equations.json", res)
 
+    # Batch 0: second reading of the page (reader model, as a vision model). Saved as pending so playback uses the
+    # corrected rule-based reading while the narrations are checked.
+    springer = page_reading.is_springer(blocks)
+    pdf = str(store.pdf_path(doc_id))
+    for n, (i, b) in enumerate(todo):
+        _set(doc_id, message=f"Reading equations from the page ({n + 1}/{len(todo)})")
+        res[b["id"]] = {**_source(reader, pdf, b, springer), "verdict": "pending", "attempts": []}
+    save()
+
     work: dict[str, dict] = {}
     for i, b in todo:
-        latex = b.get("latex") or ""
-        if not latex.strip() or not b.get("speech_rules"):
-            res[b["id"]] = {"verdict": "unreadable" if not b.get("speech_rules") else "fallback",
-                            "reason": "no usable LaTeX from the parser", "attempts": []}
+        base = {k: res[b["id"]][k] for k in ("source", "latex", "speech_rules")}
+        if not base["latex"].strip() or not base["speech_rules"]:
+            res[b["id"]] = {**base, "verdict": "unreadable" if not base["speech_rules"] else "fallback",
+                            "reason": "no usable LaTeX from the parser or the page", "attempts": []}
             continue
-        work[b["id"]] = {"latex": latex, "context": _context_for(blocks, i), "attempts": []}
+        work[b["id"]] = {"latex": base["latex"], "context": _context_for(blocks, i), "attempts": [], "base": base}
     save()
 
     # Batch 1: narrations (reader model).
@@ -173,6 +189,7 @@ def _verify_document(store: DocStore, doc_id: str, force: bool) -> None:
         else:
             verdict = "fallback"
         res[bid] = {
+            **w["base"],
             "verdict": verdict,
             "speech_ai": best["speech"] if verdict in ("verified", "uncertain") else None,
             "brief": w.get("brief"),
@@ -185,6 +202,28 @@ def _verify_document(store: DocStore, doc_id: str, force: bool) -> None:
     for r in res.values():
         counts[r["verdict"]] = counts.get(r["verdict"], 0) + 1
     _set(doc_id, state="done", message="Equations checked", done=total, counts=counts)
+
+
+def _source(model: str, pdf: str, b: dict, springer: bool) -> dict:
+    """The LaTeX to narrate, check and read by rules: the parser's, or the vision model's reading of the page when
+    the PDF text layer backs it (page_reading.decide). Both readings are kept in "source"."""
+    parser = b.get("latex") or ""
+    if b.get("latex_source") == "arxiv":
+        return {"latex": parser, "speech_rules": b.get("speech_rules"), "source": {"status": "arxiv", "used": "arxiv"}}
+    vision, error = None, None
+    try:
+        vision = page_reading.clean_transcription(page_reading.transcribe(model, pdf, b), b.get("eq_number"), b.get("text") or "")
+    except Exception as exc:  # noqa: BLE001 - a reader model without vision, or Ollama failing: keep the parser's
+        error = str(exc)[:200]
+    info = {**page_reading.decide(parser, vision, b, springer), "model": model, "error": error}
+    latex, speech = parser, b.get("speech_rules")
+    if info["used"] == "vision":
+        spoken = get_math_speech().speak(vision) if latex_has_content(vision) else None
+        if spoken:
+            latex, speech = vision, spoken
+        else:  # the page reading can't be read aloud by the rules engine either
+            info.update(status="single" if speech else "unreadable", used="parser")
+    return {"latex": latex, "speech_rules": speech, "source": info}
 
 
 def _check_batch(doc_id: str, checker: str, items: list, res: dict, total: int) -> None:
