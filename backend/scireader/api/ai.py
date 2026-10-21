@@ -199,3 +199,40 @@ def crop(doc_id: str, page: int, x0: float, y0: float, x1: float, y1: float) -> 
     if not cache.exists():
         cache.write_bytes(figures.crop_png(str(store.pdf_path(doc_id)), page, [x0, y0, x1, y1], scale=2.5))
     return Response(cache.read_bytes(), media_type="image/png", headers={"Cache-Control": "max-age=86400"})
+
+
+@router.post("/docs/{doc_id}/arxiv-source")
+def arxiv_source(doc_id: str, arxiv_id: str | None = None) -> dict:
+    """Use the paper's arXiv LaTeX for its equations (needs internet once; cached afterwards)."""
+    from ..parsing import arxiv_source as ax
+
+    doc = _doc_or_404(doc_id)
+    aid = arxiv_id or (doc.get("source", {}).get("ref") if doc.get("source", {}).get("type") == "arxiv" else None)
+    if not aid:
+        raise HTTPException(400, "This paper has no arXiv ID")
+    cache = store.dir(doc_id) / "arxiv_src.tex"
+    if cache.exists():
+        tex = cache.read_text(encoding="utf-8")
+    else:
+        try:
+            tex = ax.fetch_tex(aid)
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(502, f"Couldn't reach arXiv (offline?): {exc.__class__.__name__}") from exc
+        if not tex:
+            raise HTTPException(404, "arXiv has no LaTeX source for this paper (PDF-only submission)")
+        cache.write_text(tex, encoding="utf-8")
+    rows = ax.source_equations(tex)
+    eq_blocks = [b for b in doc["blocks"] if b["type"] == "equation"]
+    mapping = ax.align(eq_blocks, rows)
+    n = ax.apply(doc, mapping)
+    store.write_json(doc_id, "document.json", doc)
+    # Re-check the replaced equations with the exact LaTeX.
+    res = equations.results(store, doc_id)
+    for bid in mapping:
+        res.pop(bid, None)
+    store.write_json(doc_id, "equations.json", res)
+    from . import tts as tts_api
+
+    tts_api.invalidate(doc_id)
+    equations.start(store, doc_id)
+    return {"matched": n, "equations": len(eq_blocks), "source_rows": len(rows), "arxiv": aid}
