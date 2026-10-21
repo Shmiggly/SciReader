@@ -132,3 +132,30 @@ select, input[type="text"], input:not([type]) {
   .playbar { grid-template-columns: auto 1fr; }
   .controls { grid-column: 1 / -1; justify-content: flex-start; }
 }
+
+/* Model manager */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); display: flex; justify-content: center; align-items: flex-start; z-index: 20; padding: 4vh 0; }
+.modal { width: min(920px, 94vw); max-height: 92vh; overflow: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px 24px; box-shadow: var(--shadow); }
+.modal h2 { margin: 0; font-size: 20px; }
+.modal h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 22px 0 8px; }
+.modal code { font-size: 12px; }
+.offline { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
+.offline.ok { background: #e3f4e8; color: #1d5b32; }
+@media (prefers-color-scheme: dark) { .offline.ok { background: #1d3a27; color: #b9e6c6; } }
+.row { display: flex; align-items: center; gap: 10px; padding: 4px 0; flex-wrap: wrap; }
+.row input { flex: 1; min-width: 200px; }
+.pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border); margin-left: 6px; }
+.pill.ok { background: #e3f4e8; color: #1d5b32; border-color: #b9e6c6; }
+@media (prefers-color-scheme: dark) { .pill.ok { background: #1d3a27; color: #b9e6c6; border-color: #2d5a3c; } }
+.voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; margin-top: 8px; }
+.voice { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 10px; }
+.voice.default { border-color: var(--accent); background: var(--accent-soft); }
+.voice-actions { display: flex; gap: 4px; align-items: center; }
+.voice-actions button { padding: 2px 8px; white-space: nowrap; }
+.jobs { display: grid; gap: 8px; margin-bottom: 10px; }
+.jobs label { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.warn { color: #9a6200; }
+.llm-table { width: 100%; border-collapse: collapse; }
+.llm-table td { padding: 5px 6px; border-top: 1px solid var(--border); }
+.pull-progress { margin-top: 8px; display: grid; gap: 4px; }
+.models-link { float: right; margin-top: -44px; }

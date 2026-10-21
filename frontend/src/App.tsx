@@ -1,6 +1,7 @@
 // App shell: start screen (open a paper, recent papers, samples) or the reader.
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type Doc, type ParseStatus, type RecentPaper, type Sample } from "./api";
+import { ModelManager } from "./ModelManager";
 import { Reader } from "./Reader";
 import { useStore } from "./store";
 
@@ -65,6 +66,7 @@ function StartScreen({
   const [arxiv, setArxiv] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
+  const [showModels, setShowModels] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -104,6 +106,8 @@ function StartScreen({
         <h1>
           <img src="/icon.svg" alt="" width={40} height={40} /> SciReader
         </h1>
+        <button className="ghost models-link" onClick={() => setShowModels(true)}>▦ Models</button>
+        {showModels && <ModelManager onClose={() => setShowModels(false)} />}
         <p className="tagline">Listen to scientific papers, with the real PDF in front of you. Equations, units and chemistry read like a scientist would. Fully offline.</p>
 
         {opening ? (

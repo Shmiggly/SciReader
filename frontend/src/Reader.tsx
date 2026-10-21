@@ -1,6 +1,7 @@
 // Reader layout: outline (left), PDF (center), side panel (right), playback bar (bottom).
 import { useEffect, useState } from "react";
 import { api, type PaperState, type Voice } from "./api";
+import { ModelManager } from "./ModelManager";
 import { PdfView } from "./PdfView";
 import {
   type EqMode,
@@ -25,6 +26,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   const doc = useStore((s) => s.doc)!;
   const [resume, setResume] = useState<PaperState["position"] | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showModels, setShowModels] = useState(false);
 
   // Restore per-paper settings and offer to continue.
   useEffect(() => {
@@ -54,10 +56,12 @@ export function Reader({ onClose }: { onClose: () => void }) {
           ← Papers
         </button>
         <div className="doc-title" title={doc.title}>{doc.title}</div>
+        <button className="ghost" onClick={() => setShowModels(true)}>▦ Models</button>
         <button className="ghost" onClick={() => setShowSettings((v) => !v)} aria-pressed={showSettings}>
           ⚙ Reading settings
         </button>
       </header>
+      {showModels && <ModelManager onClose={() => setShowModels(false)} />}
       <div className="reader-body">
         <Outline />
         <main className="center">
