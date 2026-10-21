@@ -1,0 +1,276 @@
+{
+ "by": "agent, careful manual inspection (2026-10-21)",
+ "criterion": "faithful = a careful listener could write the exact equation back from the narration",
+ "items": [
+  {
+   "id": "2004.01458#5",
+   "latex": "Q_\\text{SEI}(n)= \\frac{\\text{d}Q_\\text{SEI,tot}}{\\text{d}n}",
+   "narration": "Q sub SEI open parenthesis n close parenthesis equals the fraction with numerator d Q sub SEI comma tot over denominator d n.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2603.13303#1",
+   "latex": "N_K=\\frac{L_c}{b}",
+   "narration": "N sub K equals the fraction with numerator L sub c over denominator b.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2304.04986#4",
+   "latex": "\\mathcal{L} = w_Q\\ell(Q_i^N) + w_{dQ}\\ell(\\frac{dQ^N}{dV_i}) + w_{Q_1}\\ell(Q_i^1) + \\mathcal{R}",
+   "narration": "mathcal L equals w sub Q times ell of Q sub i superscript N plus w sub dQ times ell of the fraction with numerator dQ superscript N over denominator dV sub i plus w sub Q sub 1 times ell of Q sub i superscript 1 plus mathcal R.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2304.04986#1",
+   "latex": "Q_i = \\mathcal{F}\\left(V_i | \\mathcal{O}\\right)",
+   "narration": "Q sub i equals the function F of V sub i given O, all inside parentheses.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "relaxed",
+   "gate": "match"
+  },
+  {
+   "id": "2603.27106#11",
+   "latex": "\\mathbf{z}_i = f_{\\boldsymbol{\\theta}}(\\mathcal{G}_i)",
+   "narration": "z sub i equals f sub theta bold of G sub i end parenthesis.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2402.09128#4",
+   "latex": "P_i = \\frac{TP}{TP + FP}",
+   "narration": "P sub i equals the fraction with numerator TP over denominator TP plus FP.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2203.16091#9",
+   "latex": "N_k = 0, \\text{ on } r = 0",
+   "narration": "N sub k equals zero, on r equals zero.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "1911.02049#9",
+   "latex": "\\alpha_k^{(n)} = \\langle \\mathbf{u}(\\mathbf{x}, t_n) , \\phi_k \\rangle",
+   "narration": "alpha sub k to the power of n equals the inner product of u of x and t sub n with phi sub k.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "relaxed",
+   "gate": "relaxed"
+  },
+  {
+   "id": "1911.02049#11",
+   "latex": "\\dfrac{\\text{d}a_k}{\\text{d}t} = {\\sum_{i=1}^{R} \\mathfrak{L}^{i}_{k} a_i + \\sum_{i=1}^{R} \\sum_{j=1}^{R} \\mathfrak{N}^{ij}_{k} a_i a_j}",
+   "narration": "d a sub k over d t equals the sum from i equals 1 to R of L superscript i subscript k times a sub i plus the sum from i equals 1 to R of the sum from j equals 1 to R of N superscript ij subscript k times a sub i times a sub j.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2603.27106#3",
+   "latex": "E = \\frac{9KG}{3K+G}",
+   "narration": "E equals the fraction with numerator nine K G over denominator three K plus G.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2209.13557#2",
+   "latex": "y_p = \\psi (\\boldsymbol x_p, \\boldsymbol s)",
+   "narration": "y sub p equals psi of bold x sub p and bold s.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2307.10139#9",
+   "latex": "C_{ij}^{std} = \\frac{C_{ij} -\\hat{\\mu}_{ij}}{\\hat{\\sigma}_{ij}} ~~~ \\rm{for} ~~~ i,j = 1,2,3",
+   "narration": "C sub ij superscript std equals the fraction with numerator C sub ij minus mu hat sub ij over sigma hat sub ij for i comma j equals 1 comma 2 comma 3.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2402.09128#5",
+   "latex": "R_i = \\frac{TP}{TP + FN}",
+   "narration": "R sub i equals the fraction with numerator TP over denominator TP plus FN.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2403.16105#8",
+   "latex": "F_f(t)=\\mu F_{\\perp}(t)",
+   "narration": "F sub f of t equals mu times F sub perpendicular of t.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "match",
+   "gate": "match"
+  },
+  {
+   "id": "2606.06415#3",
+   "latex": "\\frac{n^2-1}{n^2+2} = \\frac{4\\pi}{3}N\\alpha",
+   "narration": "the fraction with numerator n squared minus 1 over denominator n squared plus 2 equals the fraction with numerator 4 pi over denominator 3 N alpha.",
+   "faithful": false,
+   "note": "Nα moved into the denominator",
+   "judge_phi4": "relaxed",
+   "gate": "relaxed"
+  },
+  {
+   "id": "2308.08905#0",
+   "latex": "E^i = \\frac{1}{2} \\int d\\vec{r} \\left| \\vec{u^i} (r_{\\perp},t) \\right|^2",
+   "narration": "E to the i equals one-half the integral over d vec r of the magnitude squared of vec u to the i at r sub perpendicular and t end subscript end parenthesis all end exponent.",
+   "faithful": false,
+   "note": "garbled ending, structure unrecoverable",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2509.07164#0",
+   "latex": "G_{22}(\\mathbf{x},k) = \\sum_{i=1}^{N_c+N_u}\\sum_{j=1}^{N_c+N_u}\\Phi(k)^{|i-j|}\\delta_{i,c}\\delta_{j,c}",
+   "narration": "G sub 22 of the vector x and k equals the sum from i equals 1 to N c plus N u times the sum from j equals 1 to N c plus N u of Phi of k raised to the absolute value of i minus j times delta sub i comma c times delta sub j comma c.",
+   "faithful": false,
+   "note": "exponent extent ambiguous (deltas may be read as part of it)",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2308.08905#1",
+   "latex": "\\vec{v_{\\theta}}=\\frac{l}{r}\\vec{e}_{\\theta}",
+   "narration": "v sub theta equals the fraction with numerator l over denominator r times e sub theta.",
+   "faithful": false,
+   "note": "denominator extent ambiguous",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "1907.04555#1",
+   "latex": "\\,= \\int_0^T \\left<f(t),{v} \\right>\\, dt - \\left<\\rho \\mathbf{u}_0,{\\dot{v}}(0)\\right> +\\left<\\rho \\mathbf{u}_1,{v}(0)\\right>",
+   "narration": "equals the integral from 0 to T of the inner product of f of t and v dt minus the inner product of rho u sub 0 and the time derivative of v at 0 plus the inner product of rho u sub 1 and v at 0.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "match"
+  },
+  {
+   "id": "2203.16091#1",
+   "latex": "V(t) = U_\\mathrm{eq} - \\eta_\\mathrm{r} - \\eta_\\mathrm{c} - \\Delta \\phi_\\mathrm{e} - \\Delta \\phi_\\mathrm{s}",
+   "narration": "V of t equals the fraction with numerator U sub eq over 1 minus eta sub r minus eta sub c minus delta phi sub e minus delta phi sub s.",
+   "faithful": false,
+   "note": "invents a fraction that is not in the equation",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2306.15508#6",
+   "latex": "\\lim_{\\delta\\rightarrow0}\\sup_{N\\in\\mathbb{N}}\\mathbb{P} \\left(\\|X^{N,1}_{(\\tau^N+\\delta)}-X^{N,1}_{\\tau^N}\\|_{L^2}>\\eta\\right)=0",
+   "narration": "the limit as delta approaches 0 of the supremum over N in the natural numbers of the probability that the L2 norm of X to the N comma 1 at tau superscript N plus delta minus X to the N comma 1 at tau superscript N is greater than eta equals 0.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2307.10139#2",
+   "latex": "\\text{Percentage Error} = 100 \\times \\frac{||\\boldsymbol{S} - \\boldsymbol{\\hat{S}} ||_2}{||\\boldsymbol{S}||_2 } \\",
+   "narration": "the quantity named Percentage Error equals one hundred times the fraction with numerator the L2 norm of bold S minus bold hat S and denominator the L2 norm of bold S.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "1903.00549#2",
+   "latex": "\\nabla^2 p_\\alpha = 0",
+   "narration": "the Laplacian of p sub alpha equals zero.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "match"
+  },
+  {
+   "id": "2209.13557#8",
+   "latex": "\\boldsymbol x_2^{(1)} = [33, 33] \\text{.}",
+   "narration": "x sub 2 open parenthesis 1 close parenthesis equals the vector with components 33 and 33 end vector period.",
+   "faithful": false,
+   "note": "superscript (1) read as plain (1)",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2002.00806#0",
+   "latex": "i_{\\rm c}(c_{\\rm s},c) = k_{\\rm c} \\; c\\;(c_{\\rm s,max}-c_{\\rm s})",
+   "narration": "i sub c of c sub s and c equals k sub c times c times the fraction with numerator c sub s max minus c sub s over denominator 1.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2606.06415#2",
+   "latex": "E[\\rho_0+\\delta\\rho] = E^0[\\rho_0] + E^1[\\rho_0,\\delta\\rho] + E^2[\\rho_0,(\\delta\\rho)^2] + E^3[\\rho_0,(\\delta\\rho)^3] + \\cdots",
+   "narration": "E of rho sub 0 plus delta rho equals E superscript 0 of rho sub 0 plus E superscript 1 of rho sub 0 comma delta rho plus E superscript 2 of rho sub 0 comma open parenthesis delta rho close parenthesis squared plus E superscript 3 of rho sub 0 comma open parenthesis delta rho close parenthesis cubed plus ellipsis.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2603.27106#5",
+   "latex": "D = \\lim_{t \\to \\infty} \\frac{1}{6t}\\left\\langle \\lvert \\mathbf r(t) - \\mathbf r(0) \\rvert^2 \\right\\rangle",
+   "narration": "D equals the limit as t approaches infinity of the fraction with numerator one over six t times the average of the magnitude of the vector r of t minus the vector r of 0 squared.",
+   "faithful": false,
+   "note": "denominator extent ambiguous",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2306.15508#11",
+   "latex": "\\partial_{t} u = -\\partial_{x}^{4}u - \\partial_{x}^{2} u - u \\partial_{x} u",
+   "narration": "partial t of u equals negative partial x to the fourth power of u minus partial x squared of u minus u times partial x of u.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2004.01458#8",
+   "latex": "L_\\text{mig} =\\frac{2RT\\kappa_{\\text{Li}^+,\\text{SEI}}}{F \\left|j_\\text{int}\\right|}",
+   "narration": "L sub mig equals the fraction with numerator 2 R T kappa sub Li plus comma SEI over F absolute value of j sub int end absolute value.",
+   "faithful": true,
+   "note": "",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  },
+  {
+   "id": "2104.08866#1",
+   "latex": "\\Xi(\\boldsymbol{\\xi};t,\\tau) = \\Xi(\\boldsymbol{\\xi};t,t_i) \\, \\Xi\\left[{}_{(t)}\\mathbf{F}(t_i)\\cdot\\boldsymbol{\\xi};t_i,\\tau\\right]",
+   "narration": "Xi of bold xi semicolon t comma tau equals Xi of bold xi semicolon t comma t sub i space times Xi of the fraction with numerator subscript open parenthesis t close parenthesis F of t sub i dot bold xi semicolon t sub i comma tau end fraction.",
+   "faithful": false,
+   "note": "invents a fraction",
+   "judge_phi4": "mismatch",
+   "gate": "mismatch"
+  }
+ ]
+}

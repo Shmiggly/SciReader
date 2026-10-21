@@ -47,8 +47,10 @@ Requires Ollama with `qwen3.5:9b`, `qwen3.5:4b`, `gemma4:12b` and `phi4:14b`.
 
 Add queries in `scripts/collect.py` (field, search text) or arXiv IDs to `SAMPLES`, rerun the collector, then `run.py`. Cached model calls make reruns cheap. Contributions of new fields (electrochemistry, astrophysics…) and of adjudicated items are welcome.
 
+**Manual adjudication (30 narrations, `bench/data/adjudication.json`).** We checked 30 unverified 9B narrations by hand (15 the judge accepted, 15 it rejected). The judge's "faithful" calls were right 14/15 times, but its "error" calls only 7/15 times: it often fails to transcribe correct long readings. So the judge underestimates every pipeline; correcting for that, unverified narration still changes about a third of equations. The gate verified 15 of the 30 narrations and **none of them was wrong**; it rejected (or flagged as uncertain) all 8 real errors, and rejected 6 correct narrations, which then fall back to the rule-based reading.
+
 ## Caveats
 
 - The naive condition is simulated from MathML token order, not extracted from rendered PDFs.
-- Judge errors count against every condition; a manually adjudicated subset separates narrator from judge errors (to do).
+- Judge errors count against every condition (see the adjudication above).
 - The units snippets were written by the same team that wrote the normalizer.

@@ -58,6 +58,7 @@ An open benchmark of how faithfully read-aloud pipelines speak math, with an ana
 **What we found** (judge: `phi4:14b`, a third model family; details and caveats in [`bench/README.md`](bench/README.md)):
 - **Unverified local LLM narration silently changes about 1 in 3 equations.** On the 63 equations the judge can reliably transcribe (it reconstructs their rule-based reading), `qwen3.5:9b` narrations were written back faithfully only 64 % of the time; `qwen3.5:4b` 57 %.
 - **Verification fixes most of it.** The gate catches about 4 in 5 of those errors (recall 78–81 %), raising faithful readings to **89 %** (9B) and **87 %** (4B), while still using natural AI narration for 45 % of all equations (99 of 220) and the rule-based reading for the rest.
+- **Verified means verified:** in a manual check of 30 narrations, none of the gate-verified ones was wrong, and every real error was rejected or flagged.
 - **A generic reader's text-layer reading** is faithful for only 41 % of those equations.
 - Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 24 % < rules 29 % < LLM 32 % < **LLM + verify 38 %**.
 
