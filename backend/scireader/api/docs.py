@@ -25,6 +25,10 @@ USER_AGENT = "SciReader/0.1 (open-source paper reader; https://github.com/Shmigg
 
 def _open_pdf(path: Path, name: str, source: dict) -> dict:
     doc_id = store.add_pdf(path, name, source)
+    doc = store.document(doc_id)
+    if doc is not None and source.get("type") == "arxiv" and doc.get("source") != source:
+        doc["source"] = source  # e.g. parsed earlier from a local file, now known to be on arXiv
+        store.write_json(doc_id, "document.json", doc)
     st = jobs.start_parse(doc_id, store)
     return {"id": doc_id, "status": st}
 
