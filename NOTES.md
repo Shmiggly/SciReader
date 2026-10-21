@@ -18,7 +18,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 
 - **Phase:** PRE-HACKATHON. No app code yet (code gets written during the event).
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
-- **Toolchain:** installed and verified 2026-10-20 (§3).
+- **Toolchain:** installed and verified 2026-10-20 (§3). GPU + Kokoro TTS smoke test passed the same night (§3).
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader (prep committed and pushed).
 - **Next actions (user):** restart the Claude app, finish the rest of §4. At kickoff, fill the blanks at the top of `docs/prompts/kickoff.md` and send it as the first message of a fresh session opened in this repo.
 
@@ -61,13 +61,22 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - The problem: readers who lose their place reread the same lines; audiobooks help with books. Existing open-source readers fail on papers (start at the first character, read everything, bad voices, no section selection).
 - **Machine:** Windows 11 Home, PowerShell 5.1 + Git Bash. RTX 4070 (12 GB VRAM, driver 617.42), 64 GB RAM.
   Disk: **D: ~840 GB free** (use it for models/caches), **C: 89 % full (~107 GB free)**: never let caches default to C:.
-- **Toolchain (installed & verified 2026-10-20):** git 2.55 · uv 0.13.4 · Python 3.12.15 (uv-managed, `D:\tools\uv\python`) · Node 24.20.0 LTS + npm 11.19 (`C:\Program Files\nodejs`) · gh 2.102.0 (`C:\Program Files\GitHub CLI`, **not logged in yet**). Not installed: Ollama, Docker. No `ANTHROPIC_API_KEY` yet.
+- **Toolchain (installed & verified 2026-10-20):** git 2.55 · uv 0.13.4 · Python 3.12.15 (uv-managed, `D:\tools\uv\python`) · Node 24.20.0 LTS + npm 11.19 (`C:\Program Files\nodejs`) · gh 2.102.0 (`C:\Program Files\GitHub CLI`, logged in, see GitHub below). Not installed: Ollama, Docker. No `ANTHROPIC_API_KEY` yet.
 - **User env vars (HKCU) set 2026-10-20:** `HF_HOME=D:\models\hf` · `UV_CACHE_DIR=D:\cache\uv` · `UV_PYTHON_INSTALL_DIR=D:\tools\uv\python` · `UV_TOOL_DIR=D:\tools\uv\tools` · `NPM_CONFIG_CACHE=D:\cache\npm` · `GH_CONFIG_DIR=D:\tools\gh`. App model dir planned: `D:\models\scireader`.
 - **Python usage:** always `uv run …` / `uv venv`. Bare `python` hits the Microsoft Store alias; `~\.local\bin` (uv's `python3.12.exe` shim) is not on PATH.
 - **Conda:** Miniconda3 (Python 3.12.4) and Anaconda Desktop are installed (plus old Anaconda2 leftovers), but they're not on PATH and not hooked into PowerShell or bash. Don't use them for this project and don't run `conda init` (an auto-activated base env can confuse uv's interpreter discovery). uv is the only Python toolchain.
 - **gh config:** `GH_CONFIG_DIR=D:\tools\gh` (user env var, set 2026-10-20). gh's default `%APPDATA%\GitHub CLI` would be redirected inside the Claude app (see the MSIX gotcha below); this way the app and normal terminals share one login. The user ran `gh auth login --web` (HTTPS) from the app's Terminal panel on 2026-10-20. Verify with `gh auth status`.
 - **Gotcha: Claude desktop is an MSIX-packaged app.** Shells it launches have writes to `%APPDATA%`/`%LOCALAPPDATA%` silently redirected to `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\…`, invisible to normal terminals (and it broke uv's Python junction). Keep tools and caches on D: through the env vars above. Installers run through winget/msiexec are unaffected.
 - **Gotcha: env changes need a restart.** Shells inherit the environment the Claude app started with. After installing tools or changing env vars, restart the Claude app (or refresh `$env:Path` from the registry inside the command).
+- **GPU + TTS smoke test (2026-10-20, passed).** Scratch venv `D:\scratch\gpu-smoke\.venv` (outside the repo; disposable).
+  - PyTorch **2.14.1+cu132** (CUDA 13.2), installed with `uv pip install torch --torch-backend=auto`. Sees the RTX 4070; 20 × 4096² matmuls in 0.18 s. Wheels are now in the uv cache on D:, so the project install will be fast.
+  - **Kokoro 0.9.4** (misaki 0.9.4, spaCy 3.8, espeakng-loader 0.2.4). Weights `hexgrad/Kokoro-82M` are in `D:\models\hf` (347 MB incl. all voices). Voice `af_heart`.
+  - Timings on GPU: cold import ~9.5 s, model load 1.6 s, then **~0.1 s per sentence** (5.7–8.5 s of audio, 61–84× real time). Peak VRAM **0.7 GB**.
+  - **Word timestamps: yes.** Each `KPipeline` result has `.tokens` with `.text`, `.phonemes`, `.start_ts`, `.end_ts` (seconds); 38/38 words were timed.
+  - Normalizer evidence: "1.12 eV at 300 K" is spoken as "one point one two **ee-vee** at three hundred **kay**", so units need our normalizer. "H equals p squared over 2 m" (already spelled out) is fine.
+- **Gotcha: spaCy model.** misaki auto-downloads `en_core_web_sm` on first use by shelling out to an installer, and that fails inside a non-activated uv venv ("No virtual environment found"). Declare it as an explicit dependency: `en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl`.
+- **Gotcha: CUDA torch in a uv project.** `--torch-backend=auto` only works with `uv pip`. In `pyproject.toml`, add the PyTorch index (`https://download.pytorch.org/whl/cu132`) as an explicit `[[tool.uv.index]]` and pin `torch` to it in `[tool.uv.sources]`.
+- **espeak-ng:** no separate Windows installer was needed (bundled by `espeakng-loader`). Hugging Face warns about unauthenticated requests (harmless); set `HF_HUB_OFFLINE=1` once models are cached so the app runs offline.
 - **Repo:** local `D:\Github\SciReader\SciReader`, branch `main`, remote `origin` = https://github.com/Shmiggly/SciReader (**PRIVATE** until submission; flipping it public is in M7). The outer `D:\Github\SciReader` folder only holds this repo.
 - **GitHub:** account `Shmiggly`, gh logged in over HTTPS (token in Windows Credential Manager, config in `D:\tools\gh`). `gh auth setup-git` is done, so `git push` uses gh's login. That needs `GH_CONFIG_DIR` in the environment: restart the Claude app, or set `$env:GH_CONFIG_DIR = 'D:\tools\gh'` in the command. Git identity: `Shmiggly` (global config). In PowerShell 5.1, commit with `git commit -F <file>` because here-strings piped to `-F -` don't arrive.
 
@@ -80,7 +89,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - [x] uv, Python 3.12, Node LTS, GitHub CLI installed; caches and Python moved to D: (see §3). Done 2026-10-20.
 - [x] gh logged in as Shmiggly; private repo `Shmiggly/SciReader` created and pushed. Done 2026-10-20.
 - [ ] **Restart the Claude desktop app** before kickoff so new sessions inherit the new PATH and env vars.
-- [ ] Optional pre-downloads (saves ~15 min at kickoff): `uvx --from huggingface_hub hf download hexgrad/Kokoro-82M`. Optional GPU smoke test (CUDA PyTorch + Kokoro) to catch Windows/CUDA/espeak issues tonight rather than during the unattended stretch.
+- [x] Kokoro-82M pre-downloaded and GPU smoke test passed (results in §3). Done 2026-10-20.
 - [ ] Optional: `winget install --id Ollama.Ollama -e` (fully offline LLM fallback; a 7–8B model fits in 12 GB).
 - [ ] Get an Anthropic API key or sponsor credits; at kickoff put it in `.env` (gitignored), never in chat or commits.
 - [ ] Pick 3–5 papers from your own field that are genuinely hard to read (equations, units, figures). arXiv IDs are ideal.
@@ -96,7 +105,8 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - **2026-10-20 · Fidelity principle:** body text is read verbatim (deterministic normalization only). AI touches only equations, figures and tables, plus on-demand features, and always labels itself.
 - **2026-10-20 · Stack defaults:** Python 3.12 + uv + FastAPI backend; Vite + React + TS + pdfjs-dist frontend; Node helper for Speech Rule Engine; local web app first, desktop packaging only as a stretch.
 - **2026-10-20 · Parser:** Docling first (MIT, Windows-friendly, layout labels + bbox + reading order + formula LaTeX). Time-boxed MinerU 2.5 bake-off (best formula scores on OmniDocBench in 2026; GPU; license moved to a custom Apache-based license in Apr 2026, fine for open source). Marker is avoided as default (weights restricted above revenue thresholds; verify if revisited).
-- **2026-10-20 · TTS:** Kokoro-82M (Apache-2.0, fast, good quality, CPU or GPU) as default. Candidates for a 2nd engine: Piper (low-end CPU), Chatterbox (MIT, cloning), Qwen3-TTS (Apache-2.0). Avoid XTTS-v2 as default (non-commercial license). Word timestamps from Kokoro are **unverified**: fall back to sentence-level highlight.
+- **2026-10-20 · TTS:** Kokoro-82M (Apache-2.0, fast, good quality, CPU or GPU) as default. Candidates for a 2nd engine: Piper (low-end CPU), Chatterbox (MIT, cloning), Qwen3-TTS (Apache-2.0). Avoid XTTS-v2 as default (non-commercial license).
+- **2026-10-20 · Word highlighting moves to P0 (M2).** The smoke test showed Kokoro returns per-word timestamps and synthesizes a sentence in ~0.1 s, so word-level highlight is cheap and directly serves readers who lose their place.
 - **2026-10-20 · LLM:** provider abstraction. Claude via API when a key exists (claude-sonnet-5-5 for quality, claude-haiku-5-5 for bulk), any OpenAI-compatible local server otherwise, and a full no-LLM mode.
 
 ---
@@ -128,11 +138,11 @@ Times are from kickoff. Details in the kickoff prompt §7.
 
 - [ ] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads
 - [ ] M1 (0:20–1:15) Parse → Document JSON, sentence split, normalizer + tests, Kokoro synth, MinerU bake-off
-- [ ] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, highlight, auto-scroll, skipping
+- [ ] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping
 - [ ] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [ ] M4 AI layer: verified equation narration, figure narration, explain/ask with citations, summaries
 - [ ] M5 SciSpeech-Bench + figure
-- [ ] M6 Reflow view, word-level highlight, audiobook export, 2nd TTS engine, arXiv source mode
+- [ ] M6 Reflow view, audiobook export, 2nd TTS engine, arXiv source mode
 - [ ] M7 Ship: freeze at T-6 h; README, write-up, demo script, video, **make the repo public** (private until then), submission form (by Thu 7 PM CDT)
 
 ---
