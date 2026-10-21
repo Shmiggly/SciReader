@@ -29,6 +29,7 @@ Researchers with dyslexia, ADHD or low vision, non-native readers, and anyone li
 2. A different model family (`gemma4:12b`), which never sees the LaTeX, writes the narration back as LaTeX.
 3. Both are compared as canonical MathML trees (MathJax), not as strings.
 4. On a mismatch the narrator gets one repair round ("'k_B T' came back as 'k_B' times 'T'"). If it still fails, SciReader falls back to the rule-based reading, and if even that is impossible it says only "Equation 3".
+5. Only an exact round trip is spoken as AI narration. "Uncertain" (same symbols, different grouping) gets the rule-based reading too, because grouping is exactly where AI readings go silently wrong.
 
 Each equation gets a badge on the PDF: *checking…*, ✓ verified, ? uncertain, ✗ rules, unreadable. Clicking it shows the equation (KaTeX), exactly what is spoken, and the check's attempts. Playback never waits for the AI.
 
@@ -51,17 +52,19 @@ Each equation gets a badge on the PDF: *checking…*, ✓ verified, ? uncertain,
 An open benchmark of how faithfully read-aloud pipelines speak math, with an analysis notebook in [marimo](https://marimo.io) (`bench/analysis.py`, static export in `bench/analysis.html`).
 
 - **Equations:** 220 display equations from 24 open arXiv papers (115 polymers/materials, 40 physics, 35 chemistry, 30 math), with the LaTeX from the arXiv source as ground truth. Each pipeline's speech is transcribed back to LaTeX by an independent judge model from a third family (`phi4:14b`) and compared structurally.
-- **Units and chemistry by sound:** 99 snippets phonemized with the voice's own phonemizer. **A generic reader mispronounces 47 % of them; SciReader 0 %** (caveat: we wrote the snippets knowing the normalizer's rules).
+- **Units and chemistry by sound**, phonemized with the voice's own phonemizer. On **50 held-out snippets sampled automatically from 18 papers** (reference readings by a separate model, corrected blind to SciReader's output), **a generic reader mispronounces 36 %, SciReader 10 %**. On the 99 snippets we wrote ourselves it is 47 % vs 0 %, which says little, since we wrote them knowing the rules.
 
 ![SciSpeech-Bench: share of equations a listener can write back, per pipeline](bench/figures/faithfulness.png)
 
 **What we found** (judge: `phi4:14b`, a third model family; details and caveats in [`bench/README.md`](bench/README.md)):
-- **Unverified local LLM narration silently changes about 1 in 3 equations.** On the 63 equations the judge can reliably transcribe (it reconstructs their rule-based reading), `qwen3.5:9b` narrations were written back faithfully only 64 % of the time; `qwen3.5:4b` 57 %.
-- **Verification fixes most of it.** The gate catches about 4 in 5 of those errors (recall 78–81 %), raising faithful readings to **89 %** (9B) and **87 %** (4B), while still using natural AI narration for 45 % of all equations (99 of 220) and the rule-based reading for the rest.
-- **Verified means verified:** in a manual check of 30 narrations, none of the gate-verified ones was wrong, and every real error was rejected or flagged.
-- **A generic reader's text-layer reading** is faithful for only 41 % of those equations.
-- **Naturalness (blind ratings by the author, 10 equations × 3 readings, 1–5):** naive 2.6, rules 3.8, SciReader's verified narration 4.0. Verified AI narration is at least as easy to follow as the rule-based reading (better on 5 of 10, tied on 2), and both are far above a generic reader.
-- Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 24 % < rules 29 % < LLM 32 % < **LLM + verify 38 %**.
+- **Unverified local LLM narration silently changes about 1 in 3 equations.** On the 66 equations the judge can reliably transcribe (it reconstructs their rule-based reading), `qwen3.5:9b` narrations were written back faithfully only 64 % of the time; `qwen3.5:4b` 59 %.
+- **Verification fixes most of it.** The gate catches 3 in 4 of those errors (recall 75 % for 9B, 78 % for 4B). Speaking AI narration only after an exact round trip raises faithful readings to **88 %** (9B) and **91 %** (4B); AI narration is used for 37 % of all equations (81 of 220), the rule-based reading for the rest. A small narrator plus the gate does as well as a bigger one.
+- **Verified means verified:** in a manual check of 30 narrations (adjudicated by the agent that built the pipeline, so a sanity check rather than an independent audit), none of the 15 gate-verified ones was wrong, and every real error was rejected or marked uncertain. One of the two uncertain narrations was a real error (the Lorentz–Lorenz equation with Nα moved into the denominator), which is why uncertain narrations are not spoken.
+- **A generic reader's text-layer reading** is faithful for only 44 % of those equations.
+- **Naturalness (blind ratings by the author, 10 equations × 3 readings, 1–5):** naive 2.6, rules 3.8, AI narration as rated 4.0. Three of the ten rated AI narrations were uncertain, which SciReader no longer speaks; with the rules reading in their place, SciReader as shipped scores 3.8, the same as rules. So verified AI narration is about as easy to follow as the rule-based reading, and both are far above a generic reader (n = 10, one rater).
+- Over all 220 equations the judge itself is the ceiling (it fails on many long equations even from a perfect reading), but the order holds: naive 24 % < rules 30 % < LLM 32 % < **LLM + verify 37 %**.
+
+![Units and chemistry by sound: our own snippets vs held-out text](bench/figures/units_heldout.png)
 
 In the left panel, rules = 100 % by construction (that is how the subset is defined). The analysis is a [marimo](https://marimo.io) notebook: open `bench/analysis.html` without installing anything, or run `marimo edit bench/analysis.py` to filter by field and judge.
 
