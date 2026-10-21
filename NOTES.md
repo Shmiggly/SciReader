@@ -19,7 +19,8 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **Phase:** PRE-HACKATHON. No app code yet (code gets written during the event).
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Toolchain:** installed and verified 2026-10-20 (§3).
-- **Next actions (user):** `gh auth login` + create the repo, restart the Claude app, finish the rest of §4. At kickoff, fill the blanks at the top of `docs/prompts/kickoff.md` and send it as the first message of a fresh session opened in this repo.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader (prep committed and pushed).
+- **Next actions (user):** restart the Claude app, finish the rest of §4. At kickoff, fill the blanks at the top of `docs/prompts/kickoff.md` and send it as the first message of a fresh session opened in this repo.
 
 ---
 
@@ -67,7 +68,8 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **gh config:** `GH_CONFIG_DIR=D:\tools\gh` (user env var, set 2026-10-20). gh's default `%APPDATA%\GitHub CLI` would be redirected inside the Claude app (see the MSIX gotcha below); this way the app and normal terminals share one login. The user ran `gh auth login --web` (HTTPS) from the app's Terminal panel on 2026-10-20. Verify with `gh auth status`.
 - **Gotcha: Claude desktop is an MSIX-packaged app.** Shells it launches have writes to `%APPDATA%`/`%LOCALAPPDATA%` silently redirected to `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\…`, invisible to normal terminals (and it broke uv's Python junction). Keep tools and caches on D: through the env vars above. Installers run through winget/msiexec are unaffected.
 - **Gotcha: env changes need a restart.** Shells inherit the environment the Claude app started with. After installing tools or changing env vars, restart the Claude app (or refresh `$env:Path` from the registry inside the command).
-- **Repo:** `D:\Github\SciReader\SciReader` (git, one "Initial commit", README stub, **no remote yet**). The outer `D:\Github\SciReader` folder only holds this repo.
+- **Repo:** local `D:\Github\SciReader\SciReader`, branch `main`, remote `origin` = https://github.com/Shmiggly/SciReader (**PRIVATE** until submission; flipping it public is in M7). The outer `D:\Github\SciReader` folder only holds this repo.
+- **GitHub:** account `Shmiggly`, gh logged in over HTTPS (token in Windows Credential Manager, config in `D:\tools\gh`). `gh auth setup-git` is done, so `git push` uses gh's login. That needs `GH_CONFIG_DIR` in the environment: restart the Claude app, or set `$env:GH_CONFIG_DIR = 'D:\tools\gh'` in the command. Git identity: `Shmiggly` (global config). In PowerShell 5.1, commit with `git commit -F <file>` because here-strings piped to `-F -` don't arrive.
 
 ---
 
@@ -76,7 +78,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 Installs can trigger UAC prompts, which would stall an unattended agent, so they happen tonight.
 
 - [x] uv, Python 3.12, Node LTS, GitHub CLI installed; caches and Python moved to D: (see §3). Done 2026-10-20.
-- [ ] `gh auth login` (the user does this; it's their GitHub account), then create the GitHub repo and add it as `origin`. It must be **public** by submission time.
+- [x] gh logged in as Shmiggly; private repo `Shmiggly/SciReader` created and pushed. Done 2026-10-20.
 - [ ] **Restart the Claude desktop app** before kickoff so new sessions inherit the new PATH and env vars.
 - [ ] Optional pre-downloads (saves ~15 min at kickoff): `uvx --from huggingface_hub hf download hexgrad/Kokoro-82M`. Optional GPU smoke test (CUDA PyTorch + Kokoro) to catch Windows/CUDA/espeak issues tonight rather than during the unattended stretch.
 - [ ] Optional: `winget install --id Ollama.Ollama -e` (fully offline LLM fallback; a 7–8B model fits in 12 GB).
