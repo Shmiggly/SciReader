@@ -19,6 +19,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **Phase:** PRE-HACKATHON. No app code yet (code gets written during the event).
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Toolchain:** installed and verified 2026-10-20 (§3). GPU + Kokoro TTS smoke test passed the same night (§3).
+- **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work. Both tested on this machine (§3).
 - **GitHub:** private repo https://github.com/Shmiggly/SciReader (prep committed and pushed).
 - **Next actions (user):** restart the Claude app, finish the rest of §4. At kickoff, fill the blanks at the top of `docs/prompts/kickoff.md` and send it as the first message of a fresh session opened in this repo.
 
@@ -61,8 +62,8 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - The problem: readers who lose their place reread the same lines; audiobooks help with books. Existing open-source readers fail on papers (start at the first character, read everything, bad voices, no section selection).
 - **Machine:** Windows 11 Home, PowerShell 5.1 + Git Bash. RTX 4070 (12 GB VRAM, driver 617.42), 64 GB RAM.
   Disk: **D: ~840 GB free** (use it for models/caches), **C: 89 % full (~107 GB free)**: never let caches default to C:.
-- **Toolchain (installed & verified 2026-10-20):** git 2.55 · uv 0.13.4 · Python 3.12.15 (uv-managed, `D:\tools\uv\python`) · Node 24.20.0 LTS + npm 11.19 (`C:\Program Files\nodejs`) · gh 2.102.0 (`C:\Program Files\GitHub CLI`, logged in, see GitHub below). Not installed: Ollama, Docker. No `ANTHROPIC_API_KEY` yet.
-- **User env vars (HKCU) set 2026-10-20:** `HF_HOME=D:\models\hf` · `UV_CACHE_DIR=D:\cache\uv` · `UV_PYTHON_INSTALL_DIR=D:\tools\uv\python` · `UV_TOOL_DIR=D:\tools\uv\tools` · `NPM_CONFIG_CACHE=D:\cache\npm` · `GH_CONFIG_DIR=D:\tools\gh`. App model dir planned: `D:\models\scireader`.
+- **Toolchain (installed & verified 2026-10-20):** git 2.55 · uv 0.13.4 · Python 3.12.15 (uv-managed, `D:\tools\uv\python`) · Node 24.20.0 LTS + npm 11.19 (`C:\Program Files\nodejs`) · gh 2.102.0 (`C:\Program Files\GitHub CLI`, logged in, see GitHub below) · Ollama 0.40.6 (`%LOCALAPPDATA%\Programs\Ollama`). Not installed: Docker. No cloud API keys, by design (the app is fully offline).
+- **User env vars (HKCU) set 2026-10-20:** `HF_HOME=D:\models\hf` · `UV_CACHE_DIR=D:\cache\uv` · `UV_PYTHON_INSTALL_DIR=D:\tools\uv\python` · `UV_TOOL_DIR=D:\tools\uv\tools` · `NPM_CONFIG_CACHE=D:\cache\npm` · `GH_CONFIG_DIR=D:\tools\gh` · `OLLAMA_MODELS=D:\models\ollama`. App model dir planned: `D:\models\scireader`.
 - **Python usage:** always `uv run …` / `uv venv`. Bare `python` hits the Microsoft Store alias; `~\.local\bin` (uv's `python3.12.exe` shim) is not on PATH.
 - **Conda:** Miniconda3 (Python 3.12.4) and Anaconda Desktop are installed (plus old Anaconda2 leftovers), but they're not on PATH and not hooked into PowerShell or bash. Don't use them for this project and don't run `conda init` (an auto-activated base env can confuse uv's interpreter discovery). uv is the only Python toolchain.
 - **gh config:** `GH_CONFIG_DIR=D:\tools\gh` (user env var, set 2026-10-20). gh's default `%APPDATA%\GitHub CLI` would be redirected inside the Claude app (see the MSIX gotcha below); this way the app and normal terminals share one login. The user ran `gh auth login --web` (HTTPS) from the app's Terminal panel on 2026-10-20. Verify with `gh auth status`.
@@ -77,6 +78,12 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 - **Gotcha: spaCy model.** misaki auto-downloads `en_core_web_sm` on first use by shelling out to an installer, and that fails inside a non-activated uv venv ("No virtual environment found"). Declare it as an explicit dependency: `en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl`.
 - **Gotcha: CUDA torch in a uv project.** `--torch-backend=auto` only works with `uv pip`. In `pyproject.toml`, add the PyTorch index (`https://download.pytorch.org/whl/cu132`) as an explicit `[[tool.uv.index]]` and pin `torch` to it in `[tool.uv.sources]`.
 - **espeak-ng:** no separate Windows installer was needed (bundled by `espeakng-loader`). Hugging Face warns about unauthenticated requests (harmless); set `HF_HUB_OFFLINE=1` once models are cached so the app runs offline.
+- **Ollama (installed 2026-10-20).** Server runs from the tray app at login (outside the Claude sandbox) on `http://127.0.0.1:11434`. Models live in `D:\models\ollama`: `qwen3.5:9b` (6.6 GB, text + images, 256K context) and `gemma4:12b` (8.0 GB, 11.9B Q4_K_M, text + images). Both the native `/api/chat` (with `images`, `think: false`) and the OpenAI-compatible `/v1/chat/completions` work.
+- **Measured VRAM (nvidia-smi, 12 GB card):** other apps ~2.8 GB at idle · `qwen3.5:9b` ~6.2 GB · `gemma4:12b` ~8.5 GB · Kokoro ~0.7 GB. So qwen + Kokoro fit together while reading (~9.7 GB total); gemma can't share with qwen (Ollama swaps them). **`ollama ps` under-reports gemma4** (shows 1.1 GB): trust nvidia-smi.
+- **Load times:** cold first load from disk 18–28 s; warm swap ~5 s. After loading, ~70 tokens/s for qwen3.5:9b, so narrating one equation takes 0.2–0.7 s.
+- **LLM smoke test (2026-10-20), 8 physics/chem equations:** qwen3.5:9b narrations were all faithful and natural. gemma4:12b blind back-transcription recovered 7/8. The miss (Planck's law) is the textbook case for verification: "e to the h nu divided by k sub B T" is ambiguous about the denominator, and the transcriber also dropped "(T)". Figure test: qwen3.5:9b described a synthetic two-phase XRD plot correctly (axes, units, legend, all 10 peak positions) in ~10 s including a model swap.
+- **Gotcha: SymPy's LaTeX parser (lark backend) failed on 6 of 8 equations** (`\Delta`, `\varepsilon`, `\hbar`, `\nabla`, integrals, `\mathrm`). Plain string similarity is also misleading (0.70 for a correct Arrhenius round trip). The verifier needs canonicalized structural comparison (see §5).
+- Test scripts and outputs are in the scratchpad and `D:\scratch\gpu-smoke\out` (throwaway, not project code).
 - **Repo:** local `D:\Github\SciReader\SciReader`, branch `main`, remote `origin` = https://github.com/Shmiggly/SciReader (**PRIVATE** until submission; flipping it public is in M7). The outer `D:\Github\SciReader` folder only holds this repo.
 - **GitHub:** account `Shmiggly`, gh logged in over HTTPS (token in Windows Credential Manager, config in `D:\tools\gh`). `gh auth setup-git` is done, so `git push` uses gh's login. That needs `GH_CONFIG_DIR` in the environment: restart the Claude app, or set `$env:GH_CONFIG_DIR = 'D:\tools\gh'` in the command. Git identity: `Shmiggly` (global config). In PowerShell 5.1, commit with `git commit -F <file>` because here-strings piped to `-F -` don't arrive.
 
@@ -90,16 +97,20 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - [x] gh logged in as Shmiggly; private repo `Shmiggly/SciReader` created and pushed. Done 2026-10-20.
 - [ ] **Restart the Claude desktop app** before kickoff so new sessions inherit the new PATH and env vars.
 - [x] Kokoro-82M pre-downloaded and GPU smoke test passed (results in §3). Done 2026-10-20.
-- [ ] Optional: `winget install --id Ollama.Ollama -e` (fully offline LLM fallback; a 7–8B model fits in 12 GB).
-- [ ] Get an Anthropic API key or sponsor credits; at kickoff put it in `.env` (gitignored), never in chat or commits.
+- [x] Ollama 0.40.6 installed; `qwen3.5:9b` + `gemma4:12b` pulled to D: and tested (§3). Done 2026-10-20.
+- [ ] Before kickoff: check that the Ollama icon is in the system tray (its server starts at login).
 - [ ] Pick 3–5 papers from your own field that are genuinely hard to read (equations, units, figures). arXiv IDs are ideal.
-- [ ] Claude desktop app: session in **auto** permission mode (not plan mode), keep-awake on, Windows sleep off while plugged in.
+- [ ] Kickoff session: open it directly on the repo folder (**not** in a worktree, so commits land on `main`) and pick **auto** mode in the message box (new sessions default to asking for permission, which would stall the unattended run). Keep-awake is already on, battery included, but a closed laptop lid still sleeps.
 - [ ] At kickoff: read the sponsor prize rules (Valency, Adaption, marimo) on Slack and note them in the kickoff prompt.
 
 ---
 
 ## 5. Decision log (newest first; one line of reasoning each)
 
+- **2026-10-20 · Fully offline (user requirement).** The app must work with Wi-Fi off: no cloud APIs, no CDNs, no runtime downloads. arXiv import is the only online feature and must fail gracefully. No cloud API keys anywhere. This also strengthens the pitch: private, free, usable on unpublished work.
+- **2026-10-20 · Local LLMs.** `qwen3.5:9b` narrates equations, describes figures, and does explain/ask/summaries. `gemma4:12b` (a different model family, so errors are less correlated) only back-transcribes for verification. Run verification in two batches per paper (all narrations, then all back-transcriptions with `keep_alive: 0`) so the models swap once, not per equation. Use `think: false` and temperature 0 for narration and transcription. No cloud provider is implemented; the provider interface stays generic.
+- **2026-10-20 · Verifier design.** Primary check: convert both LaTeX strings to MathML with MathJax (the same Node helper as SRE) and compare canonicalized trees (flatten `mrow`; unify `\varepsilon`/`\epsilon`, `\dfrac`/`\frac`, implicit vs explicit multiplication, `e^{x}`/`\exp`, `\mathrm{A}`/`A`). SymPy equivalence or numeric spot checks are secondary, only when both sides parse. On a mismatch, retry once by telling the narrator what was lost, then fall back to SRE speech.
+- **2026-10-20 · Git workflow.** Work on `main` (solo, no reviewer). Tag every working milestone (`m0-setup`, …, `m2-slice`, …, `demo-ready`) and push tags for one-command rollback. Use a short-lived branch only for a risky swap. Don't start the kickoff session in a worktree.
 - **2026-10-20 · Direction:** Idea 1 (science-aware reader) over Idea 2 (AI safety for physical sciences). It's buildable solo in 36 h, an agent can build it unattended from a spec, it demos well in a 4-min video, and it answers a real need. Its Relevance risk is countered by being science-native (math/units/chemistry) and by a measurable benchmark. **Confirmed by the user.**
 - **2026-10-20 · Combination:** the AI-reliability angle goes into **verified narration**: every LLM rewrite of math is back-transcribed and checked for symbolic equivalence against the source LaTeX; failures fall back to deterministic speech. The benchmark measures how often unverified LLM narration silently changes the math. That's a real faithfulness/hallucination eval at small scale.
 - **2026-10-20 · Fidelity principle:** body text is read verbatim (deterministic normalization only). AI touches only equations, figures and tables, plus on-demand features, and always labels itself.
@@ -107,7 +118,6 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - **2026-10-20 · Parser:** Docling first (MIT, Windows-friendly, layout labels + bbox + reading order + formula LaTeX). Time-boxed MinerU 2.5 bake-off (best formula scores on OmniDocBench in 2026; GPU; license moved to a custom Apache-based license in Apr 2026, fine for open source). Marker is avoided as default (weights restricted above revenue thresholds; verify if revisited).
 - **2026-10-20 · TTS:** Kokoro-82M (Apache-2.0, fast, good quality, CPU or GPU) as default. Candidates for a 2nd engine: Piper (low-end CPU), Chatterbox (MIT, cloning), Qwen3-TTS (Apache-2.0). Avoid XTTS-v2 as default (non-commercial license).
 - **2026-10-20 · Word highlighting moves to P0 (M2).** The smoke test showed Kokoro returns per-word timestamps and synthesizes a sentence in ~0.1 s, so word-level highlight is cheap and directly serves readers who lose their place.
-- **2026-10-20 · LLM:** provider abstraction. Claude via API when a key exists (claude-sonnet-5-5 for quality, claude-haiku-5-5 for bulk), any OpenAI-compatible local server otherwise, and a full no-LLM mode.
 
 ---
 
@@ -115,9 +125,9 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 
 **Pitch:** SciReader is an open-source, local-first reading companion for scientific papers. The PDF stays in front of you; a parsed, structured copy runs in the background so you can click anywhere to start listening, follow a highlight on the real page, and hear equations, units and chemistry spoken the way a scientist would say them, with AI narration that checks itself against the source.
 
-**Principles:** PDF-first · start anywhere · read like a scientist · faithful by default · local & private · one-click models · focus aids for people who lose their place.
+**Principles:** PDF-first · start anywhere · read like a scientist · faithful by default · fully offline & private · one-click models · focus aids for people who lose their place.
 
-**Novelty pillars:** (1) science-aware speech, (2) verified math narration, (3) SciSpeech-Bench, an open benchmark and the write-up figure, (4) local/private, so it works on unpublished manuscripts and papers under review.
+**Novelty pillars:** (1) science-aware speech, (2) verified math narration, (3) SciSpeech-Bench, an open benchmark and the write-up figure, (4) fully offline on a consumer GPU, so it works on unpublished manuscripts, papers under review, and with Wi-Fi off.
 
 **Competitors (closed, cloud, subscription):** Paper2Audio, Audiolizer, Listening, Audeus, Speechify, ElevenReader. None is open source or local, and none publishes how faithfully it renders math.
 
@@ -150,8 +160,7 @@ Times are from kickoff. Details in the kickoff prompt §7.
 ## 9. Open questions for the user
 
 1. Domain, and 3–5 sample papers?
-2. Which LLM access will you have (Anthropic key, sponsor credits, local only)?
-3. Sponsor prize rules (Valency / Adaption / marimo): is one worth targeting? (marimo is cheap to target: the benchmark analysis could be a marimo notebook.)
+2. Sponsor prize rules (Valency / Adaption / marimo): is one worth targeting? (marimo is cheap to target: the benchmark analysis could be a marimo notebook.)
 
 ---
 

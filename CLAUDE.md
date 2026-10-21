@@ -14,4 +14,5 @@
 - Claude desktop is MSIX-packaged: anything your shells write under `%APPDATA%`/`%LOCALAPPDATA%` lands in a private redirected copy. Don't install tools or caches there.
 - Use `uv run` for Python; bare `python` is the Microsoft Store stub.
 - Never commit secrets (`.env`), model weights, or PDFs we can't redistribute.
-- Load the `claude-api` skill before writing Claude API code.
+- Fully offline at runtime: no cloud APIs, no CDN links, no runtime downloads. LLMs run through Ollama at `http://127.0.0.1:11434` (`qwen3.5:9b`, `gemma4:12b`). Don't build anything that needs a cloud API key.
+- Work on `main`, tag working milestones, push after each one. Use subagents sparingly (each one re-reads the project).

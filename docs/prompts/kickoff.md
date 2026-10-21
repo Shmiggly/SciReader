@@ -1,6 +1,8 @@
 # SciReader: Hackathon Kickoff Brief
 
 > **How to use:** fill in the "Before sending" block, then paste everything from the horizontal rule down as the first message of a **fresh** Claude Code session opened in `D:\Github\SciReader\SciReader`, with **auto** permission mode (not plan mode). Blanks you leave empty are treated as unknown, and the agent proceeds without them.
+>
+> **Before starting the session:** restart the Claude app (so it picks up the new env vars), check that the Ollama icon is in the system tray, open the session **directly on the repo folder, not in a worktree** (so commits land on `main`), and pick **auto** in the message box (new sessions default to asking for permission).
 
 ---
 
@@ -8,7 +10,7 @@
 
 - Domain: ______
 - Papers I want in `samples/` (arXiv IDs, or PDFs I already dropped in `samples/`): ______
-- LLM access: `ANTHROPIC_API_KEY` in `.env`? yes / no. Other credits or local models: ______
+- LLM access (fixed, nothing to fill): **no cloud API, no key.** Everything runs locally; Ollama already has `qwen3.5:9b` and `gemma4:12b`.
 - Sponsor prize rules learned at kickoff (Valency / Adaption / marimo): ______
 - Anything else that changed since last night: ______
 
@@ -22,14 +24,14 @@ Rules for the unattended stretch:
 
 1. **Never wait on me.** Don't use AskUserQuestion, plan mode, or anything that needs my approval: it would sit there for 3 hours. When something is ambiguous, pick the option that best serves the spec below, record it in `NOTES.md` §Decision log with one line of reasoning, and keep going. Real questions for me go in `NOTES.md` §Open questions.
 2. **Don't end your turn early.** Work through the milestones in §7 in order. Stop only when M3 is done and verified, or when you're blocked on something only I can do (log it, then switch to the next unblocked task). If M3 is done before I'm back, continue into M4 and M5.
-3. **Keep `main` runnable.** Vertical slice first, depth later. Commit after every working step with a clear message, and **push to `origin` (private repo `Shmiggly/SciReader`) at least after every milestone**: it's my backup and how I watch progress. If a push fails, log it in NOTES and keep working; never force-push.
+3. **Keep `main` runnable.** Vertical slice first, depth later. Commit after every working step with a clear message, and **push to `origin` (private repo `Shmiggly/SciReader`) at least after every milestone**: it's my backup and how I watch progress. If a push fails, log it in NOTES and keep working; never force-push. Work on `main`. Tag every milestone that works end to end (`m0-setup`, `m1-backend`, `m2-slice`, …, and `demo-ready` before the freeze) and push the tags, so I can roll back to a working demo with one command. Use a short-lived branch only for a risky swap, such as replacing the parser.
 4. **Time-box.** If a dependency or approach fights you for more than ~30 minutes, take the fallback named in this spec (or the simplest thing that works), log it, and move on.
 5. **No interactive or elevated commands.** Always use non-interactive flags. Nothing that needs admin or UAC. Run long installs and downloads in the background and work on something else meanwhile.
-6. **Parallelize with subagents** when work is independent and lives in separate directories (for example: the normalizer and its tests in `backend/scireader/speech/`, the parser bake-off in `backend/scireader/parsing/`, benchmark data collection in `bench/`). You own the integration.
+6. **Use subagents sparingly.** Each subagent re-reads the project from scratch. Run at most 2 at a time, and only for chunks that are independent and live in separate directories (for example: the normalizer and its tests in `backend/scireader/speech/`, the parser bake-off in `backend/scireader/parsing/`). You own the integration.
 7. **Verify for real.** Run the tests, start the app, open it in the browser pane (`.claude/launch.json` + preview), click through it like a user, and save one screenshot per milestone to `docs/screenshots/`. I'll use them for the video and to check progress.
 8. **Disk:** model weights and caches go on D: (`HF_HOME=D:\models\hf` if not already set; app models in `D:\models\scireader`). C: is 89 % full. Never commit weights, large PDFs, `.env` or secrets.
 9. **Memory across sessions:** `NOTES.md` is current truth. Update it at every milestone (status, decisions, gotchas, how to run) and delete what's no longer true. `docs/DEVLOG.md` is append-only history (what was done, what was learned) and feeds the write-up.
-10. Load the `claude-api` skill before writing Claude API code.
+10. **Fully offline at runtime.** The app must work with Wi-Fi off: no cloud APIs, no CDN links, no runtime downloads. LLMs run through Ollama on `http://127.0.0.1:11434`. Don't build anything that needs a cloud API key.
 
 ## 1. The problem (also the pitch)
 
@@ -52,7 +54,7 @@ Design principles (use them to resolve ambiguity):
 - **Start anywhere:** clicking a sentence, paragraph or section heading starts reading from there, instantly.
 - **Read like a scientist:** equations, units, chemical formulas, Greek letters, scientific notation, Fig./Eq./Ref. are spoken the way a physicist or chemist would say them aloud.
 - **Faithful by default:** body text is read verbatim (deterministic normalization only). AI touches only what can't be read verbatim (equations, figures, tables) and on-demand features. Every AI rewrite of math is verified against the source (§4 P1). I can always see what is being spoken ("spoken text" on hover).
-- **Local & private:** runs on my laptop (RTX 4070 12 GB, 64 GB RAM). AI providers are pluggable: Claude API when a key is present, any OpenAI-compatible local server (Ollama, LM Studio) otherwise, and a fully working no-LLM mode.
+- **Fully offline & private:** runs entirely on my laptop (RTX 4070 12 GB, 64 GB RAM) with Wi-Fi off. All AI is local: Kokoro for speech; Ollama for LLMs (`qwen3.5:9b` narrates, describes figures and answers questions; `gemma4:12b` independently back-transcribes for verification). With Ollama off, the reader still fully works and only the AI features are disabled. Importing from arXiv is the only feature that needs a network, and it fails gracefully offline.
 - **One-click models:** TTS voices and models are downloaded and managed inside the app, with no terminal.
 - **Focus aids:** designed for people who lose their place, with sentence/line focus, dimming and auto-follow.
 
@@ -61,7 +63,7 @@ Design principles (use them to resolve ambiguity):
 - **Relevance (target 5):** reading physical-science papers aloud fails on math, units and chemistry, and that's exactly what we attack. Demos use real physics, chemistry, materials and math papers. Relevance is our weakest criterion, so science-specific features get priority over generic polish.
 - **Novelty (target 4–5):** *verified math narration*. It's the first read-aloud tool that checks its own AI narration against the source LaTeX and refuses to speak math it can't verify. Plus an open benchmark.
 - **Innovativeness:** one loop combining document-layout AI, local neural TTS, LLM narration and symbolic verification.
-- **Impact:** clear users (researchers with reading difficulties, visually impaired scientists, anyone with a commute) and a clear change: papers become listenable without losing fidelity, open source and local so labs can use it on unpublished work.
+- **Impact:** clear users (researchers with reading difficulties, visually impaired scientists, anyone with a commute) and a clear change: papers become listenable without losing fidelity, open source and fully offline, so labs can use it on unpublished work, on a plane, or under data policies that forbid cloud AI.
 - **The finding (SciSpeech-Bench, §6):** how often generic pipelines and unverified LLM narration silently change the math, and how much verification fixes it. That's our "discovery" figure.
 
 ## 4. Feature spec
@@ -79,18 +81,20 @@ P0 = must be in the demo. P1 = should. P2 = stretch. Build in that order.
 - **Science-aware text normalization** (deterministic, no LLM): units and compound units (mol L⁻¹, cm⁻¹, m s⁻², eV, meV, Å, K, °C, GPa, kJ/mol), scientific notation (1.2 × 10⁻³, 1.2e-3), ± ≈ ~ ∝ ≤ ≥, ranges (5–10 K), Greek letters, sub/superscripts, chemical formulas (H₂O, Fe₂O₃, CO₂, NH₄⁺, Ca²⁺), isotopes (¹³C), abbreviations (e.g., i.e., et al., Fig., Figs., Eq., Eqs., Ref., Sec., ca., vs., cf.), and ambiguity traps ("5 min" vs "min(x)", "Si" vs "S i"). Display text and spoken text are stored separately. pytest suite with **≥ 100 cases**.
 - **Equations, deterministic baseline:** LaTeX → MathML → speech with Speech Rule Engine (ClearSpeak), run through a small Node helper. Inline math is normalized in place. Display equations are announced ("Equation 3:") with modes: read in full / brief / skip.
 - **Local TTS:** Kokoro-82M (Apache-2.0) as the default engine, on GPU if available, else CPU. Synthesize per sentence, stream, prefetch the next 3–5 sentences, cache audio on disk keyed by (model, voice, speed, spoken text). **Target: < 1.5 s from click to sound.** It's realistic: the smoke test measured ~0.1 s per sentence on the RTX 4070 (60–85× real time, 0.7 GB VRAM). The cold import takes ~10 s, so load and warm up the model in the background at backend startup.
-- **Model manager:** a panel listing TTS engines and voices from a registry (name, size, license, languages, quality notes, GPU/CPU), with a Download button and progress bar, Delete, and "Set default". The registry is a JSON file so new engines are easy to add; engines sit behind an interface. Start with Kokoro. Add a second engine only after P0 is done: Piper for low-end CPUs, or Chatterbox / Qwen3-TTS for quality. Check licenses and avoid non-commercial ones (e.g. XTTS-v2) as the default.
+- **Model manager:** a panel listing TTS engines and voices from a registry (name, size, license, languages, quality notes, GPU/CPU), with a Download button and progress bar, Delete, and "Set default". The registry is a JSON file so new engines are easy to add; engines sit behind an interface. Start with Kokoro. Add a second engine only after P0 is done: Piper for low-end CPUs, or Chatterbox / Qwen3-TTS for quality. Check licenses and avoid non-commercial ones (e.g. XTTS-v2) as the default. The same panel lists the Ollama LLMs (installed, size) and can pull new ones through Ollama's `/api/pull` with streamed progress, so the LLM side is one-click too.
 
 ### P1: AI layer + reflow
-- **Provider abstraction:** `anthropic` (claude-sonnet-5-5 for quality tasks, claude-haiku-5-5 for bulk narration) when `ANTHROPIC_API_KEY` is set; `openai-compatible` base URL (Ollama, LM Studio) otherwise; `none` disables AI features gracefully with a hint. Cache every LLM response on disk (hash of model + prompt). Use prompt caching for the paper text with Claude.
+- **LLM provider (local only):** Ollama, through its native `/api/chat` (supports `images` and `think: false`) or the OpenAI-compatible `/v1/chat/completions`; both were verified on this machine. Defaults: `qwen3.5:9b` for narration, figures, explain/ask and summaries; `gemma4:12b` for back-transcription only. Model names are configurable. When Ollama isn't running, AI features are disabled gracefully with a hint. Cache every LLM response on disk (hash of model + prompt). Use `think: false` and temperature 0 for narration and transcription. Keep the provider interface generic, but don't implement cloud providers.
 - **Verified equation narration (the signature feature):**
   1. A narrator LLM turns LaTeX plus surrounding context into natural speech ("E equals m c squared"; "the Hamiltonian H equals the sum over i of p i squared over 2 m").
   2. An independent back-transcriber (separate call that never sees the original LaTeX) turns that speech back into LaTeX.
-  3. Compare: symbolic equivalence with SymPy when both sides parse (`sympy.parsing.latex` with the lark backend, or latex2sympy2), otherwise normalized-token / tree-edit similarity.
-  4. Verdict: **verified ✓** (use LLM speech), **uncertain ?** (use LLM speech, show a badge), **failed ✗** (fall back to SRE speech, show a badge).
+  3. Compare structurally, not with SymPy alone. In the smoke test, SymPy's LaTeX parser (lark backend) failed on 6 of 8 equations (`\Delta`, `\hbar`, `\nabla`, integrals, `\mathrm`), and raw string similarity scored a correct round trip at 0.70. Primary check: convert both LaTeX strings to MathML with MathJax (the same Node helper as SRE) and compare canonicalized trees (flatten `mrow`; unify `\varepsilon`/`\epsilon`, `\dfrac`/`\frac`, implicit vs explicit multiplication, `e^{x}`/`\exp`, `\mathrm{A}`/`A`). Secondary: SymPy equivalence or numeric spot checks, only when both sides parse.
+  4. Verdict: **verified ✓** (use LLM speech) or **uncertain ?** (use LLM speech, show a badge). On a mismatch, retry once by telling the narrator what was lost (for example "make it explicit that k_B T is the whole denominator") and re-verify. Still failing → **failed ✗** (fall back to SRE speech, show a badge).
+
+  Run it in two batches per paper (all narrations with qwen, then all back-transcriptions with gemma using `keep_alive: 0`) so the models swap once, not per equation; they don't fit in VRAM together. A smoke-test case worth showing in the demo: Planck's law, narrated as "e to the h nu divided by k sub B T", came back as `e^{h\nu/k_B T}`. The spoken form is ambiguous about the denominator, and the round trip exposes it.
 
   Precompute for all equations in the background after parsing. Each equation gets a badge; clicking it shows the LaTeX (KaTeX), the spoken text and the verdict.
-- **Figure narration:** crop the figure and caption from the page image and ask a vision model for a short description (plot type, axes, units, key trends, panels). Read it when playback reaches the figure, or (setting) when the text first references "Fig. N". Always labeled, in speech ("AI description of Figure 2: …") and in the UI.
+- **Figure narration:** crop the figure and caption from the page image and ask `qwen3.5:9b` (it reads images) for a short description (plot type, axes, units, key trends, panels). In the smoke test it described a synthetic XRD plot correctly, peaks included, in ~10 s with a model swap. Read it when playback reaches the figure, or (setting) when the text first references "Fig. N". Always labeled, in speech ("AI description of Figure 2: …") and in the UI.
 - **Explain selection:** select text or an equation → "Explain" → a short plain-language explanation grounded in the paper, with citation chips that jump to and highlight the source spans. Can be read aloud.
 - **Ask the paper:** a Q&A panel grounded in the parsed document. Answers cite spans (click → highlight on the PDF) and can be read aloud.
 - **Listen to a summary:** a 1–2-minute spoken summary per section or for the whole paper, clearly labeled as AI.
@@ -131,8 +135,9 @@ P0 = must be in the demo. P1 = should. P2 = stretch. Build in that order.
   Sentence rects: get word or char boxes with pypdfium2 (or the pdf.js text content) inside each block's bbox, and align them to the sentence text with fuzzy character alignment. Fall back to the block bbox if alignment fails.
 - **Speech pipeline:** block → sentences (rule-based splitter aware of "Fig. 2", "et al.", "e.g.", decimals) → normalizer → math speech (inline and display) → spoken text → TTS.
 - **TTS:** engine interface `synth(text, voice, speed) -> (audio, word_timestamps | None)`. Verified with kokoro 0.9.4: each `KPipeline` result has `.tokens`, each with `.text`, `.phonemes`, `.start_ts`, `.end_ts` (seconds), so word highlighting is P0. Kokoro setup gotchas from the smoke test (details in NOTES §3): declare `en_core_web_sm` as an explicit dependency (misaki's runtime auto-download fails in a uv venv); get CUDA torch from the PyTorch index (`cu132` worked) through `[[tool.uv.index]]` + `[tool.uv.sources]`; set `HF_HUB_OFFLINE=1` once models are cached. Endpoint `GET /api/tts/{doc}/{sentence_id}?voice&speed` returns audio (WAV or Opus) plus timestamps. Downloads go through `huggingface_hub` with progress over SSE.
-- **GPU budget (12 GB):** load lazily. Never keep the parser VLM, the TTS model and a local LLM in VRAM at the same time; unload the parser after parsing.
-- **Config:** `.env` (gitignored) and `.env.example`: `ANTHROPIC_API_KEY`, `LLM_PROVIDER`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, `MODELS_DIR`, `HF_HOME`.
+- **GPU budget (12 GB, measured with nvidia-smi):** other apps ~2.8 GB, `qwen3.5:9b` ~6.2 GB, `gemma4:12b` ~8.5 GB, Kokoro ~0.7 GB. While reading, keep qwen + Kokoro resident (~9.7 GB total). Load gemma only for batch verification, then unload it. Run the parser before any of them and unload it afterwards. `ollama ps` under-reports gemma4's VRAM, so trust nvidia-smi.
+- **Offline checklist:** bundle the pdf.js worker and KaTeX CSS/fonts through Vite (no CDN links); bundle any web fonts locally (e.g. OpenDyslexic, OFL); SRE's locale files come from its npm package; download parser models during M0; set `HF_HUB_OFFLINE=1` at runtime; check `http://127.0.0.1:11434/api/version` at startup. Verify by checking the browser network panel for any non-localhost request.
+- **Config:** `.env` (gitignored) and `.env.example`: `OLLAMA_URL`, `NARRATOR_MODEL`, `VERIFIER_MODEL`, `MODELS_DIR`, `HF_HOME`, `HF_HUB_OFFLINE`.
 - **Licenses:** everything we depend on by default must be compatible with an open-source repo; list each dependency's license in the README. Avoid Marker as default (weights restricted for organizations above revenue thresholds) and XTTS-v2 (non-commercial).
 
 ## 6. SciSpeech-Bench (the measurable result)
@@ -143,23 +148,24 @@ Goal: one clear figure for the write-up and a reusable open benchmark.
 - **Conditions:**
   - (a) naive: what a generic reader speaks (the PDF text layer of the equation region);
   - (b) SRE ClearSpeak from the source LaTeX;
-  - (c) LLM narration, unverified;
-  - (d) LLM narration + verification gate (fallback to SRE);
-  - (e) optional: the full SciReader pipeline from the parsed PDF (OCR LaTeX → speech), which also measures the parser's math accuracy.
+  - (c) local LLM narration (`qwen3.5:9b`), unverified;
+  - (d) the same + verification gate with one repair retry (fallback to SRE);
+  - (e) optional: the full SciReader pipeline from the parsed PDF (OCR LaTeX → speech), which also measures the parser's math accuracy;
+  - (f) optional: (c) and (d) with `qwen3.5:4b` too, to show how the error rate grows as the model shrinks and how much verification closes the gap.
 - **Metrics:**
-  - **Faithfulness:** back-transcription with a fixed, independent model, then SymPy equivalence or normalized similarity against the ground-truth LaTeX.
+  - **Faithfulness:** back-transcription with a fixed, independent model (`gemma4:12b`), then the canonical MathML comparison (plus SymPy where it parses) against the ground-truth LaTeX. Have a ~30-item subset adjudicated (by me, or by careful manual inspection) to separate narrator errors from transcriber errors.
   - **Naturalness:** LLM-judge pairwise preference on a subset, plus a ~30-item blind subset I'll rate myself later (make a tiny rating page or CSV).
-  - Report the **silent error rate of unverified LLM narration** and the verifier's precision/recall at catching errors.
-- **Outputs:** `bench/results/*.json`, `bench/figures/faithfulness.png` (+ `.svg`), a short `bench/README.md`. Keep API spend sane: cache everything, use the cheaper model for bulk work, cap runs.
+  - Report the **silent error rate of unverified local-LLM narration** and the verifier's precision/recall at catching errors.
+- **Outputs:** `bench/results/*.json`, `bench/figures/faithfulness.png` (+ `.svg`), a short `bench/README.md`. Collecting the arXiv data needs the network once; everything after that runs locally and costs only time. Cache every model call.
 
 ## 7. Milestones (times from kickoff; adjust if behind, but keep the order)
 
-- **M0 (0:00–0:20) Setup:** verify the toolchain (uv, Python 3.12, Node LTS, git); scaffold the monorepo, `.gitignore`, `.env.example`, README skeleton, `.claude/launch.json` for the dev servers. Download 3–5 sample papers into `samples/` (from "Before sending"; otherwise pick equation-heavy open-access arXiv papers in physics, physical chemistry, materials and math; gitignore PDFs that aren't CC-BY). Start parser model downloads in the background (Kokoro-82M is already in the HF cache on D:). Commit.
+- **M0 (0:00–0:20) Setup:** verify the toolchain (uv, Python 3.12, Node LTS, git) and that Ollama is up with both models (`ollama list`); scaffold the monorepo, `.gitignore`, `.env.example`, README skeleton, `.claude/launch.json` for the dev servers. Download 3–5 sample papers into `samples/` (from "Before sending"; otherwise pick equation-heavy open-access arXiv papers in physics, physical chemistry, materials and math; gitignore PDFs that aren't CC-BY). Start parser model downloads in the background (Kokoro-82M is already in the HF cache on D:). Commit.
 - **M1 (0:20–1:15) Parse + speak, backend only:** Docling → Document JSON for all samples, plus an inspection script that prints block types and reading order; sentence splitter; normalizer + tests (subagent); Kokoro synthesizes a sentence to WAV; MinerU bake-off, time-boxed (subagent, separate directory). Commit.
 - **M2 (1:15–2:15) Vertical slice:** frontend PDF viewer + overlays + click-to-read + playback bar + sentence and word highlight + auto-scroll + prefetch + audio cache; skip headers, footers, citations and bibliography. Screenshot. Commit. **This is the minimum I want to see when I'm back.**
 - **M3 (2:15–3:00) Math + models + focus:** SRE equation speech and equation modes; model manager panel with download progress; focus mode; outline sidebar with click-to-read. Commit.
   Then write `NOTES.md` §0 "When you're back": a 5-line summary, how to launch, a 2-minute test script, decisions to review, questions. Update §1 Status and §8 Roadmap.
-- **M4 AI layer:** provider abstraction, verified equation narration with badges, figure narration, explain/ask with span citations, summaries.
+- **M4 AI layer:** Ollama provider, verified equation narration with badges, figure narration, explain/ask with span citations, summaries.
 - **M5 SciSpeech-Bench** and its figure.
 - **M6 Depth:** reflow view, audiobook export, a second TTS engine, arXiv source mode (pick by demo value).
 - **M7 Ship (start no later than 8 h before the deadline; feature freeze at T-6 h):** README (pitch, GIF/screenshots, install, features, architecture diagram, licenses, benchmark result); `docs/writeup.md` (one page + figure: what we built, what we learned); `docs/demo_script.md` (≤ 4-min video, beat by beat); repo ready to go public (no secrets, no non-redistributable PDFs, no weights). **The GitHub repo `Shmiggly/SciReader` is private until then.** After I OK the audit, make it public (see the Ship prompt in `docs/prompts/followups.md`).
@@ -174,13 +180,13 @@ On a real, equation-heavy physics or chemistry paper:
 5. A figure gets a spoken, labeled AI description.
 6. I select a confusing sentence, hit "Explain", and get a grounded answer with a clickable source chip.
 7. I download a second voice in the model manager and switch to it.
-8. Everything works offline except Claude calls (and fully offline with a local LLM).
+8. With Wi-Fi turned off, everything above still works (only arXiv import needs the network).
 
 ## 9. Don'ts
 
 - Don't let an LLM paraphrase body text that's being read as the paper. Verbatim + normalization only.
 - Don't read the bibliography, page furniture or citation markers by default.
-- Don't build accounts, cloud sync or telemetry.
+- Don't build accounts, cloud sync or telemetry, and don't add cloud API calls or CDN links.
 - Don't polish visuals before M2 works end to end.
 - Don't start Electron/Tauri before M5.
 - Don't commit secrets, model weights or PDFs we can't redistribute.
@@ -189,8 +195,8 @@ On a real, equation-heavy physics or chemistry paper:
 ## 10. Demo story (design the product for this)
 
 - **0:00–0:30:** the problem: readers reread the same line; audiobooks help; existing readers fail on papers (show a generic reader mangling an equation and reading "[12]"; even a good neural voice says "1.12 eV at 300 K" as "one point one two ee-vee at three hundred kay").
-- **0:30–2:30:** SciReader on a real paper: click to start anywhere, highlight + focus mode, an equation spoken naturally with its verification badge, a figure described, explain/ask with citations, a new voice in one click, all local.
-- **2:30–3:30:** the SciSpeech-Bench figure: generic pipelines mangle X % of equations, unverified LLM narration silently alters Y %, verification catches Z %.
+- **0:30–2:30:** SciReader on a real paper: click to start anywhere, highlight + focus mode, an equation spoken naturally with its verification badge, a figure described, explain/ask with citations, a new voice in one click. Turn Wi-Fi off on camera, and everything keeps working.
+- **2:30–3:30:** the SciSpeech-Bench figure: generic pipelines mangle X % of equations, unverified local-LLM narration silently alters Y %, verification catches Z % (show the Planck ambiguity as the concrete example).
 - **3:30–4:00:** open source, local, who it helps, what's next.
 
 **Start now:** set `NOTES.md` §1 Status to "Hackathon started, M0 in progress", then go.
