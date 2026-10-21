@@ -259,6 +259,10 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           <input type="checkbox" checked={useStore((s) => s.figuresOn)} onChange={(ev) => useStore.setState({ figuresOn: ev.target.checked })} />
           Describe figures at first mention (AI, labeled)
         </label>
+        <label className="check">
+          <input type="checkbox" checked={useStore((s) => s.autoPause)} onChange={(ev) => useStore.setState({ autoPause: ev.target.checked })} />
+          Pause after each paragraph (Space continues)
+        </label>
       </section>
       <ReflowSettings />
       <AudiobookExport />

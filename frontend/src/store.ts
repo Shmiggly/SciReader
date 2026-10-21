@@ -84,6 +84,7 @@ interface State {
   selection: string[] | null;
   eqRef: { blockId: string; sentenceId: string } | null;
   view: "pdf" | "text";
+  autoPause: boolean;
   reflow: { font: string; size: number; lineHeight: number; width: number };
   setDoc: (doc: Doc | null) => void;
   set: (p: Partial<State>) => void;
@@ -120,6 +121,7 @@ export const useStore = create<State>((set) => ({
   selection: null,
   eqRef: null,
   view: "pdf",
+  autoPause: false,
   reflow: { font: "atkinson", size: 19, lineHeight: 1.7, width: 70 },
   setDoc: (doc) => {
     const index = new Map<string, Entry>();
@@ -265,6 +267,11 @@ audio.addEventListener("ended", () => {
   if (st.figPopup && !st.figPopup.pinned) useStore.setState({ figPopup: null });
   const e = cur ? st.index.get(cur) : undefined;
   const next = e ? nextReadable(e.idx, 1) : null;
+  if (next && st.autoPause && e && st.index.get(next)!.b.id !== e.b.id) {
+    // Auto-pause: stop at the end of each paragraph; Space continues with the next one.
+    useStore.setState({ playing: false, word: null, current: next, tts: null });
+    return;
+  }
   if (next) void playSentence(next);
   else useStore.setState({ playing: false, word: null });
 });
