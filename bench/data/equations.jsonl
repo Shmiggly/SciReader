@@ -1,0 +1,220 @@
+{"id": "2209.13557#0", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol m_{0,2} = \\boldsymbol m_{1,2} = [2,2,2,2,2,2,2,2]"}
+{"id": "2209.13557#1", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol x_p = \\mathcal{A}_g(x_{i}^{(\\tau)}, x_{i}^{(0)}) = \\dfrac{1}{N_p}\\sum_{i=1}^{N_p} \\boldsymbol x_{i}^{(\\tau)} + \\boldsymbol x_{i}^{(0)}"}
+{"id": "2209.13557#2", "arxiv": "2209.13557", "field": "polymers", "latex": "y_p = \\psi (\\boldsymbol x_p, \\boldsymbol s)"}
+{"id": "2209.13557#3", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol x_1^{(1)} = [41, 41]"}
+{"id": "2209.13557#4", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol m_{0,1} = \\boldsymbol m_{1,0} = [3,3,3,3,3,3,3,3]"}
+{"id": "2209.13557#5", "arxiv": "2209.13557", "field": "polymers", "latex": "\\widehat{var} = \\dfrac{1}{|\\mathcal{P}|} \\sum_{p \\in \\mathcal{P}} var( f(x), \\forall x \\in \\mathcal{E}_p )"}
+{"id": "2209.13557#6", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol x_0^{(1)} = [41, 41]"}
+{"id": "2209.13557#7", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol m_{2,0} = \\boldsymbol m_{2,1} = [2,2,2,2,2,2,2,2] \\text{.}"}
+{"id": "2209.13557#8", "arxiv": "2209.13557", "field": "polymers", "latex": "\\boldsymbol x_2^{(1)} = [33, 33] \\text{.}"}
+{"id": "2307.10139#0", "arxiv": "2307.10139", "field": "polymers", "latex": "\\boldsymbol{S} = \\left[S_{11},~ S_{22},~ S_{33},~ S_{12},~ S_{13},~ S_{23} \\right]"}
+{"id": "2307.10139#1", "arxiv": "2307.10139", "field": "polymers", "latex": "J = \\det\\boldsymbol{F}"}
+{"id": "2307.10139#2", "arxiv": "2307.10139", "field": "polymers", "latex": "\\text{Percentage Error} = 100 \\times \\frac{||\\boldsymbol{S} - \\boldsymbol{\\hat{S}} ||_2}{||\\boldsymbol{S}||_2 } \\"}
+{"id": "2307.10139#3", "arxiv": "2307.10139", "field": "polymers", "latex": "\\boldsymbol{S} = J \\boldsymbol{F}^{-1} \\boldsymbol{\\sigma} \\boldsymbol{F}^{-T}"}
+{"id": "2307.10139#4", "arxiv": "2307.10139", "field": "polymers", "latex": "\\text{ReLu} ~ : ~ {\\sigma}(x) = \\max(x) ~~~~~~~~~ \\text{Softplus} ~ : ~ \\sigma(x) = \\log(1 + e^x)"}
+{"id": "2307.10139#5", "arxiv": "2307.10139", "field": "polymers", "latex": "\\mathcal{N}(\\boldsymbol{C}, \\boldsymbol{w}) = \\boldsymbol{\\hat{S}} \\"}
+{"id": "2307.10139#6", "arxiv": "2307.10139", "field": "polymers", "latex": "\\mathcal{L}_{\\rm{MSE}}(\\boldsymbol{S},\\boldsymbol{\\hat{S}}) = \\frac{1}{n} \\sum_{i=1}^n ||\\boldsymbol{S}_i - \\boldsymbol{\\hat{S}}_i ||^2_2 \\"}
+{"id": "2307.10139#7", "arxiv": "2307.10139", "field": "polymers", "latex": "\\boldsymbol{C} = \\boldsymbol{F}^T \\boldsymbol{F}"}
+{"id": "2307.10139#8", "arxiv": "2307.10139", "field": "polymers", "latex": "\\boldsymbol{C} = \\left[C_{11},~ C_{22},~ C_{33},~ C_{12},~ C_{13},~ C_{23} \\right]"}
+{"id": "2307.10139#9", "arxiv": "2307.10139", "field": "polymers", "latex": "C_{ij}^{std} = \\frac{C_{ij} -\\hat{\\mu}_{ij}}{\\hat{\\sigma}_{ij}} ~~~ \\rm{for} ~~~ i,j = 1,2,3"}
+{"id": "2511.23306#0", "arxiv": "2511.23306", "field": "polymers", "latex": "L=1-CC+\\frac{|\\overline{M}_{\\mathrm{pred}}-\\overline{M}_{\\mathrm{lab}}|+\\sum_{i,j=1}^n|M^{i,j}_{\\mathrm{pred}}-M^{i,j}_{\\mathrm{lab}}|}{1.5\\cdot\\overline{M}_{\\mathrm{lab}}}"}
+{"id": "2511.23306#1", "arxiv": "2511.23306", "field": "polymers", "latex": "M_{k+1} = M_{k} - \\alpha \\cdot ((M_{\\mathrm{Prediction},k}-M_{\\mathrm{Design}})\\ast g_{\\mathrm{corr}})"}
+{"id": "2511.23306#2", "arxiv": "2511.23306", "field": "polymers", "latex": "M_{k} = M_{\\mathrm{Design}} - \\alpha \\cdot ((M_{\\mathrm{Prediction}}-M_{\\mathrm{Design}})\\ast g_{\\mathrm{corr}})"}
+{"id": "2603.27106#0", "arxiv": "2603.27106", "field": "polymers", "latex": "C_p = \\frac{\\langle H^2 \\rangle - \\langle H \\rangle^2}{k_B T^2\\, m}"}
+{"id": "2603.27106#1", "arxiv": "2603.27106", "field": "polymers", "latex": "T_g = \\frac{c_{\\mathrm{high}} - c_{\\mathrm{low}}}{m_{\\mathrm{low}} - m_{\\mathrm{high}}}"}
+{"id": "2603.27106#2", "arxiv": "2603.27106", "field": "polymers", "latex": "\\sigma_i = \\sum_{j=1}^{6} C_{ij}\\,\\varepsilon_j"}
+{"id": "2603.27106#3", "arxiv": "2603.27106", "field": "polymers", "latex": "E = \\frac{9KG}{3K+G}"}
+{"id": "2603.27106#4", "arxiv": "2603.27106", "field": "polymers", "latex": "\\alpha_{ij} \\approx -\\frac{\\mu_i^{(+)} - \\mu_i^{(-)}}{2\\delta}"}
+{"id": "2603.27106#5", "arxiv": "2603.27106", "field": "polymers", "latex": "D = \\lim_{t \\to \\infty} \\frac{1}{6t}\\left\\langle \\lvert \\mathbf r(t) - \\mathbf r(0) \\rvert^2 \\right\\rangle"}
+{"id": "2603.27106#6", "arxiv": "2603.27106", "field": "polymers", "latex": "\\frac{n^2 - 1}{n^2 + 2} = \\frac{4\\pi}{3} N \\bar{\\alpha}"}
+{"id": "2603.27106#7", "arxiv": "2603.27106", "field": "polymers", "latex": "\\rho = \\frac{m}{\\langle V \\rangle}"}
+{"id": "2603.27106#8", "arxiv": "2603.27106", "field": "polymers", "latex": "\\kappa = -\\,\\frac{J_q}{\\mathrm{d}T/\\mathrm{d}x}"}
+{"id": "2603.27106#9", "arxiv": "2603.27106", "field": "polymers", "latex": "\\eta = \\frac{\\langle V \\rangle}{k_B T}\\int_0^\\infty \\left\\langle P_{\\alpha\\beta}(0)\\,P_{\\alpha\\beta}(t) \\right\\rangle \\mathrm dt, \\alpha \\neq \\beta"}
+{"id": "2603.27106#10", "arxiv": "2603.27106", "field": "polymers", "latex": "\\varepsilon_{\\mathrm{dip}} = 1 + \\frac{\\langle M^2 \\rangle - \\langle \\mathbf M \\rangle^2}{3\\,\\varepsilon_0\\,k_B T\\,\\langle V \\rangle}"}
+{"id": "2603.27106#11", "arxiv": "2603.27106", "field": "polymers", "latex": "\\mathbf{z}_i = f_{\\boldsymbol{\\theta}}(\\mathcal{G}_i)"}
+{"id": "2312.07149#0", "arxiv": "2312.07149", "field": "polymers", "latex": "k_G(x, y; l)=exp\\left (-\\frac{d(x, y)^2}{2l^2}\\right)"}
+{"id": "2312.07149#1", "arxiv": "2312.07149", "field": "polymers", "latex": "k_M(x, y; \\nu, l)=\\frac{1}{\\Gamma(\\nu)2^{\\nu-1}} \\left (\\frac{\\sqrt{2\\nu}}{l}d(x, y) \\right)^{\\nu} K_{\\nu}\\left (\\frac{\\sqrt{2\\nu}}{l}d(x, y) \\right)"}
+{"id": "2312.07149#2", "arxiv": "2312.07149", "field": "polymers", "latex": "E(x) = \\sum_{i}^{bonds} k_i(r_i-r_0)^2 + \\sum_{i}^{angles} k_i(\\theta_i-\\theta_0)^2\\ + \\sum_{i}^{torsions} \\sum_{n=1}^{3} k_{i,n}(1-cos(n\\phi_i-\\delta_{i,n}))"}
+{"id": "2312.07149#3", "arxiv": "2312.07149", "field": "polymers", "latex": "k_D(x, y; \\sigma_0)=\\sigma_0^2+x \\cdot y"}
+{"id": "2312.07149#4", "arxiv": "2312.07149", "field": "polymers", "latex": "k_C(x, y; C)= C \\ \\forall \\ x, y"}
+{"id": "2603.13303#0", "arxiv": "2603.13303", "field": "polymers", "latex": "w_i=\\frac{1}{(y_i^{\\text{max}}-y_i^{\\text{min}})}\\cdot\\frac{K\\cdot\\sqrt{1/n_i}}{\\sum_{j=1}^K\\sqrt{1/n_j}}"}
+{"id": "2603.13303#1", "arxiv": "2603.13303", "field": "polymers", "latex": "N_K=\\frac{L_c}{b}"}
+{"id": "2603.13303#2", "arxiv": "2603.13303", "field": "polymers", "latex": "<R_g>=\\frac{1}{N_{chains}}\\sum^{N_{chains}}_{c=1}(\\frac{1}{N_t}\\sum_tR_g(t,c))"}
+{"id": "2603.13303#3", "arxiv": "2603.13303", "field": "polymers", "latex": "\\text{wMAE}=\\frac{1}{|\\mathcal{X}|}\\sum_{X\\in\\mathcal{X}}\\sum_{i\\in\\mathcal{I}(X)}\\omega_i\\cdot |\\hat y_i(X)-{y_i}(X)|"}
+{"id": "2603.13303#4", "arxiv": "2603.13303", "field": "polymers", "latex": "\\hat{R_g}=\\frac{b}{\\sqrt{6}}N_k^\\nu"}
+{"id": "2402.09128#0", "arxiv": "2402.09128", "field": "polymers", "latex": "C_{ij}= \\begin{cases} \\frac{Z_iZ_j}{r_{ij}},& \\text{if } i\\neq j\\\\ \\frac{1}{2}Z_i^{2.4}, & \\text{if } i=j \\end{cases}"}
+{"id": "2402.09128#1", "arxiv": "2402.09128", "field": "polymers", "latex": "MAFE = \\langle |\\frac{t_i^{DFT}-t_i^{ML}}{t_i^{DFT}}| \\rangle"}
+{"id": "2402.09128#2", "arxiv": "2402.09128", "field": "polymers", "latex": "MAE = \\langle |t_i^{DFT}-t_i^{ML}| \\rangle"}
+{"id": "2402.09128#3", "arxiv": "2402.09128", "field": "polymers", "latex": "AP_i = \\int_{0}^{1}P_i(R_i) dR_i"}
+{"id": "2402.09128#4", "arxiv": "2402.09128", "field": "polymers", "latex": "P_i = \\frac{TP}{TP + FP}"}
+{"id": "2402.09128#5", "arxiv": "2402.09128", "field": "polymers", "latex": "R_i = \\frac{TP}{TP + FN}"}
+{"id": "2402.09128#6", "arxiv": "2402.09128", "field": "polymers", "latex": "mAP = \\frac{1}{2}(AP_1 + AP_2)"}
+{"id": "2402.09128#7", "arxiv": "2402.09128", "field": "polymers", "latex": "\\rho = 1 - \\frac{6\\sum_i \\left[ R(t_i^{DFT}) - R(t_i^{ML}) \\right]^2}{n(n^2-1)}"}
+{"id": "2402.09128#8", "arxiv": "2402.09128", "field": "polymers", "latex": "B = c_1 \\oplus c_2 \\oplus ... \\oplus c_a"}
+{"id": "2509.07164#0", "arxiv": "2509.07164", "field": "polymers", "latex": "G_{22}(\\mathbf{x},k) = \\sum_{i=1}^{N_c+N_u}\\sum_{j=1}^{N_c+N_u}\\Phi(k)^{|i-j|}\\delta_{i,c}\\delta_{j,c}"}
+{"id": "2509.07164#1", "arxiv": "2509.07164", "field": "polymers", "latex": "\\mathbf{S}^{-1}(k) = \\mathbf{G}^{-1}(k) + \\mathbf{U}(k)"}
+{"id": "2509.07164#2", "arxiv": "2509.07164", "field": "polymers", "latex": "\\hat{{\\mu}}_j = (\\mathbf{1}^T\\tilde{\\mathbf{R}}_{MLE}^{-1}\\mathbf{1})^{-1}\\mathbf{1}^T\\tilde{\\mathbf{R}}_{MLE}^{-1}\\mathbf{y}_j"}
+{"id": "2509.07164#3", "arxiv": "2509.07164", "field": "polymers", "latex": "\\hat{\\sigma}_j^2K^* = \\hat{\\sigma}_j^2\\left\\{1 +\\hat{\\eta}- \\mathbf{r}^T(\\mathbf{x}^*)(\\mathbf{R}+\\eta\\mathbf I_n)^{-1}\\mathbf{r}(\\mathbf{x}^*)\\right\\}"}
+{"id": "2509.07164#4", "arxiv": "2509.07164", "field": "polymers", "latex": "G_{11}(\\mathbf{x},k) = \\sum_{i=1}^{N_c+N_u}\\sum_{j=1}^{N_c+N_u}\\Phi(k)^{|i-j|}\\delta_{i,u}\\delta_{j,u}"}
+{"id": "2509.07164#5", "arxiv": "2509.07164", "field": "polymers", "latex": "\\hat{\\sigma}^2_j = \\frac{1}{n}(\\mathbf{y}_j-\\mathbf{1}\\hat{\\mu}_j)^T\\tilde{\\mathbf{R}}_{MLE}^{-1}(\\mathbf{y}_j-\\mathbf{1}\\hat{\\mu}_j)"}
+{"id": "2509.07164#6", "arxiv": "2509.07164", "field": "polymers", "latex": "G_{12}(\\mathbf{x},k) = G_{21}(\\mathbf x, k) = \\sum_{i=1}^{N_c+N_u}\\sum_{j=1}^{N_c+N_u}\\Phi(k)^{|i-j|}\\delta_{i,u}\\delta_{j,c}"}
+{"id": "2509.07164#7", "arxiv": "2509.07164", "field": "polymers", "latex": "K^{**} = K^* + h^*(\\mathbf{x}^*)(\\mathbf{1}^T\\tilde{\\mathbf{R}}^{-1}\\mathbf1)^{-1}h^*(\\mathbf{x}^*)"}
+{"id": "2606.06415#0", "arxiv": "2606.06415", "field": "polymers", "latex": "\\text{Attention}(\\mathbf{Q}, \\mathbf{K}, \\mathbf{V}) = \\text{softmax}\\left( \\frac{\\mathbf{QK}^T}{\\sqrt{d_k}} + \\mathbf{M} \\right)\\mathbf{V}"}
+{"id": "2606.06415#1", "arxiv": "2606.06415", "field": "polymers", "latex": "p(\\alpha^{*}|\\mathcal{G}^{*},\\mathbf{G},\\boldsymbol{\\alpha}) \\approx \\int p(\\alpha^{*}|f)\\,p(f|\\mathcal{G}^{*},\\mathbf{w})p(\\mathbf{w}|\\mathbf{G},\\boldsymbol{\\alpha})\\,dfd\\mathbf{w}"}
+{"id": "2606.06415#2", "arxiv": "2606.06415", "field": "polymers", "latex": "E[\\rho_0+\\delta\\rho] = E^0[\\rho_0] + E^1[\\rho_0,\\delta\\rho] + E^2[\\rho_0,(\\delta\\rho)^2] + E^3[\\rho_0,(\\delta\\rho)^3] + \\cdots"}
+{"id": "2606.06415#3", "arxiv": "2606.06415", "field": "polymers", "latex": "\\frac{n^2-1}{n^2+2} = \\frac{4\\pi}{3}N\\alpha"}
+{"id": "2606.06415#4", "arxiv": "2606.06415", "field": "polymers", "latex": "p(\\alpha^{*}|\\mathcal{G}^{*})\\approx \\frac{1}{N_d}\\sum_{i=1}^{N_d} p(y^{*}|x^{*};\\mathbf{w}_i)"}
+{"id": "2606.06415#5", "arxiv": "2606.06415", "field": "polymers", "latex": "E^{DFTB3} = E^{DFTB1} + \\frac{1}{2}\\sum_{AB}\\Delta q_A \\Delta q_B\\gamma_{AB} + \\frac{1}{3}\\sum_{AB}\\Delta q^2_A \\Delta q_B\\Gamma_{AB}"}
+{"id": "2606.06415#6", "arxiv": "2606.06415", "field": "polymers", "latex": "\\mathcal{L} = -\\sum_{t=1}^n \\log \\mathbf{P}(x_t | x_{1:t-1}, \\theta)"}
+{"id": "2606.06415#7", "arxiv": "2606.06415", "field": "polymers", "latex": "\\mathbf{P}(x_{t+1} | x_{1:t}) = \\text{softmax}(\\textbf{W}_{\\text{out}}\\textbf{h}_t)"}
+{"id": "2606.06415#8", "arxiv": "2606.06415", "field": "polymers", "latex": "\\boldsymbol{\\Psi}_i(\\boldsymbol{r}) = \\sum_{\\mu}c_{i\\mu}\\phi_{\\mu}(\\boldsymbol{r})"}
+{"id": "2606.07384#0", "arxiv": "2606.07384", "field": "materials", "latex": "\\Phi = \\phi_{0} \\mathrm{and} \\Phi_{\\mathrm{w}} = J - \\phi_{0} \\,"}
+{"id": "2606.07384#1", "arxiv": "2606.07384", "field": "materials", "latex": "p\\,(\\underline{\\underline{F}},\\, \\Phi_{\\mathrm{w}}, \\, T) = \\frac{\\partial \\Psi(\\underline{\\underline{F}},\\, \\Phi_{\\mathrm{w}}, \\, T)}{\\partial \\Phi_{\\mathrm{w}}}\\,"}
+{"id": "2606.07384#2", "arxiv": "2606.07384", "field": "materials", "latex": "\\sigma_{\\mathrm{el}} \\! \\left(\\lambda\\right) = G_{0}\\frac{\\lambda^{2} - 1}{\\lambda} + \\sigma_{0}~"}
+{"id": "2606.07384#3", "arxiv": "2606.07384", "field": "materials", "latex": "M_{\\mathrm{1D}} \\! \\left(\\lambda,\\, T\\right) = G_{0} \\frac{1 + \\lambda^{2}}{\\lambda} + \\frac{A k_{\\mathrm{B}} T n}{v_{\\mathrm{w}}} \\left(\\frac{\\phi_{0}}{\\lambda}\\right)^{n} \\,"}
+{"id": "2606.07384#4", "arxiv": "2606.07384", "field": "materials", "latex": "\\underline{\\underline{\\sigma}} = \\underline{\\underline{\\sigma}}_{\\mathrm{el}} - \\left( \\Pi_{\\mathrm{mix}} + p \\right)\\underline{\\underline{I}} ~"}
+{"id": "2606.07384#5", "arxiv": "2606.07384", "field": "materials", "latex": "\\mathrm{V} = \\left\\{\\underline{u} \\in \\left[H^{1}\\!\\left(\\Omega_{0}\\right)\\right]^{N} \\, \\left\\vert \\, \\underline{u} = \\underline{U} \\forall \\underline{X}\\in \\partial_{u} \\Omega_{0} \\right. \\right\\} \\,"}
+{"id": "2606.07384#6", "arxiv": "2606.07384", "field": "materials", "latex": "\\Psi_{\\mathrm{el}}\\!\\left(\\underline{\\underline{F}}\\right) = \\frac{G_{0}}{2} \\left[I_{\\mathrm{C}} - 3 - 2 \\,\\, \\ln J\\right] + \\sigma_{0}\\!\\left(J-1\\right) \\,"}
+{"id": "2606.07384#7", "arxiv": "2606.07384", "field": "materials", "latex": "\\Psi^{*}\\!\\left(\\underline{\\underline{F}},\\, p,\\, T\\right) = \\Psi\\!\\left(\\underline{\\underline{F}},\\, \\Phi_{\\mathrm{w}}(\\underline{\\underline{F}}, \\, p,\\, T),\\, T\\right) - \\Phi_{\\mathrm{w}}(\\underline{\\underline{F}}, \\, p,\\, T) \\,\\, p \\,"}
+{"id": "2606.07384#8", "arxiv": "2606.07384", "field": "materials", "latex": "\\hat{\\mathcal{E}}\\!\\left(\\underline{\\hat{u}},\\, \\hat{\\pi};\\, p,\\, T\\right) = \\int_{\\Omega_{0}} \\!\\hat{\\Psi} (\\underline{\\underline{\\hat{F}}},\\, \\hat{\\pi};\\, p,\\, T) \\, \\mathrm{d}\\underline{X} ~"}
+{"id": "2606.07384#9", "arxiv": "2606.07384", "field": "materials", "latex": "G_{0} \\, \\frac{\\lambda_{x}^{2}-1}{\\lambda_{x}\\lambda_{y}} -\\frac{A \\, k_{\\mathrm{B}} T}{v_{\\mathrm{w}}} \\left[\\left(\\frac{\\phi_{0}}{\\lambda_{x}\\lambda_{y}}\\right)^{n} -\\phi_{0}^{n}\\right] - p = 0 ~"}
+{"id": "2606.07384#10", "arxiv": "2606.07384", "field": "materials", "latex": "\\mathcal{W}\\!\\left(\\underline{u}\\right) = \\int_{\\Omega_{0}} \\! \\underline{B} \\cdot \\underline{u} \\, \\mathrm{d}\\underline{X} + \\int_{\\partial_{\\sigma}\\Omega_{0}} \\! \\underline{S} \\cdot \\underline{u} \\, \\mathrm{d}\\underline{X} \\,"}
+{"id": "2606.07384#11", "arxiv": "2606.07384", "field": "materials", "latex": "\\Psi_{\\mathrm{mix}}\\!\\left(J,\\, T\\right) = -\\frac{A k_{\\mathrm{B}}T \\phi_{0}^{n}}{v_{w} \\left(n-1\\right)} \\frac{1}{J^{n-1}} \\,"}
+{"id": "2403.16105#0", "arxiv": "2403.16105", "field": "materials", "latex": "\\frac{1}{R}=\\frac{1}{R_1}+\\frac{1}{R_2}"}
+{"id": "2403.16105#1", "arxiv": "2403.16105", "field": "materials", "latex": "\\frac{1}{E^*} =\\frac{1-\\nu_1^2}{E_1}+\\frac{1-\\nu_2^2}{E_2}"}
+{"id": "2403.16105#2", "arxiv": "2403.16105", "field": "materials", "latex": "G_e=\\frac{E^*}{2(1+\\nu)}"}
+{"id": "2403.16105#3", "arxiv": "2403.16105", "field": "materials", "latex": "\\hat{G}(t)=G_l\\cdot{e^{-\\frac{t}{\\tau}}}"}
+{"id": "2403.16105#4", "arxiv": "2403.16105", "field": "materials", "latex": "\\hat{F}(t) = \\frac{4\\sqrt{R}}{3(1-\\nu)} \\int_0^t \\hat{G}(t-s) \\ d[\\delta^{3/2}(s)] \\"}
+{"id": "2403.16105#5", "arxiv": "2403.16105", "field": "materials", "latex": "G(t) = G_e + G_l\\cdot{e^{-\\frac{t}{\\tau}}}"}
+{"id": "2403.16105#6", "arxiv": "2403.16105", "field": "materials", "latex": "F_{\\perp}(t)=F_e+\\hat{F}(t)"}
+{"id": "2403.16105#7", "arxiv": "2403.16105", "field": "materials", "latex": "G(t) = G_e + \\hat{G}(t)"}
+{"id": "2403.16105#8", "arxiv": "2403.16105", "field": "materials", "latex": "F_f(t)=\\mu F_{\\perp}(t)"}
+{"id": "2403.16105#9", "arxiv": "2403.16105", "field": "materials", "latex": "F_e(t) = \\frac{{4G_e}\\sqrt{R}}{3(1-\\nu)} \\delta^{3/2}(t)"}
+{"id": "2104.08866#0", "arxiv": "2104.08866", "field": "materials", "latex": "\\Xi(\\boldsymbol{\\xi};t,\\tau) \\sim {\\Theta(\\boldsymbol{\\xi};t,\\tau)} e^{-k_0(t-\\tau)} \\text{and} \\frac{\\partial\\Xi(\\boldsymbol{\\xi};t,\\tau)}{\\partial\\tau} \\sim {\\Theta(\\boldsymbol{\\xi};t,\\tau)} k_0 e^{-k_0(t-\\tau)}"}
+{"id": "2104.08866#1", "arxiv": "2104.08866", "field": "materials", "latex": "\\Xi(\\boldsymbol{\\xi};t,\\tau) = \\Xi(\\boldsymbol{\\xi};t,t_i) \\, \\Xi\\left[{}_{(t)}\\mathbf{F}(t_i)\\cdot\\boldsymbol{\\xi};t_i,\\tau\\right]"}
+{"id": "2104.08866#2", "arxiv": "2104.08866", "field": "materials", "latex": "\\boldsymbol{\\sigma}(t) = n\\iiint P_\\mathrm{A}(\\boldsymbol{\\xi};t) \\,\\frac{\\partial\\psi^*_\\mathrm{A}(\\boldsymbol{\\xi})}{\\partial\\boldsymbol{\\xi}} \\,\\boldsymbol{\\xi} \\,d^3\\boldsymbol{\\xi} - p(t)\\mathbf{1}"}
+{"id": "2104.08866#3", "arxiv": "2104.08866", "field": "materials", "latex": "\\boldsymbol{\\sigma}(t) = x_p \\, {}_{(t)}{\\boldsymbol{\\sigma}}(0) + (1 - x_p)\\int_{-\\infty}^t {}_{(t)}{\\boldsymbol{\\sigma}}(\\tau) \\frac{\\partial g(t -\\tau)}{\\partial\\tau} \\,d\\tau"}
+{"id": "2104.08866#4", "arxiv": "2104.08866", "field": "materials", "latex": "\\vartheta_\\mathrm{A,con}^*({\\gamma}) = \\ln\\left\\{\\frac{\\eta\\exp[\\eta\\mathcal{L}(\\eta)]}{\\sinh(\\eta)}\\right\\} +\\beta u(\\eta)"}
+{"id": "2104.08866#5", "arxiv": "2104.08866", "field": "materials", "latex": "\\vartheta_\\mathrm{A,con}^*({\\gamma}) = \\ln\\left\\{\\frac{\\eta\\exp[\\eta\\mathcal{L}(\\eta)]}{\\sinh(\\eta)}\\right\\} +\\beta u(\\eta) -c_0"}
+{"id": "2104.08866#6", "arxiv": "2104.08866", "field": "materials", "latex": "f^\\mathrm{eq}(\\Gamma) = \\frac{e^{-\\beta H(\\Gamma)}}{\\mathfrak{q}}"}
+{"id": "2104.08866#7", "arxiv": "2104.08866", "field": "materials", "latex": "\\boldsymbol{\\sigma} = \\left(\\frac{\\partial a}{\\partial \\mathbf{F}}\\right)_{T,\\mathrm{rxn}}\\cdot\\mathbf{F}^T"}
+{"id": "2104.08866#8", "arxiv": "2104.08866", "field": "materials", "latex": "\\mu^*_\\mathrm{A}(\\boldsymbol{\\xi};t) = -\\mathfrak{b}T\\ln\\left[\\frac{\\mathfrak{q}^*_\\mathrm{A}(\\boldsymbol{\\xi})}{NP_\\mathrm{A}(\\boldsymbol{\\xi};t)}\\right]"}
+{"id": "2104.08866#9", "arxiv": "2104.08866", "field": "materials", "latex": "\\kappa \\equiv \\beta\\ell_b^2 \\left.\\frac{\\partial^2 u(\\ell)}{\\partial \\ell^2}\\right|_{\\ell=\\ell_b}"}
+{"id": "2104.08866#10", "arxiv": "2104.08866", "field": "materials", "latex": "\\mu_\\mathrm{A}^*(\\boldsymbol{\\xi};t) - \\mu_{\\mathrm{B}_j}(t) = \\mathfrak{b}T\\ln\\left[\\frac{\\mathfrak{q}_{\\mathrm{B}_j}^*}{\\mathfrak{q}^*_\\mathrm{A}(\\boldsymbol{\\xi})}\\frac{P_\\mathrm{A}(\\boldsymbol{\\xi};t)}{P^\\mathrm{tot}_{\\mathrm{B}_j}(t)/V_{\\mathrm{B}_j}}\\right]"}
+{"id": "2104.08866#11", "arxiv": "2104.08866", "field": "materials", "latex": "\\left.\\left(\\frac{\\delta a_\\Lambda}{\\delta P^\\mathrm{tot}_{\\mathrm{B}_j}(t)}\\right)_{P_\\mathrm{A}}\\right|^\\mathrm{eq} = ~ n\\mu_{\\mathrm{B}_j}^\\mathrm{eq} - n\\mathfrak{b}T - \\Lambda =0"}
+{"id": "2307.11827#0", "arxiv": "2307.11827", "field": "materials", "latex": "\\delta W= \\int \\sigma_{ij}^{PK} \\delta u_{ij} dA= \\int \\sigma_{ij}^{PK}\\left(\\frac{\\partial \\delta u_i}{\\partial x_j} + \\frac{\\partial u_k}{\\partial x_i}\\frac{\\partial \\delta u_k}{\\partial x_j} \\right) dA"}
+{"id": "2307.11827#1", "arxiv": "2307.11827", "field": "materials", "latex": "\\sigma_{yy} =\\frac{2 \\zeta}{\\pi} \\left( \\frac{1}{r^*+y} -\\frac{1}{r^*}+\\frac{2 r^* y^2 }{(r^{*2}+y^2)^2}+ \\frac{1}{\\sqrt{(r^*-y)^2 + a^2}} \\right)"}
+{"id": "2307.11827#2", "arxiv": "2307.11827", "field": "materials", "latex": "\\sigma_{xx} = \\frac{E_{3D}}{(1+\\nu_{3D})(1-2\\nu_{3D})} \\left((1-\\nu_{3D}) u_{xx} + \\nu_{3D} \\left( u_{yy}+ \\alpha \\right) \\right)"}
+{"id": "2307.11827#3", "arxiv": "2307.11827", "field": "materials", "latex": "u_{xx} =\\frac{1}{E_{2D}} \\sigma_{xx} - \\frac{\\nu_{2D}}{E_{2D}} \\sigma_{yy}"}
+{"id": "2307.11827#4", "arxiv": "2307.11827", "field": "materials", "latex": "\\frac{\\sigma_{ij}}{k_B T}=\\frac{n_p F_{iK}F_{jK}}{J} + \\frac{1}{\\Omega} \\left(\\frac{\\mathcal{A}( J)}{J}- \\frac{n_p \\Omega}{J}- \\frac{\\mu }{k_B T} \\right)\\delta_{ij}"}
+{"id": "2307.11827#5", "arxiv": "2307.11827", "field": "materials", "latex": "u_{ij} =\\frac{1}{2} \\left( \\frac{\\partial u_i}{\\partial x_j} + \\frac{\\partial u_j}{\\partial x_i} + \\frac{\\partial u_{k}}{\\partial x_i} \\frac{\\partial u_k}{\\partial x_j}\\right)"}
+{"id": "2307.11827#6", "arxiv": "2307.11827", "field": "materials", "latex": "\\frac{\\Omega \\sigma_{xx}}{k_B T}=2(1+\\nu) n_p \\Omega u_{xx}"}
+{"id": "2307.11827#7", "arxiv": "2307.11827", "field": "materials", "latex": "\\Delta = -\\frac{\\zeta}{E \\pi} \\left(\\ln \\left(\\frac{16 r^{*2}}{a^2}\\right) + \\frac{1}{2} (\\pi -6 - \\pi \\nu) \\right)"}
+{"id": "2307.11827#8", "arxiv": "2307.11827", "field": "materials", "latex": "\\sigma_{xx} =\\frac{2 \\zeta}{\\pi} \\Bigg(\\frac{2 r^{* 3}}{(r^{*2}+y^2)^2} -\\frac{1}{r^*}-\\frac{2 (r^*-y)}{a^2}"}
+{"id": "2307.11827#9", "arxiv": "2307.11827", "field": "materials", "latex": "\\sigma_{yy} \\sim G_0 \\left(1-\\frac{\\Delta}{r^*}\\right) + \\frac{2 G_0 \\nu}{1-\\nu} \\frac{\\ln\\left(1-\\frac{\\Delta}{r^*}\\right)}{\\left(1-\\frac{\\Delta}{r^*}\\right)} - \\frac{G_0}{\\left(1-\\frac{\\Delta}{r^*}\\right)}"}
+{"id": "2307.11827#10", "arxiv": "2307.11827", "field": "materials", "latex": "E = 2(1+\\nu) n_p k_B T"}
+{"id": "1911.02049#0", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{A} = \\mathbf{W}\\mathbf{\\Sigma}\\mathbf{V}^T = \\sum_{k=1}^N\\sigma_k \\mathbf{w}_k \\mathbf{v}_k^T"}
+{"id": "1911.02049#1", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathfrak{L}^{i}_{k} = \\bigg \\langle \\dfrac{1}{\\text{Re}} \\bigg(\\dfrac{\\partial^2 \\phi_i^{\\omega}}{\\partial x^2} + \\dfrac{\\partial^2 \\phi_i^{\\omega}}{\\partial y^2}\\bigg),\\phi_k^{\\omega} \\bigg \\rangle"}
+{"id": "1911.02049#2", "arxiv": "1911.02049", "field": "physics", "latex": "\\omega(x, y, 0) = \\exp\\left( -\\pi \\left[ (x-x_1)^2 + (y-y_1)^2 \\right] \\right) +"}
+{"id": "1911.02049#3", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{\\Phi}_t = [\\mathbf{\\Phi}_0 \\mathbf{V}_t \\text{cos}(\\mathbf{\\Sigma}_t) + \\mathbf{U}_t \\text{sin}(\\mathbf{\\Sigma}_t)]\\mathbf{V}_{t}^{T}"}
+{"id": "1911.02049#4", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{\\dot{a}} = \\mathbf{\\mathfrak{L}} \\mathbf{a} + \\mathbf{a}^T \\mathbf{\\mathfrak{N}} \\mathbf{a}"}
+{"id": "1911.02049#5", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{\\Gamma}_t = \\mathbf{U}_t \\mathbf{\\Sigma}_t \\mathbf{V}_{t}^{T}"}
+{"id": "1911.02049#6", "arxiv": "1911.02049", "field": "physics", "latex": "\\Pi = -F(t)\\text{cos}(\\eta x) \\text{cos}(\\eta y)"}
+{"id": "1911.02049#7", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{u}_t(\\mathbf{x},t;\\mu, \\kappa)=\\mathbf{F}(\\mathbf{x},t;\\mathbf{u};\\mu) + \\mathbf{\\Pi}(\\mathbf{x},t;\\mathbf{u};\\mu,\\kappa)"}
+{"id": "1911.02049#8", "arxiv": "1911.02049", "field": "physics", "latex": "\\mathbf{u}(\\mathbf{x}, t) = \\sum_{k=1}^{R} a_k(t) \\phi_k(\\mathbf{x})"}
+{"id": "1911.02049#9", "arxiv": "1911.02049", "field": "physics", "latex": "\\alpha_k^{(n)} = \\langle \\mathbf{u}(\\mathbf{x}, t_n) , \\phi_k \\rangle"}
+{"id": "1911.02049#10", "arxiv": "1911.02049", "field": "physics", "latex": "(\\mathbf{\\Phi}_i-\\mathbf{\\Phi}_0 \\mathbf{\\Phi}_0^T \\mathbf{\\Phi}_i)(\\mathbf{\\Phi}_0^T\\mathbf{\\Phi}_i)^{-1} = \\mathbf{U}_i\\mathbf{\\Sigma}_i \\mathbf{V}_i^T"}
+{"id": "1911.02049#11", "arxiv": "1911.02049", "field": "physics", "latex": "\\dfrac{\\text{d}a_k}{\\text{d}t} = {\\sum_{i=1}^{R} \\mathfrak{L}^{i}_{k} a_i + \\sum_{i=1}^{R} \\sum_{j=1}^{R} \\mathfrak{N}^{ij}_{k} a_i a_j}"}
+{"id": "2510.18125#0", "arxiv": "2510.18125", "field": "physics", "latex": "\\varphi(0,t)=\\mathbb{I}, \\Sigma_{\\alpha}(L,t)=P_{\\alpha}(t)"}
+{"id": "2510.18125#1", "arxiv": "2510.18125", "field": "physics", "latex": "Y'(1)-\\nu\\Theta(1)=\\Theta'(1)=0"}
+{"id": "2510.18125#2", "arxiv": "2510.18125", "field": "physics", "latex": "\\mathcal{U}_{\\mathrm{lin}} =\\frac{1}{2}\\int_{0}^{L}\\mathrm{d}u\\,\\,\\left\\langle K\\mathcal{D}\\xi,\\mathcal{D}\\xi\\right\\rangle"}
+{"id": "2510.18125#3", "arxiv": "2510.18125", "field": "physics", "latex": "\\Gamma_{\\alpha\\beta}\\partial_{t}\\xi_{\\beta}=-\\frac{\\delta\\mathcal{U}_{\\mathrm{lin}}}{\\delta\\xi_{\\alpha}}+f_{\\alpha}"}
+{"id": "2510.18125#4", "arxiv": "2510.18125", "field": "physics", "latex": "(\\psi,\\xi)_{\\Gamma}=\\int_{0}^{L}\\mathrm{d}u\\,\\,\\langle\\Gamma\\psi,\\xi\\rangle"}
+{"id": "2510.18125#5", "arxiv": "2510.18125", "field": "physics", "latex": "\\xi\\lvert_{u=0}=0, \\mathcal{D}\\xi\\lvert_{u=L}=0"}
+{"id": "2510.18125#6", "arxiv": "2510.18125", "field": "physics", "latex": "\\mathcal{M_{\\alpha\\beta}}\\,\\Xi_{\\beta}=\\lambda\\Gamma_{\\alpha\\beta}\\Xi_{\\beta}"}
+{"id": "2510.18125#7", "arxiv": "2510.18125", "field": "physics", "latex": "= \\frac{1}{2}\\int_{0}^{L}\\mathrm{d}u\\,\\,k_{1}(h_{1}-1)^{2}+k_{2}h_{2}^{2}+k_{3}\\Pi^{2}"}
+{"id": "2510.18125#8", "arxiv": "2510.18125", "field": "physics", "latex": "\\bar{\\boldsymbol{r}}(u)=(u,0), \\bar{\\boldsymbol{e}}_{1}(u)=(1,0), \\bar{\\boldsymbol{e}}_{2}(u)=(0,1)"}
+{"id": "2510.18125#9", "arxiv": "2510.18125", "field": "physics", "latex": "=\\frac{1}{2}\\int_{0}^{L}\\mathrm{d}u\\,\\,k_{1}(h_{1}^{(1)})^{2}+k_{2}(h_{2}^{(1)})^{2}+k_{3}(\\Pi^{(1)})^{2}"}
+{"id": "2510.18125#10", "arxiv": "2510.18125", "field": "physics", "latex": "Y(0)=\\Theta(0)=0"}
+{"id": "2510.18125#11", "arxiv": "2510.18125", "field": "physics", "latex": "B_{1} =(\\chi_{1}(\\chi_{1}-\\nu g_{1})-\\chi_{2}(\\chi_{2}-\\nu g_{2}))g_{1}"}
+{"id": "1903.00549#0", "arxiv": "1903.00549", "field": "physics", "latex": "\\omega\\left(q\\right)\\approx \\frac{1}{\\tau} + \\frac{\\bar{\\zeta}}{2\\eta} + \\left[\\frac{1}{3\\tau} + \\frac{\\bar{\\zeta}}{3\\eta}\\right] \\left(qL_0\\right)^2 + \\mathcal{O}\\left(\\left(qL_0\\right)^4\\right)"}
+{"id": "1903.00549#1", "arxiv": "1903.00549", "field": "physics", "latex": "\\delta\\tilde{\\sigma}_{xx}\\left(\\pm L\\right)=\\mp \\partial_x\\sigma_{xx}^0\\left(\\pm L_0\\right)\\delta\\tilde{L}, \\delta\\tilde{\\sigma}_{xy}\\left(\\pm L\\right)=0"}
+{"id": "1903.00549#2", "arxiv": "1903.00549", "field": "physics", "latex": "\\nabla^2 p_\\alpha = 0"}
+{"id": "1903.00549#3", "arxiv": "1903.00549", "field": "physics", "latex": "\\delta\\tilde{p}_x(0) = 0, \\delta\\tilde{p}_x\\left(L\\right)=0"}
+{"id": "1903.00549#4", "arxiv": "1903.00549", "field": "physics", "latex": "\\delta\\tilde{p}_x\\left(\\pm L\\right)=\\mp \\partial_x p_x^0\\left(\\pm L_0\\right)\\delta\\tilde{L}, \\delta\\tilde{p}_y\\left(\\pm L\\right)=-iq\\,\\delta\\tilde{L}"}
+{"id": "1903.00549#5", "arxiv": "1903.00549", "field": "physics", "latex": "L_c^2\\left(\\partial_x^2-q^2\\right)\\delta\\tilde{p}_y=\\delta\\tilde{p}_y"}
+{"id": "1903.00549#6", "arxiv": "1903.00549", "field": "physics", "latex": "\\sigma_{\\alpha\\beta}^s=2\\eta \\tilde{v}_{\\alpha\\beta}+\\frac{\\nu_1}{2}\\left(p_\\alpha h_\\beta + h_\\alpha p_\\beta -\\frac{2}{d} p_\\gamma h_\\gamma \\delta_{\\alpha\\beta}\\right) - \\zeta q_{\\alpha\\beta}"}
+{"id": "1903.00549#7", "arxiv": "1903.00549", "field": "physics", "latex": "p_x^0\\left(x\\right)=\\frac{\\sinh\\left(x/L_c\\right)}{\\sinh\\left(L_0/L_c\\right)}"}
+{"id": "1903.00549#8", "arxiv": "1903.00549", "field": "physics", "latex": "\\sigma_{\\alpha\\beta}^{E}=-P\\,\\delta_{\\alpha\\beta} - \\frac{\\partial f}{\\partial\\left(\\partial_\\beta p_\\gamma\\right)}\\partial_\\alpha p_\\gamma"}
+{"id": "1903.00549#9", "arxiv": "1903.00549", "field": "physics", "latex": "V_0\\approx \\frac{T_0 L_c}{2\\eta h}L_0 + \\frac{L_c}{2\\eta}\\left[\\frac{\\zeta}{2}-\\frac{T_0 L_c}{h}\\right]"}
+{"id": "1903.00549#10", "arxiv": "1903.00549", "field": "physics", "latex": "\\sigma_{\\alpha\\beta}=\\sigma_{\\alpha\\beta}^s+\\sigma_{\\alpha\\beta}^a"}
+{"id": "1903.00549#11", "arxiv": "1903.00549", "field": "physics", "latex": "V_0\\approx \\frac{T_0 L_c}{2\\eta h}L_0 \\equiv\\frac{L_0}{\\tau}"}
+{"id": "2308.08905#0", "arxiv": "2308.08905", "field": "physics", "latex": "E^i = \\frac{1}{2} \\int d\\vec{r} \\left| \\vec{u^i} (r_{\\perp},t) \\right|^2"}
+{"id": "2308.08905#1", "arxiv": "2308.08905", "field": "physics", "latex": "\\vec{v_{\\theta}}=\\frac{l}{r}\\vec{e}_{\\theta}"}
+{"id": "2308.08905#2", "arxiv": "2308.08905", "field": "physics", "latex": "u^i_\\alpha (\\vec{k},t) = \\left( \\delta_{\\alpha \\beta} - \\frac{k_\\alpha k_\\beta}{k^2} \\right) u_\\beta(\\vec{k},t)"}
+{"id": "2308.08905#3", "arxiv": "2308.08905", "field": "physics", "latex": "\\frac{\\partial \\boldsymbol{v}}{\\partial z} + \\left( \\boldsymbol{v} \\cdot \\nabla_\\perp\\right) \\boldsymbol{v} = \\nabla_\\perp\\left(\\frac{I_f}{I_{sat}} + \\frac{\\nabla_\\perp^2 \\sqrt{I_f}}{2\\sqrt{I_f}}\\right)"}
+{"id": "2004.01458#0", "arxiv": "2004.01458", "field": "chemistry", "latex": "\\Delta Q\\propto t^\\beta 0 \\leq \\beta \\leq 1"}
+{"id": "2004.01458#1", "arxiv": "2004.01458", "field": "chemistry", "latex": "L_\\text{SEI} =\\frac{V_\\text{SEI}}{F} j_{\\text{SEI,0,0}}e^{-\\alpha_\\text{SEI}\\tilde{\\eta}_\\text{SEI}} \\cdot t"}
+{"id": "2004.01458#2", "arxiv": "2004.01458", "field": "chemistry", "latex": "j_{\\text{SEI,mig}} =\\frac{c_\\text{Li,0}DF^2j_\\text{int}}{2RT\\kappa_{\\text{Li}^+,\\text{SEI}}}e^{-\\tilde{\\eta}_\\text{SEI}} \\text{charging}"}
+{"id": "2004.01458#3", "arxiv": "2004.01458", "field": "chemistry", "latex": "L_\\text{diff} =\\frac{c_\\text{Li,0}DF}{j_\\text{SEI,0,0}}e^{-(1-\\alpha_\\text{SEI})\\tilde{\\eta}_\\text{SEI}}"}
+{"id": "2004.01458#4", "arxiv": "2004.01458", "field": "chemistry", "latex": "Q_\\text{SEI}(n)=\\int_{U_1}^{U_2}\\frac{\\text{d}Q}{\\text{d}U_0}_\\text{sim}(n)\\text{d}U_0"}
+{"id": "2004.01458#5", "arxiv": "2004.01458", "field": "chemistry", "latex": "Q_\\text{SEI}(n)= \\frac{\\text{d}Q_\\text{SEI,tot}}{\\text{d}n}"}
+{"id": "2004.01458#6", "arxiv": "2004.01458", "field": "chemistry", "latex": "\\frac{dL_\\text{SEI}}{dt}=-\\frac{V_\\text{SEI}}{F} j_\\text{SEI}"}
+{"id": "2004.01458#7", "arxiv": "2004.01458", "field": "chemistry", "latex": "j_\\text{SEI}=-DF\\frac{c_\\text{Li}(L_\\text{tun})}{L_\\text{app}}\\left(1+\\frac{F}{2RT} (\\phi(L_\\text{SEI})-\\phi(L_\\text{tun})) \\right)"}
+{"id": "2004.01458#8", "arxiv": "2004.01458", "field": "chemistry", "latex": "L_\\text{mig} =\\frac{2RT\\kappa_{\\text{Li}^+,\\text{SEI}}}{F \\left|j_\\text{int}\\right|}"}
+{"id": "2004.01458#9", "arxiv": "2004.01458", "field": "chemistry", "latex": "j_\\text{SEI}=j_\\text{SEI,0} \\cdot \\left(e^{(1-\\alpha_\\text{SEI})\\frac{F\\eta_\\text{SEI}}{RT}}-e^{-\\alpha_\\text{SEI}\\frac{F\\eta_\\text{SEI}}{RT}} \\right)"}
+{"id": "2004.01458#10", "arxiv": "2004.01458", "field": "chemistry", "latex": "L_\\text{SEI}\\propto t^\\beta \\Leftrightarrow \\beta=\\frac{\\text{d}\\log (L_\\text{SEI})}{\\text{d}\\log (t)}"}
+{"id": "2004.01458#11", "arxiv": "2004.01458", "field": "chemistry", "latex": "j_\\text{SEI,0}=j_{\\text{SEI},0,0}\\left(\\frac{c_{\\text{Li}}}{c_{{\\text{Li}},0}}\\right)^{\\alpha_\\text{SEI}}"}
+{"id": "2304.04986#0", "arxiv": "2304.04986", "field": "chemistry", "latex": "Q_i = \\mathcal{F}(V_i | \\mathcal{O})"}
+{"id": "2304.04986#1", "arxiv": "2304.04986", "field": "chemistry", "latex": "Q_i = \\mathcal{F}\\left(V_i | \\mathcal{O}\\right)"}
+{"id": "2304.04986#2", "arxiv": "2304.04986", "field": "chemistry", "latex": "\\left.\\frac{dQ}{dV}\\right|_i = \\text{AutoDiff}(Q_i, V_i)"}
+{"id": "2304.04986#3", "arxiv": "2304.04986", "field": "chemistry", "latex": "\\mathcal{O} = \\begin{cases} &\\textbf{composition} = \\text{Li}_{1.2}\\text{Mn}_{0.2}\\text{Cr}_{0.2}\\text{Ti}_{0.4}\\text{O}_{2} \\\\ &\\textbf{rate} = 20~\\text{mA/g}, \\\\ &\\textbf{cycle} = 1 \\end{cases}"}
+{"id": "2304.04986#4", "arxiv": "2304.04986", "field": "chemistry", "latex": "\\mathcal{L} = w_Q\\ell(Q_i^N) + w_{dQ}\\ell(\\frac{dQ^N}{dV_i}) + w_{Q_1}\\ell(Q_i^1) + \\mathcal{R}"}
+{"id": "2203.16091#0", "arxiv": "2203.16091", "field": "chemistry", "latex": "\\phi_\\mathrm{p} = V(t), \\text{ on } x = L"}
+{"id": "2203.16091#1", "arxiv": "2203.16091", "field": "chemistry", "latex": "V(t) = U_\\mathrm{eq} - \\eta_\\mathrm{r} - \\eta_\\mathrm{c} - \\Delta \\phi_\\mathrm{e} - \\Delta \\phi_\\mathrm{s}"}
+{"id": "2203.16091#2", "arxiv": "2203.16091", "field": "chemistry", "latex": "i_\\mathrm{e} = 0, \\text{ at } x = 0, L"}
+{"id": "2203.16091#3", "arxiv": "2203.16091", "field": "chemistry", "latex": "c_\\mathrm{e} = c_{\\mathrm{e} 0}, \\text{ at } t = 0"}
+{"id": "2203.16091#4", "arxiv": "2203.16091", "field": "chemistry", "latex": "j_k = j_{k0} \\sinh\\left(\\frac{F}{2 R T} \\eta_k \\right)"}
+{"id": "2203.16091#5", "arxiv": "2203.16091", "field": "chemistry", "latex": "\\mu_k = k_B T \\ln \\left( \\frac{c_k}{c_k^{\\max} - c_k} \\right) + H \\left(\\frac{c_k^{\\max} - 2c_k}{c_k^{\\max}} \\right) - \\frac{\\omega}{(c_k^{\\max})^2} \\nabla^2 c_k"}
+{"id": "2203.16091#6", "arxiv": "2203.16091", "field": "chemistry", "latex": "j^\\theta_k(x,\\theta) = j_{k0}(c_\\mathrm{e}(x),c_k(x,R_k,\\theta)) \\sinh \\left[ \\frac{F}{2 R T} \\left(\\phi_k(x) - \\phi_\\mathrm{e}(x) - U_k(c_k(x,R_k,\\theta))\\right) \\right]"}
+{"id": "2203.16091#7", "arxiv": "2203.16091", "field": "chemistry", "latex": "j_\\mathrm{n} = \\frac{i_\\mathrm{app}(t)}{L_\\mathrm{n}}, j_\\mathrm{p} = - \\frac{i_\\mathrm{app}(t)}{L_\\mathrm{p}}"}
+{"id": "2203.16091#8", "arxiv": "2203.16091", "field": "chemistry", "latex": "I(t) V(t) = P(t)"}
+{"id": "2203.16091#9", "arxiv": "2203.16091", "field": "chemistry", "latex": "N_k = 0, \\text{ on } r = 0"}
+{"id": "2203.16091#10", "arxiv": "2203.16091", "field": "chemistry", "latex": "j_{k0}(t) = F K_k \\left. \\sqrt{\\frac{c_{k}(r,t)}{c_k^{\\max}} \\left(1 - \\frac{c_{k}(r,t)}{c_{k}^{\\max}} \\right)} \\right|_{r = R_k} \\mbox{for} {k \\in \\{\\text{n,p}\\}}"}
+{"id": "2203.16091#11", "arxiv": "2203.16091", "field": "chemistry", "latex": "U_\\mathrm{eq} = U_\\mathrm{p} \\left( \\left. c_{\\mathrm{p}} \\right|_{r = R_\\mathrm{p}} \\right) - U_\\mathrm{n} \\left( \\left. c_{\\mathrm{n}} \\right|_{r = R_\\mathrm{n}} \\right), (\\text{open-circuit potential})"}
+{"id": "2002.00806#0", "arxiv": "2002.00806", "field": "chemistry", "latex": "i_{\\rm c}(c_{\\rm s},c) = k_{\\rm c} \\; c\\;(c_{\\rm s,max}-c_{\\rm s})"}
+{"id": "2002.00806#1", "arxiv": "2002.00806", "field": "chemistry", "latex": "U_{\\rm eq}(c_{\\rm s},c) = \\frac{RT}{F(\\alpha_{\\rm a}+\\alpha_{\\rm c})}\\log \\left( \\frac{k_{\\rm c}\\; c\\;(c_{\\rm s,max}-c_{\\rm s})}{ k_{\\rm a}\\; c_{\\rm s}} \\right) + u_{\\rm eq}(c_s,c)"}
+{"id": "2002.00806#2", "arxiv": "2002.00806", "field": "chemistry", "latex": "V(t) = \\phi_{\\rm s} (L_4,t) - \\phi_{\\rm s} (L_1,t) - \\frac{R_{\\rm f}}{A}I(t)"}
+{"id": "2002.00806#3", "arxiv": "2002.00806", "field": "chemistry", "latex": "i_{\\rm a}{(c_{\\rm s})} = k_{\\rm a} \\; c_{\\rm s}"}
+{"id": "2002.00806#4", "arxiv": "2002.00806", "field": "chemistry", "latex": "\\mbox{SOC}^{(a)}(t)=\\frac{3}{(L_2-L_1)(R^{(\\rm a)}(x))^3} \\int_{L_1}^{L_2}\\int_0^{R^{(\\rm a)}(x)} r^2 \\frac{c^{(a)}_{\\rm s}(r,x,t)}{c^{(a)}_{\\rm s,max}}{\\rm d}r{\\rm d}x"}
+{"id": "2002.00806#5", "arxiv": "2002.00806", "field": "chemistry", "latex": "i_0 = k \\;c^{\\alpha_{\\rm a}}\\; (c_{\\rm s,max} -c_{\\rm s})^{\\alpha_{\\rm a}} \\;c_{\\rm s}^{\\alpha_{\\rm c}}"}
+{"id": "2306.15508#0", "arxiv": "2306.15508", "field": "math", "latex": "\\!\\!\\!\\!\\!\\!\\!\\! \\leqslant~ C_{p,T}\\Big(1+\\frac{1}{N}\\sum_{i=1}^N\\mathbb{E}\\|\\xi^i\\|_{L^2}^p\\Big)\\leqslant C_{p,T}"}
+{"id": "2306.15508#1", "arxiv": "2306.15508", "field": "math", "latex": "\\mathbb{E}|\\Pi(\\mathscr{S}^N)|^2\\leqslant\\!\\!\\!\\!\\!\\!\\!\\! \\frac{1}{N^2}\\sum_{i,k=1}^{N}\\mathbb{E}\\Big[\\big(\\mathcal{M}_t^i-\\mathcal{M}_s^i\\big)\\big(\\mathcal{M}_t^k-\\mathcal{M}_s^k\\big)\\Big]"}
+{"id": "2306.15508#2", "arxiv": "2306.15508", "field": "math", "latex": "\\!\\!\\!\\!\\!\\!\\!\\! +C\\int_0^t(1+\\|X^{N,1}_s\\|^{2}_{1})ds+\\frac{2}{N}\\sum_{j=1}^N\\int_0^t(( X^{N,1}_s,\\tilde{\\sigma}(s,X^{N,1}_s,X^{N,j}_s)dW^{1}_s))"}
+{"id": "2306.15508#3", "arxiv": "2306.15508", "field": "math", "latex": "{\\mathbb{H}}^n:=\\text{span}\\Big\\{l_1,l_2,\\cdots\\,l_n\\Big\\}"}
+{"id": "2306.15508#4", "arxiv": "2306.15508", "field": "math", "latex": "\\leqslant\\!\\!\\!\\!\\!\\!\\!\\! \\sum_{m=1}^\\infty(\\varepsilon2^{-m})^{-1}\\mathbb{E}\\Big[\\mathscr{S}^{N}(\\mathscr{U}_{\\varepsilon2^{-m}}^c)\\Big]"}
+{"id": "2306.15508#5", "arxiv": "2306.15508", "field": "math", "latex": "\\|X^{n}_t\\|_{\\mathbb{H}}^p =\\!\\!\\!\\!\\!\\!\\!\\! \\|X^{n}_0\\|_{\\mathbb{H}}^p+\\frac{p(p-2)}{2}\\int_0^t\\|X^{n}_s\\|_{\\mathbb{H}}^{p-4} \\|\\big(P_n\\sigma(s,X^{n}_s,\\mathscr{L}_{X^{n}_s})\\tilde{P}_n\\big)^*X^{n}_s\\|_U^2ds"}
+{"id": "2306.15508#6", "arxiv": "2306.15508", "field": "math", "latex": "\\lim_{\\delta\\rightarrow0}\\sup_{N\\in\\mathbb{N}}\\mathbb{P} \\left(\\|X^{N,1}_{(\\tau^N+\\delta)}-X^{N,1}_{\\tau^N}\\|_{L^2}>\\eta\\right)=0"}
+{"id": "2306.15508#7", "arxiv": "2306.15508", "field": "math", "latex": "\\mathbb{E}\\Big[\\sup_{t\\in[0,T]}\\Big(\\frac{1}{N}\\sum_{i=1}^NI^{N,i}_1(t)\\Big)\\Big]\\leqslant\\!\\!\\!\\!\\!\\!\\!\\! ~C_{p,T}+C_p\\mathbb{E}\\Big[\\int_0^T\\frac{1}{N}\\sum_{i=1}^N\\|X^{N,i}_t\\|_{L^2}^pdt\\Big]"}
+{"id": "2306.15508#8", "arxiv": "2306.15508", "field": "math", "latex": "A(u):=A_1(u)+A_2(u)+K(t,u,\\mu)"}
+{"id": "2306.15508#9", "arxiv": "2306.15508", "field": "math", "latex": "\\langle \\tilde{\\mathscr{M}}_l\\rangle(t)=\\int_0^t |\\sigma\\big(s,\\tilde{X}_s,\\tilde{\\mu}_s\\big)^*l|^2ds"}
+{"id": "2306.15508#10", "arxiv": "2306.15508", "field": "math", "latex": "\\!\\!\\!\\!\\!\\!\\!\\! -\\int_s^t\\Big\\|\\Big(\\int\\tilde{\\sigma}(r,x_r,x'_r)\\mathscr{S}(dx')\\Big)^*l\\Big\\|_U^2dr\\Big)g_1(x_{s_1})\\cdots g_m(x_{s_m})\\mathscr{S}(dx')\\mathscr{S}(dx)\\Big|=0.~~~~"}
+{"id": "2306.15508#11", "arxiv": "2306.15508", "field": "math", "latex": "\\partial_{t} u = -\\partial_{x}^{4}u - \\partial_{x}^{2} u - u \\partial_{x} u"}
+{"id": "1907.04555#0", "arxiv": "1907.04555", "field": "math", "latex": "= \\, \\phi^e \\int_{\\Omega} -(e^T \\nabla \\chi)^T\\mathcal{B} v + (\\epsilon^S \\nabla \\chi)^T \\nabla w \\,d\\Omega"}
+{"id": "1907.04555#1", "arxiv": "1907.04555", "field": "math", "latex": "\\,= \\int_0^T \\left<f(t),{v} \\right>\\, dt - \\left<\\rho \\mathbf{u}_0,{\\dot{v}}(0)\\right> +\\left<\\rho \\mathbf{u}_1,{v}(0)\\right>"}
+{"id": "1907.04555#2", "arxiv": "1907.04555", "field": "math", "latex": "\\rho \\mathbf{\\ddot{u}}(t) + \\alpha \\rho \\mathbf{\\dot{u}}(t)-\\mathcal{B}^T \\left( c^E \\mathcal{B} \\mathbf{u}(t) + \\beta c^E \\mathcal{B} \\mathbf{\\dot{u}}(t) + e^T \\nabla\\phi(t)\\right) = 0 \\text{ in } \\Omega \\times [0,T]"}
+{"id": "1907.04555#3", "arxiv": "1907.04555", "field": "math", "latex": "H^{-1}(\\Omega) :=\\bigg\\{\\ f \\text{ continuous linear functional on $H^1_0(\\Omega)$ : }"}
+{"id": "1907.04555#4", "arxiv": "1907.04555", "field": "math", "latex": "= \\ \\tilde{M} \\sup_{\\| w\\|_{H^{1}_{0}(\\Omega)} \\leq 1 } \\left| \\left< e\\mathcal{B} \\mathbf{u}_m(t) ,\\nabla w \\right> -\\left<g(t),w\\right> \\right|^2"}
+{"id": "1907.04555#5", "arxiv": "1907.04555", "field": "math", "latex": "= \\lambda_{1,mech} \\|\\mathcal{B}\\mathbf{u}_m(t)\\|^2_{L^2(\\Omega)}"}
+{"id": "1907.04555#6", "arxiv": "1907.04555", "field": "math", "latex": "\\lim_{t \\to \\infty} \\left< e^T\\nabla\\phi_m(t), \\mathcal{B} \\mathbf{u}_m(t) \\right> = \\lim_{t \\to \\infty} -\\left< c^E \\mathcal{B} \\mathbf{u}_m(t),\\mathcal{B} \\mathbf{u}_m(t) \\right> \\leqslant 0"}
+{"id": "1907.04555#7", "arxiv": "1907.04555", "field": "math", "latex": "+ \\int_0^t \\underbrace{ \\|\\mathbf{u}_m(s)\\|^2_{H^1_{\\mathcal{B}}(\\Omega)}+ \\|\\mathbf{\\dot{u}}_m(s)\\|^2_{L^2(\\Omega)} +\\|\\phi_m(s)\\|^2_{H^1_0(\\Omega)} }_{\\ge 0} \\, ds"}
+{"id": "1907.04555#8", "arxiv": "1907.04555", "field": "math", "latex": "\\|\\rho \\mathbf{\\ddot{u}}_m(0)\\|_{L^2(\\Omega)} = \\|\\alpha \\rho \\mathbf{\\dot{u}}_m(0)-\\mathcal{B}^T \\left( c^E \\mathcal{B} \\mathbf{u}_m(0) + \\beta c^E \\mathcal{B} \\mathbf{\\dot{u}}_m(0) + e^T \\nabla\\phi_m(0)\\right)"}
+{"id": "1907.04555#9", "arxiv": "1907.04555", "field": "math", "latex": "\\lim_{t \\to \\infty} \\left< c^E \\mathcal{B} \\mathbf{u}_m(t),\\mathcal{B} \\mathbf{u}_m(t) \\right> = \\lim_{t \\to \\infty} \\left< \\epsilon^S \\nabla \\phi_m(t),\\nabla \\phi_m(t) \\right>= 0"}
+{"id": "1907.04555#10", "arxiv": "1907.04555", "field": "math", "latex": "\\mathbf{u}(0)=\\mathbf{u}_0, \\mathbf{\\dot{u}}(0)=\\mathbf{u}_1 \\text{ on } \\Omega"}
+{"id": "1907.04555#11", "arxiv": "1907.04555", "field": "math", "latex": "(\\mathbf{u}_m,\\phi_m)_{m=1}^\\infty \\ \\text{in}\\ L^\\infty(0,T;H^1_\\mathcal{B}(\\Omega)) \\times L^\\infty(0,T;H^1_{0}(\\Omega))"}
+{"id": "2502.06454#0", "arxiv": "2502.06454", "field": "math", "latex": "\\int_{\\Omega}(u_1w_1-u_2w_2)^2 =\\int_{\\Omega}((u_1-u_2)w_1+u_2(w_1-w_2))^2"}
+{"id": "2502.06454#1", "arxiv": "2502.06454", "field": "math", "latex": "|l(\\psi)| = |\\langle g, \\psi \\rangle| = \\left|\\langle g, \\lim_{n \\to \\infty} \\psi_n \\rangle\\right|"}
+{"id": "2502.06454#2", "arxiv": "2502.06454", "field": "math", "latex": "|a(w,\\phi )|=\\left|\\int_{\\Omega } w_{xx} \\phi_{xx}+\\int_{\\Omega }w\\phi \\right|"}
+{"id": "2502.06454#3", "arxiv": "2502.06454", "field": "math", "latex": "\\mathcal{R}(I - \\mathcal{A}) = \\mathcal{E}"}
+{"id": "2502.06454#4", "arxiv": "2502.06454", "field": "math", "latex": "u_x|_{\\partial\\Omega}= v_x|_{\\partial\\Omega}=0"}
+{"id": "2502.06454#5", "arxiv": "2502.06454", "field": "math", "latex": "\\langle U_1,U_2\\rangle_{\\mathcal{X}}=\\int_{\\Omega } u_1 u_2+\\int_{\\Omega } v_1 v_2+\\int_{\\Omega } w_{1xx} w_{2xx} \\textit{ and } \\langle V_1,V_2\\rangle_{\\mathcal{E}}=\\int_{\\Omega }u_1 u_2+\\int_{\\Omega } v_1 v_2"}

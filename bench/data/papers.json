@@ -1,0 +1,218 @@
+[
+ {
+  "arxiv": "2209.13557",
+  "field": "polymers",
+  "title": null,
+  "license": null,
+  "url": "https://arxiv.org/abs/2209.13557",
+  "n_equations": 9,
+  "n_found": 14
+ },
+ {
+  "arxiv": "2307.10139",
+  "field": "polymers",
+  "title": null,
+  "license": null,
+  "url": "https://arxiv.org/abs/2307.10139",
+  "n_equations": 10,
+  "n_found": 11
+ },
+ {
+  "arxiv": "2511.23306",
+  "field": "polymers",
+  "title": null,
+  "license": null,
+  "url": "https://arxiv.org/abs/2511.23306",
+  "n_equations": 3,
+  "n_found": 3
+ },
+ {
+  "arxiv": "2603.27106",
+  "field": "polymers",
+  "title": "ADEPT-PolyGraphMT: Automated Molecular Simulation and Multi-Task Multi-Fidelity Machine Learning for Polymer Property Generation and Prediction",
+  "license": null,
+  "url": "https://arxiv.org/abs/2603.27106",
+  "n_equations": 12,
+  "n_found": 20
+ },
+ {
+  "arxiv": "2312.07149",
+  "field": "polymers",
+  "title": "Feature-based prediction of properties of cross-linked epoxy polymers by molecular dynamics and machine learning techniques",
+  "license": "cc-by-nc-nd",
+  "url": "https://arxiv.org/abs/2312.07149",
+  "n_equations": 5,
+  "n_found": 5
+ },
+ {
+  "arxiv": "2603.13303",
+  "field": "polymers",
+  "title": "PolyMon: A Unified Framework for Polymer Property Prediction",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2603.13303",
+  "n_equations": 5,
+  "n_found": 5
+ },
+ {
+  "arxiv": "2402.09128",
+  "field": "polymers",
+  "title": "Machine learning assisted prediction of organic salt structure properties",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2402.09128",
+  "n_equations": 9,
+  "n_found": 9
+ },
+ {
+  "arxiv": "2509.07164",
+  "field": "polymers",
+  "title": "Fast Phase Prediction of Charged Polymer Blends by White-Box Machine Learning Surrogates",
+  "license": null,
+  "url": "https://arxiv.org/abs/2509.07164",
+  "n_equations": 8,
+  "n_found": 17
+ },
+ {
+  "arxiv": "2606.06415",
+  "field": "polymers",
+  "title": "PolyGraphPy: A unified Python framework for atomistic simulation and machine learning-driven polymer design",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2606.06415",
+  "n_equations": 9,
+  "n_found": 17
+ },
+ {
+  "arxiv": "2606.07384",
+  "field": "materials",
+  "title": "Hydrogel mechanics below swelling equilibrium",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2606.07384",
+  "n_equations": 12,
+  "n_found": 85
+ },
+ {
+  "arxiv": "2403.16105",
+  "field": "materials",
+  "title": "Viscoelastic material properties determine the contact mechanics of hydrogel spheres",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2403.16105",
+  "n_equations": 10,
+  "n_found": 10
+ },
+ {
+  "arxiv": "2104.08866",
+  "field": "materials",
+  "title": "Chain breaking in the statistical mechanical constitutive theory of polymer networks",
+  "license": null,
+  "url": "https://arxiv.org/abs/2104.08866",
+  "n_equations": 12,
+  "n_found": 136
+ },
+ {
+  "arxiv": "2307.11827",
+  "field": "materials",
+  "title": "Obstructed swelling and fracture of hydrogels",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2307.11827",
+  "n_equations": 11,
+  "n_found": 65
+ },
+ {
+  "arxiv": "1911.02049",
+  "field": "physics",
+  "title": "An Evolve-Then-Correct Reduced Order Model for Hidden Fluid Dynamics",
+  "license": null,
+  "url": "https://arxiv.org/abs/1911.02049",
+  "n_equations": 12,
+  "n_found": 19
+ },
+ {
+  "arxiv": "2510.18125",
+  "field": "physics",
+  "title": "Elastohydrodynamic instabilities of a soft robotic arm in a viscous fluid",
+  "license": null,
+  "url": "https://arxiv.org/abs/2510.18125",
+  "n_equations": 12,
+  "n_found": 87
+ },
+ {
+  "arxiv": "1903.00549",
+  "field": "physics",
+  "title": "Active Fingering Instability in Tissue Spreading",
+  "license": null,
+  "url": "https://arxiv.org/abs/1903.00549",
+  "n_equations": 12,
+  "n_found": 68
+ },
+ {
+  "arxiv": "2308.08905",
+  "field": "physics",
+  "title": "Exploring the dynamics of the Kelvin-Helmoltz instability in paraxial fluids of light",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2308.08905",
+  "n_equations": 4,
+  "n_found": 26
+ },
+ {
+  "arxiv": "2004.01458",
+  "field": "chemistry",
+  "title": "Solid–Electrolyte Interphase During Battery Cycling: Theory of Growth Regimes",
+  "license": null,
+  "url": "https://arxiv.org/abs/2004.01458",
+  "n_equations": 12,
+  "n_found": 36
+ },
+ {
+  "arxiv": "2304.04986",
+  "field": "chemistry",
+  "title": "Deep learning of experimental electrochemistry for battery cathodes across diverse compositions",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2304.04986",
+  "n_equations": 5,
+  "n_found": 15
+ },
+ {
+  "arxiv": "2203.16091",
+  "field": "chemistry",
+  "title": "A continuum of physics-based lithium-ion battery models reviewed",
+  "license": null,
+  "url": "https://arxiv.org/abs/2203.16091",
+  "n_equations": 12,
+  "n_found": 118
+ },
+ {
+  "arxiv": "2002.00806",
+  "field": "chemistry",
+  "title": "Charge transport modelling of Lithium-ion batteries",
+  "license": null,
+  "url": "https://arxiv.org/abs/2002.00806",
+  "n_equations": 6,
+  "n_found": 16
+ },
+ {
+  "arxiv": "2306.15508",
+  "field": "math",
+  "title": "McKean–Vlasov stochastic partial differential equations: existence, uniqueness and propagation of chaos",
+  "license": null,
+  "url": "https://arxiv.org/abs/2306.15508",
+  "n_equations": 12,
+  "n_found": 275
+ },
+ {
+  "arxiv": "1907.04555",
+  "field": "math",
+  "title": "Existence, uniqueness and regularity of piezoelectric partial differential equations",
+  "license": null,
+  "url": "https://arxiv.org/abs/1907.04555",
+  "n_equations": 12,
+  "n_found": 86
+ },
+ {
+  "arxiv": "2502.06454",
+  "field": "math",
+  "title": "Existence and Uniqueness of Local Solutions for a Class of Partial Differential-Algebraic Equations",
+  "license": "cc-by",
+  "url": "https://arxiv.org/abs/2502.06454",
+  "n_equations": 6,
+  "n_found": 61
+ }
+]

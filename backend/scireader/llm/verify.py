@@ -47,8 +47,8 @@ def canon_tokens(el: ET.Element, relaxed: bool = False) -> list[str]:
     if tag == "mn":
         return [f"n:{c}" for c in _norm_text(el.text).replace(",", "") if not c.isspace()]
     if tag == "mtext":
-        words = re.sub(r"[^a-z0-9]", "", _norm_text(el.text).lower())
-        return [] if relaxed or not words else [f"t:{words}"]
+        # 	ext{MAE}, \mathrm{MAE} and MAE are the same thing when heard: compare letter by letter.
+        return [f"i:{c}" for c in _norm_text(el.text) if c.isalnum()]
     if tag in ("mo", "ms"):
         t = _norm_text(el.text)
         if t in DROP_MO:
@@ -149,9 +149,26 @@ def _pretty(tokens: list[str]) -> str:
 
 
 def _strip_delims(s: str) -> str:
+    r"""Pull the LaTeX out of a model answer: code fences, $$...$$, \[...\], \(...\), $...$, labels."""
     s = s.strip()
-    s = re.sub(r"^```(?:latex|tex)?\s*|\s*```$", "", s)
-    s = s.strip().strip("$").strip()
-    s = re.sub(r"^\\\[|\\\]$", "", s).strip()
-    s = re.sub(r"^\\begin\{(equation|align)\*?\}|\\end\{(equation|align)\*?\}$", "", s).strip()
-    return s
+    m = re.search(r"```(?:latex|tex|math)?\s*(.*?)```", s, re.S)
+    if m:
+        s = m.group(1).strip()
+    for pat in (r"\$\$(.*?)\$\$", r"\\\[(.*?)\\\]", r"\\\((.*?)\\\)", r"(?<!\\)\$(.*?)(?<!\\)\$"):
+        m = re.search(pat, s, re.S)
+        if m and m.group(1).strip():
+            s = m.group(1).strip()
+            break
+    s = re.sub(r"^(?:latex|tex|answer|equation)\s*:\s*", "", s, flags=re.I)
+    s = re.sub(r"\\begin\{(equation|align|gather|displaymath)\*?\}|\\end\{(equation|align|gather|displaymath)\*?\}", "", s)
+    s = re.sub(r"\\(label|tag)\{[^}]*\}", "", s)
+    s = s.replace("\\newline", "\n")
+    # Drop decoration lines ("-", "---", "|") and, when a model repeats or continues the equation on
+    # several lines without alignment markers, keep the first full line.
+    lines = [ln.strip() for ln in s.splitlines()]
+    lines = [ln for ln in lines if ln and not re.fullmatch(r"[-–—*_.,;:|=\s]+", ln)]
+    if len(lines) > 1 and not any("&" in ln or ln.endswith("\\\\") for ln in lines):
+        s = lines[0]
+    else:
+        s = " ".join(lines)
+    return s.strip().rstrip(".,;:-– ").strip()

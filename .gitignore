@@ -21,8 +21,8 @@ tools/math-speech/node_modules/
 
 # App data (document cache, audio cache, reading state) and models
 .data/
-data/
-models/
+/data/
+/models/
 *.safetensors
 *.pt
 *.pth

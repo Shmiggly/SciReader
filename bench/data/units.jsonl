@@ -1,0 +1,99 @@
+{"category": "units", "text": "The band gap is 1.12 eV at 300 K.", "gold": "The band gap is 1.12 electron volts at 300 kelvin."}
+{"category": "units", "text": "a tensile strength of 48 MPa", "gold": "a tensile strength of 48 megapascals"}
+{"category": "units", "text": "a modulus of 2.4 GPa", "gold": "a modulus of 2.4 gigapascals"}
+{"category": "units", "text": "layers of 50 µm", "gold": "layers of 50 micrometers"}
+{"category": "units", "text": "a 405 nm laser", "gold": "a 405 nanometer laser"}
+{"category": "units", "text": "an intensity of 10 mW/cm²", "gold": "an intensity of 10 milliwatts per square centimeter"}
+{"category": "units", "text": "an intensity of 10 mW cm−2", "gold": "an intensity of 10 milliwatts per square centimeter"}
+{"category": "units", "text": "cured for 30 s", "gold": "cured for 30 seconds"}
+{"category": "units", "text": "annealed for 2 h at 80 °C", "gold": "annealed for 2 hours at 80 degrees Celsius"}
+{"category": "units", "text": "a viscosity of 350 mPa·s", "gold": "a viscosity of 350 millipascal seconds"}
+{"category": "units", "text": "a peak at 1720 cm−1", "gold": "a peak at 1720 inverse centimeters"}
+{"category": "units", "text": "a peak at 1720 cm⁻¹", "gold": "a peak at 1720 inverse centimeters"}
+{"category": "units", "text": "an activation energy of 85 kJ/mol", "gold": "an activation energy of 85 kilojoules per mole"}
+{"category": "units", "text": "an activation energy of 85 kJ mol−1", "gold": "an activation energy of 85 kilojoules per mole"}
+{"category": "units", "text": "a concentration of 0.5 mol L−1", "gold": "a concentration of 0.5 moles per liter"}
+{"category": "units", "text": "a 2 mM solution", "gold": "a 2 millimolar solution"}
+{"category": "units", "text": "spun at 3000 rpm", "gold": "spun at 3000 revolutions per minute"}
+{"category": "units", "text": "a frequency of 1 Hz", "gold": "a frequency of 1 hertz"}
+{"category": "units", "text": "at 10 kHz", "gold": "at 10 kilohertz"}
+{"category": "units", "text": "a 20 kV bias", "gold": "a 20 kilovolt bias"}
+{"category": "units", "text": "a current of 5 mA", "gold": "a current of 5 milliamperes"}
+{"category": "units", "text": "a 3 mm nozzle", "gold": "a 3 millimeter nozzle"}
+{"category": "units", "text": "a lattice constant of 5.43 Å", "gold": "a lattice constant of 5.43 angstroms"}
+{"category": "units", "text": "a molar mass of 700 g/mol", "gold": "a molar mass of 700 grams per mole"}
+{"category": "units", "text": "a molar mass of 12 kDa", "gold": "a molar mass of 12 kilodaltons"}
+{"category": "units", "text": "a heating rate of 10 K/min", "gold": "a heating rate of 10 kelvin per minute"}
+{"category": "units", "text": "an acceleration of 9.81 m s−2", "gold": "an acceleration of 9.81 meters per second squared"}
+{"category": "units", "text": "a speed of 5 mm/s", "gold": "a speed of 5 millimeters per second"}
+{"category": "units", "text": "a dose of 20 mJ/cm²", "gold": "a dose of 20 millijoules per square centimeter"}
+{"category": "units", "text": "a conductivity of 1.2 S/cm", "gold": "a conductivity of 1.2 siemens per centimeter"}
+{"category": "units", "text": "a density of 1.05 g/cm³", "gold": "a density of 1.05 grams per cubic centimeter"}
+{"category": "units", "text": "with 5 wt% photoinitiator", "gold": "with 5 weight percent photoinitiator"}
+{"category": "units", "text": "with 20 vol% filler", "gold": "with 20 volume percent filler"}
+{"category": "units", "text": "a shift of 3 meV", "gold": "a shift of 3 millielectron volts"}
+{"category": "units", "text": "a 100 µL droplet", "gold": "a 100 microliter droplet"}
+{"category": "units", "text": "a resistance of 10 kΩ", "gold": "a resistance of 10 kilohms"}
+{"category": "units", "text": "a strain rate of 0.01 s−1", "gold": "a strain rate of 0.01 per second"}
+{"category": "units", "text": "thermal conductivity of 0.2 W m−1 K−1", "gold": "thermal conductivity of 0.2 watts per meter per kelvin"}
+{"category": "notation", "text": "a rate of 1.2 × 10−3 s−1", "gold": "a rate of 1.2 times 10 to the minus 3 per second"}
+{"category": "notation", "text": "a value of 3.4 × 10⁵", "gold": "a value of 3.4 times 10 to the 5"}
+{"category": "notation", "text": "a diffusion coefficient of 2e-9", "gold": "a diffusion coefficient of 2 times 10 to the minus 9"}
+{"category": "notation", "text": "about 1.5×10^-6", "gold": "about 1.5 times 10 to the minus 6"}
+{"category": "notation", "text": "a yield of 85 ± 3%", "gold": "a yield of 85 plus or minus 3 percent"}
+{"category": "notation", "text": "Tg ≈ 45 °C", "gold": "T G approximately 45 degrees Celsius"}
+{"category": "notation", "text": "between 5–10 K", "gold": "between 5 to 10 kelvin"}
+{"category": "notation", "text": "at 20–30 °C", "gold": "at 20 to 30 degrees Celsius"}
+{"category": "notation", "text": "for x ≤ 0.5", "gold": "for x less than or equal to 0.5"}
+{"category": "notation", "text": "with r ≥ 2", "gold": "with r greater than or equal to 2"}
+{"category": "notation", "text": "where σ ∝ T²", "gold": "where sigma proportional to T squared"}
+{"category": "notation", "text": "a ratio of ~3", "gold": "a ratio of about 3"}
+{"category": "greek", "text": "the shear rate γ̇", "gold": "the shear rate gamma dot"}
+{"category": "greek", "text": "the conversion α", "gold": "the conversion alpha"}
+{"category": "greek", "text": "the viscosity η", "gold": "the viscosity eta"}
+{"category": "greek", "text": "the surface tension σ", "gold": "the surface tension sigma"}
+{"category": "greek", "text": "a wavelength λ", "gold": "a wavelength lambda"}
+{"category": "greek", "text": "the strain ε", "gold": "the strain epsilon"}
+{"category": "greek", "text": "the angle θ", "gold": "the angle theta"}
+{"category": "greek", "text": "the change ΔH", "gold": "the change delta H"}
+{"category": "greek", "text": "the density ρ", "gold": "the density rho"}
+{"category": "greek", "text": "the time constant τ", "gold": "the time constant tau"}
+{"category": "chem", "text": "dissolved in H₂O", "gold": "dissolved in H 2 O"}
+{"category": "chem", "text": "dissolved in H2O", "gold": "dissolved in H 2 O"}
+{"category": "chem", "text": "under CO₂", "gold": "under C O 2"}
+{"category": "chem", "text": "TiO2 nanoparticles", "gold": "T I O 2 nanoparticles"}
+{"category": "chem", "text": "SiO₂ filler", "gold": "S I O 2 filler"}
+{"category": "chem", "text": "Fe₂O₃ particles", "gold": "F E 2 O 3 particles"}
+{"category": "chem", "text": "the NH₄⁺ ion", "gold": "the N H 4 plus ion"}
+{"category": "chem", "text": "Ca²⁺ crosslinking", "gold": "C A 2 plus crosslinking"}
+{"category": "chem", "text": "a ¹³C NMR spectrum", "gold": "a carbon 13 N M R spectrum"}
+{"category": "chem", "text": "in CH₂Cl₂", "gold": "in C H 2 C L 2"}
+{"category": "chem", "text": "ZnO nanorods", "gold": "Z N O nanorods"}
+{"category": "chem", "text": "Al₂O₃ substrate", "gold": "A L 2 O 3 substrate"}
+{"category": "chem", "text": "NaCl solution", "gold": "N A C L solution"}
+{"category": "chem", "text": "a Si wafer", "gold": "a silicon wafer"}
+{"category": "chem", "text": "Au nanoparticles", "gold": "gold nanoparticles"}
+{"category": "polymers", "text": "PEGDA hydrogels", "gold": "peg-dah hydrogels"}
+{"category": "polymers", "text": "a Tg of 60 °C", "gold": "a T G of 60 degrees Celsius"}
+{"category": "polymers", "text": "PA12 powder", "gold": "P A twelve powder"}
+{"category": "polymers", "text": "PLA filament", "gold": "P L A filament"}
+{"category": "polymers", "text": "PETG parts", "gold": "P E T G parts"}
+{"category": "polymers", "text": "TPU lattices", "gold": "T P U lattices"}
+{"category": "polymers", "text": "PDMS molds", "gold": "P D M S molds"}
+{"category": "polymers", "text": "PEEK implants", "gold": "P E E K implants"}
+{"category": "polymers", "text": "printed by DLP", "gold": "printed by D L P"}
+{"category": "polymers", "text": "printed by FDM", "gold": "printed by F D M"}
+{"category": "polymers", "text": "measured by DSC", "gold": "measured by D S C"}
+{"category": "polymers", "text": "measured by TGA", "gold": "measured by T G A"}
+{"category": "polymers", "text": "an FTIR spectrum", "gold": "an F T I R spectrum"}
+{"category": "polymers", "text": "XRD patterns", "gold": "X R D patterns"}
+{"category": "polymers", "text": "2PP lithography", "gold": "two P P lithography"}
+{"category": "abbrev", "text": "as shown in Fig. 3b", "gold": "as shown in Figure 3 b"}
+{"category": "abbrev", "text": "see Eq. (4)", "gold": "see Equation 4"}
+{"category": "abbrev", "text": "Smith et al. reported", "gold": "Smith et al reported"}
+{"category": "abbrev", "text": "polymers, e.g., PLA", "gold": "polymers, for example, P L A"}
+{"category": "abbrev", "text": "the modulus, i.e., stiffness", "gold": "the modulus, that is, stiffness"}
+{"category": "abbrev", "text": "ca. 20 min", "gold": "about 20 minutes"}
+{"category": "abbrev", "text": "DLP vs. SLA", "gold": "D L P versus S L A"}
+{"category": "abbrev", "text": "cf. Ref. 12", "gold": "compare Reference 12"}
+{"category": "abbrev", "text": "in Sec. 2", "gold": "in Section 2"}

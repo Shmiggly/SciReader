@@ -17,7 +17,7 @@ def _():
     import pandas as pd
 
     ROOT = Path(__file__).resolve().parent
-    return Path, ROOT, json, mo, pd, plt
+    return ROOT, json, mo, pd, plt
 
 
 @app.cell
@@ -26,18 +26,22 @@ def _(mo):
         """
         # SciSpeech-Bench: how faithfully do read-aloud pipelines speak math?
 
-        Ground truth is the LaTeX from arXiv source tarballs (not OCR). For each display equation we produce
-        the spoken text of each pipeline, ask an **independent model family** (`phi4:14b`) to write the speech
-        back as LaTeX, and compare both as canonical MathML trees: **exact** (same tree) or **faithful**
-        (same symbols in the same order; brackets or fraction grouping may differ).
+        Ground truth is the LaTeX from arXiv source tarballs (not OCR). For each display equation we take the
+        spoken text of each pipeline, ask an **independent model family** (`phi4:14b`) to write the speech back
+        as LaTeX, and compare both as canonical MathML trees: **exact** (same tree) or **faithful** (same symbols
+        in the same order; brackets or fraction grouping may differ).
 
         | Condition | What is spoken |
         |---|---|
         | a · naive | the equation's glyphs in reading order, as a generic reader gets them from the PDF text layer |
         | b · rules | Speech Rule Engine (ClearSpeak) from the source LaTeX |
         | c · LLM | local LLM narration (`qwen3.5:9b`), unverified |
-        | d · LLM + verify | c, back-transcribed by `gemma4:12b` and checked; one repair; else rules (SciReader) |
+        | d · LLM + verify | c, back-transcribed by `gemma4:12b` and checked; one repair; else rules (**SciReader**) |
         | f · 4B | c and d with the smaller `qwen3.5:4b` narrator |
+
+        The judge is the ceiling of this metric: it cannot write back every long equation even from a perfect
+        reading. So we also report the **judge-capable subset**: equations whose rule-based reading (b, which is
+        faithful by construction) the judge reconstructs.
         """
     )
     return
@@ -53,7 +57,8 @@ def _(ROOT, json, pd):
 
     items = _load("results/results.jsonl")
     units = pd.DataFrame(_load("results/units.jsonl"))
-    papers = json.loads((ROOT / "data" / "papers.json").read_text(encoding="utf-8")) if (ROOT / "data" / "papers.json").exists() else []
+    _pp = ROOT / "data" / "papers.json"
+    papers = json.loads(_pp.read_text(encoding="utf-8")) if _pp.exists() else []
     COND_LABEL = {
         "a_naive": "a · naive (PDF text)",
         "b_sre": "b · rules (SRE)",
@@ -87,35 +92,48 @@ def _(items, long, mo, papers):
 
 
 @app.cell
-def _(COND_LABEL, field_pick, judge_pick, long, pd):
+def _(COND_LABEL, field_pick, judge_pick, long, mo, pd):
     sel = long[(long["judge"] == judge_pick.value) & (long["field"].isin(field_pick.value))] if len(long) else long
-    summary = (
-        sel.groupby("condition")[["exact", "faithful"]].mean().mul(100).round(1)
-        .reindex([c for c in COND_LABEL if c in set(sel["condition"])])
-        .rename(index=COND_LABEL)
-        if len(sel) else pd.DataFrame()
-    )
-    summary
-    return sel, summary
+
+    def _summ(df):
+        if not len(df):
+            return pd.DataFrame()
+        return (df.groupby("condition")[["exact", "faithful"]].mean().mul(100).round(1)
+                .reindex([c for c in COND_LABEL if c in set(df["condition"])]).rename(index=COND_LABEL))
+
+    capable_ids = set(sel[(sel["condition"] == "b_sre") & sel["faithful"]]["id"]) if len(sel) else set()
+    summary = _summ(sel)
+    summary_capable = _summ(sel[sel["id"].isin(capable_ids)]) if capable_ids else pd.DataFrame()
+    mo.vstack([
+        mo.md(f"**All {sel['id'].nunique() if len(sel) else 0} equations** (limited by the judge's own transcription ability), % of equations"),
+        summary,
+        mo.md(f"**Judge-capable subset: {len(capable_ids)} equations**, % of equations"),
+        summary_capable,
+    ])
+    return capable_ids, summary, summary_capable
 
 
 @app.cell
-def _(ROOT, judge_pick, plt, summary):
-    def faithfulness_figure(summary, judge, path=None):
-        fig, ax = plt.subplots(figsize=(8.2, 4.2), dpi=150)
-        labels = list(summary.index)
-        colors = ["#2f5d8a" if "verify" in l else ("#9a9a9a" if "naive" in l else "#c7ccd3") for l in labels]
-        bars = ax.bar(range(len(labels)), summary["faithful"], color=colors, width=0.62, zorder=2)
-        ax.bar(range(len(labels)), summary["exact"], color="none", edgecolor="#1d2024", hatch="///", width=0.62,
-               linewidth=0, zorder=3, alpha=0.35)
-        for b, v in zip(bars, summary["faithful"]):
-            ax.text(b.get_x() + b.get_width() / 2, v + 1.5, f"{v:.0f}%", ha="center", va="bottom", fontsize=9)
-        ax.set_xticks(range(len(labels)), [l.replace(" · ", "\n") for l in labels], fontsize=8.5)
-        ax.set_ylim(0, 105)
-        ax.set_ylabel("Equations a listener can write back (%)")
-        ax.set_title(f"Spoken math faithfulness (judge: {judge}; hatched = exact match)", fontsize=10.5, loc="left")
-        ax.spines[["top", "right"]].set_visible(False)
-        ax.grid(axis="y", color="#e6e6e6", zorder=0)
+def _(ROOT, judge_pick, plt, summary, summary_capable):
+    def faithfulness_figure(panels, judge, path=None):
+        fig, axes = plt.subplots(1, len(panels), figsize=(11, 4.3), dpi=150, sharey=True)
+        axes = axes if len(panels) > 1 else [axes]
+        for ax, (title, summ) in zip(axes, panels):
+            labels = list(summ.index)
+            colors = ["#2f5d8a" if "verify" in l else ("#9a9a9a" if "naive" in l else "#c7ccd3") for l in labels]
+            bars = ax.bar(range(len(labels)), summ["faithful"], color=colors, width=0.62, zorder=2)
+            ax.bar(range(len(labels)), summ["exact"], color="none", edgecolor="#1d2024", hatch="///", width=0.62,
+                   linewidth=0, zorder=3, alpha=0.3)
+            for b, v in zip(bars, summ["faithful"]):
+                ax.text(b.get_x() + b.get_width() / 2, v + 1.5, f"{v:.0f}%", ha="center", va="bottom", fontsize=8.5)
+            ax.set_xticks(range(len(labels)), [l.split(" · ")[0] + "\n" + l.split(" · ")[1] for l in labels], fontsize=7.5)
+            ax.set_ylim(0, 108)
+            ax.set_title(title, fontsize=10, loc="left")
+            ax.spines[["top", "right"]].set_visible(False)
+            ax.grid(axis="y", color="#e6e6e6", zorder=0)
+        axes[0].set_ylabel("Equations written back faithfully (%)")
+        fig.suptitle(f"Can a listener write the equation back? Independent judge: {judge}; hatched = exact match",
+                     fontsize=10.5, x=0.01, ha="left")
         fig.tight_layout()
         if path is not None:
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -123,50 +141,53 @@ def _(ROOT, judge_pick, plt, summary):
             fig.savefig(path.with_suffix(".svg"))
         return fig
 
-    _fig = faithfulness_figure(summary, judge_pick.value, ROOT / "figures" / "faithfulness") if len(summary) else None
+    _panels = []
+    if len(summary_capable):
+        _panels.append((f"Judge-capable subset", summary_capable))
+    if len(summary):
+        _panels.append(("All equations (judge-limited)", summary))
+    _fig = faithfulness_figure(_panels, judge_pick.value, ROOT / "figures" / "faithfulness") if _panels else None
     _fig
-    return (faithfulness_figure,)
+    return
 
 
 @app.cell
-def _(items, judge_pick, mo, pd):
-    def gate_stats(items, judge, raw="c_llm", ver="d_verified"):
-        """Silent error rate of unverified narration, and the gate's precision / recall at catching errors."""
+def _(capable_ids, items, judge_pick, mo, pd):
+    def gate_stats(raw):
         rows = []
         for it in items:
-            j = it.get("judge", {}).get(judge, {}).get(raw)
+            if capable_ids and it["id"] not in capable_ids:
+                continue
+            j = it.get("judge", {}).get(judge_pick.value, {}).get(raw)
             g = it.get(f"{raw}_gate1")
             if not j or not g:
                 continue
-            error = j["result"] == "mismatch"
-            rejected = it.get(f"{ver}_verdict") == "fallback" or g["result"] != "match"
-            rows.append({"error": error, "rejected": rejected, "verdict": it.get(f"{ver}_verdict")})
+            rows.append({"error": j["result"] not in ("match", "relaxed"), "rejected": g["result"] != "match"})
         df = pd.DataFrame(rows)
         if df.empty:
             return None
         tp = int((df.error & df.rejected).sum())
         fp = int((~df.error & df.rejected).sum())
         fn = int((df.error & ~df.rejected).sum())
-        return {
-            "n": len(df),
-            "silent_error_rate": round(100 * df.error.mean(), 1),
-            "precision": round(100 * tp / max(1, tp + fp), 1),
-            "recall": round(100 * tp / max(1, tp + fn), 1),
-            "verdicts": df.verdict.value_counts().to_dict(),
-        }
+        return {"n": len(df), "silent": round(100 * df.error.mean()), "precision": round(100 * tp / max(1, tp + fp)),
+                "recall": round(100 * tp / max(1, tp + fn)), "passed": fn, "errors": tp + fn}
 
-    _g9 = gate_stats(items, judge_pick.value)
-    _g4 = gate_stats(items, judge_pick.value, "f_llm4b", "f_verified4b")
+    def verdicts(key):
+        out = {}
+        for it in items:
+            out[it.get(key)] = out.get(it.get(key), 0) + 1
+        return out
 
-    def _fmt(name, g):
+    def _fmt(name, g, key):
         if not g:
             return f"- {name}: no data"
-        return (f"- **{name}:** unverified narration silently changes the math in **{g['silent_error_rate']}%** of "
-                f"{g['n']} equations; the gate flags errors with precision {g['precision']}% and recall "
-                f"{g['recall']}%; verdicts {g['verdicts']}")
+        return (f"- **{name}:** unverified narration silently changes the math in **{g['silent']}%** of {g['n']} "
+                f"equations; the gate catches **{g['recall']}%** of those errors (precision {g['precision']}%; "
+                f"{g['passed']} of {g['errors']} errors slipped through). Verdicts over all equations: {verdicts(key)}")
 
-    mo.md("### Verification gate\n" + _fmt("qwen3.5:9b", _g9) + "\n" + _fmt("qwen3.5:4b", _g4))
-    return (gate_stats,)
+    mo.md("### Verification gate (judge-capable subset)\n" + _fmt("qwen3.5:9b", gate_stats("c_llm"), "d_verified_verdict")
+          + "\n" + _fmt("qwen3.5:4b", gate_stats("f_llm4b"), "f_verified4b_verdict"))
+    return
 
 
 @app.cell
@@ -200,11 +221,10 @@ def _(ROOT, mo, plt, units):
 @app.cell
 def _(items, judge_pick, mo):
     _rows = []
-    for _it in items[:400]:
+    for _it in items:
         _j = _it.get("judge", {}).get(judge_pick.value, {})
-        _rows.append({"id": _it["id"], "latex": _it["latex"][:90], "naive": _it.get("a_naive", "")[:60],
-                      "LLM": _it.get("c_llm", "")[:90], "LLM judge": _j.get("c_llm", {}).get("result"),
-                      "gate": _it.get("d_verified_verdict")})
+        _rows.append({"id": _it["id"], "field": _it["field"], "latex": _it["latex"][:90], "LLM said": _it.get("c_llm", "")[:90],
+                      "judge on LLM": _j.get("c_llm", {}).get("result"), "gate": _it.get("d_verified_verdict")})
     mo.vstack([mo.md("### Browse items"), mo.ui.table(_rows, page_size=10)])
     return
 
