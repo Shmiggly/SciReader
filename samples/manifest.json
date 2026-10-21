@@ -1,0 +1,62 @@
+{
+  "note": "Sample papers for development and demos. PDFs are fetched by scripts/fetch_samples.py and are not committed (licenses differ). See NOTES.md section 6.",
+  "papers": [
+    {
+      "id": "ehd-jet",
+      "file": "ehd_jet_printing_s44172-023-00069-0.pdf",
+      "title": "Physics-Informed Bayesian learning of electrohydrodynamic polymer jet printing dynamics",
+      "venue": "Communications Engineering 2023",
+      "doi": "10.1038/s44172-023-00069-0",
+      "url": "https://www.nature.com/articles/s44172-023-00069-0.pdf",
+      "license": "CC BY 4.0",
+      "role": "flagship demo: 33 equations, 9 figures"
+    },
+    {
+      "id": "polymer-gnn",
+      "file": "arxiv_2209.13557.pdf",
+      "title": "Polymer informatics at-scale with multitask graph neural networks",
+      "arxiv": "2209.13557",
+      "url": "https://arxiv.org/pdf/2209.13557",
+      "license": "arXiv non-exclusive (journal version CC BY)",
+      "role": "dense inline math, normalizer stress test, benchmark"
+    },
+    {
+      "id": "pa12-ann",
+      "file": "arxiv_2307.10139.pdf",
+      "title": "Artificial neural networks for predicting mechanical properties of crystalline polyamide12 via molecular dynamics",
+      "arxiv": "2307.10139",
+      "url": "https://arxiv.org/pdf/2307.10139",
+      "license": "arXiv non-exclusive (journal version CC BY)",
+      "role": "PA12, MD + ANN, units, figures, benchmark"
+    },
+    {
+      "id": "dlw-ml",
+      "file": "arxiv_2511.23306.pdf",
+      "title": "First steps towards machine learning for prediction and pre-correction in direct laser writing",
+      "arxiv": "2511.23306",
+      "url": "https://arxiv.org/pdf/2511.23306",
+      "license": "CC BY 4.0",
+      "role": "two-photon polymerization + ML, tables, benchmark"
+    },
+    {
+      "id": "photopoly-review",
+      "file": "polym13142325.pdf",
+      "title": "A critical review for synergic kinetics and strategies for enhanced photopolymerizations for 3D-printing and additive manufacturing",
+      "venue": "Polymers 2021, 13, 2325",
+      "url": "https://www.mdpi.com/2073-4360/13/14/2325/pdf",
+      "license": "CC BY 4.0",
+      "role": "kinetics equations, two-column journal layout",
+      "manual": true,
+      "manual_note": "MDPI returns 403 to scripted downloads: download it in a browser to samples/polym13142325.pdf"
+    },
+    {
+      "id": "open-polymer-challenge",
+      "file": "arxiv_2512.08896.pdf",
+      "title": "Open Polymer Challenge: post-competition report",
+      "arxiv": "2512.08896",
+      "url": "https://arxiv.org/pdf/2512.08896",
+      "license": "CC BY 4.0",
+      "role": "backup for the MDPI paper, benchmark"
+    }
+  ]
+}

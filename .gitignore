@@ -1,0 +1,46 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/public/pdfjs/
+tools/math-speech/node_modules/
+
+# App data (document cache, audio cache, reading state) and models
+.data/
+data/
+models/
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.bin
+*.gguf
+
+# Sample papers are fetched by script (licenses differ; don't redistribute)
+samples/*.pdf
+samples/cache/
+
+# Benchmark: keep data/results/figures, ignore raw downloads and caches
+bench/raw/
+bench/cache/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

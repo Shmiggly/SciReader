@@ -16,7 +16,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 
 ## 1. Status at a glance
 
-- **Phase:** PRE-HACKATHON. No app code yet (code gets written during the event).
+- **Phase:** **Hackathon started (Wed 2026-10-21 00:21 EDT, earlier than the planned 6:30), M0 in progress.**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Toolchain:** installed and verified 2026-10-20 (§3). GPU + Kokoro TTS smoke test passed the same night (§3).
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work. Both tested on this machine (§3).

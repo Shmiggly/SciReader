@@ -1,0 +1,12 @@
+{
+  "name": "scireader-math-speech",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LaTeX -> MathML -> speech (Speech Rule Engine, ClearSpeak) helper for SciReader, JSON lines over stdin/stdout",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mathjax-full": "^3.2.1",
+    "speech-rule-engine": "^5.0.0-rc.4"
+  }
+}
