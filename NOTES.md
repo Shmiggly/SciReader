@@ -4,26 +4,39 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 00:47 EDT (M2 vertical slice working)
+**Last updated:** 2026-10-21 02:20 EDT (M3 done)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Interim note (00:47 EDT).**
-- **Works now:** open a paper (drop/pick, arXiv, sample list, recent list) → Docling parse (~100 s first time, cached after) → PDF with click-to-read, sentence + word highlight, focus mode (on by default), auto-follow with "Back to reading position", prefetch + disk audio cache, outline sidebar, skipping of page furniture/affiliations/bibliography, superscript and bracket citation markers dropped from speech, equations spoken with SRE (from Docling's OCR LaTeX). Screenshot: `docs/screenshots/m2-reader-focus-highlight.jpg`.
-- **01:00 update:** science normalizer + splitter + 102-term lexicon are in (284 tests pass); model manager panel and `scripts/dev.ps1`/`setup.ps1` done; all 6 samples pre-parsed. Work pauses from ~01:00 to 02:10 EDT. **Left for M3:** verify TTS with the real normalizer in the browser, tag `m3`, final version of this section.
-- **How to launch (dev):** two terminals: `uv run --directory backend uvicorn scireader.main:app --port 8765` and `npm --prefix frontend run dev`, then open http://localhost:5173. (`scripts/dev.ps1` comes in M3.)
-- **Decisions to review:** author list skipped by default along with affiliations (toggle in ⚙ Reading settings); captions are read at their layout position until figure narration (M4) moves them to first mention; speed uses the browser's pitch-preserving playbackRate (instant, no re-synthesis).
+**Written 02:20 EDT Wed, after M3 (tag `m3`).**
+
+**Summary**
+1. The reader core works end to end on all 6 samples: open (drop/pick, arXiv, samples, recent) → Docling parse (flagship ~100 s first time, others ~20 s, cached after) → the real PDF with click-to-read, sentence + word highlight, focus mode, auto-follow, outline, resume ("Continue from …").
+2. Speech is science-aware: units, notation, Greek, chemistry, abbreviations (284 tests), your pronunciation lexicon (102 terms), citation markers ([12], superscripts, author–year) and page furniture/affiliations/references skipped.
+3. Equations are announced ("Equation 3: …") and read with Speech Rule Engine from Docling's OCR LaTeX; modes Full / Skip (Brief = AI, comes with M4).
+4. Model manager: voices (preview, default, download, delete), Ollama models (pull with progress, delete, reader/checker job, GPU fit warning), parser status, storage, "Ready offline ✓".
+5. Next: M4 AI layer (verified equation narration with badges first). Work paused at 01:00 and resumed at 02:13.
+
+**How to launch:** `./scripts/dev.ps1` (builds the UI once, starts the backend, opens an Edge app window). Dev with hot reload: `./scripts/dev.ps1 -Hot`, or two terminals: `uv run --directory backend uvicorn scireader.main:app --port 8765` and `npm --prefix frontend run dev` → http://localhost:5173. (`dev.ps1` was written but not yet run by hand.)
+
+**2-minute test:** open the flagship from Sample papers or Recent → click any sentence on page 2 (audio within ~1 s, yellow sentence, orange word) → press → and Shift+→ → press F (focus off/on) → scroll away (a "Back to reading position" button appears) → ⚙ Reading settings: try the High contrast preset → ▦ Models: ▶ preview another voice → ← Papers, reopen from Recent: "Continue from …".
+
+**Decisions to review:** author list skipped with affiliations (toggle); captions read at their layout position until M4 moves them to first mention; speed = browser playbackRate (instant, pitch-preserving); MinerU dropped (cloud-first in v4, no local formulas); chemistry style "F-E 2 O 3" with hyphens because the voice reads a lone "A" as "uh".
+
+**Known issues:** Docling's formula LaTeX is noisy on the flagship ("M o m t u n" for Momentum; equation 5 parsed as text), so rule-based readings of some equations are odd: exactly what the M4 verifier and the benchmark measure. "fps" and some acronyms are still spelled letter by letter.
+
+**Questions:** Valency / Adaption prize rules (NOTES §9).
 
 ---
 
 ## 1. Status at a glance
 
-- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT, earlier than the planned 6:30). M0 done, M2 vertical slice works end to end; M1 normalizer being finished.**
+- **Phase:** **Hackathon running (started Wed 2026-10-21 00:21 EDT). M0–M3 done (tag `m3`); M4 AI layer next.**
 - **Direction (confirmed 2026-10-20):** Idea 1 (science-aware read-aloud reader) + "verified math narration" as the bridge to AI reliability/safety.
 - **Fully offline (user requirement, 2026-10-20):** no API key. All runtime AI is local: Kokoro for speech, Ollama with `qwen3.5:9b` + `gemma4:12b` for LLM work.
-- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`.
+- **GitHub:** private repo https://github.com/Shmiggly/SciReader. Tags: `m0-setup`, `m2-slice`, `m3`.
 - **Pacing:** fresh session per block, at most one subagent, small outputs.
 
 ---
@@ -272,9 +285,9 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - the video and write-up.
 
 - [x] M0 (0:00–0:20) Setup, scaffold, samples, background model downloads (tag `m0-setup`)
-- [ ] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (dropped, see §5). All 6 samples parse: flagship ~100 s cold, the others 18–27 s.
+- [x] M1 (0:20–1:15) Parse → Document JSON ✓, Kokoro synth ✓, sentence split + normalizer + tests (subagent, in progress), MinerU bake-off (dropped, see §5). All 6 samples parse: flagship ~100 s cold, the others 18–27 s.
 - [x] M2 (1:15–2:15) **Vertical slice**: PDF viewer, click-to-read, sentence + word highlight, auto-scroll, skipping (tag `m2-slice`)
-- [ ] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
+- [x] M3 (2:15–3:00) SRE equation speech, model manager, focus mode, outline; "When you're back" section
 - [ ] M4 AI layer: verified equation narration, figure narration, explain/ask with citations, summaries
 - [ ] M5 SciSpeech-Bench + figure
 - [ ] M6 Reflow view, audiobook export, 2nd TTS engine, arXiv source mode
