@@ -58,7 +58,7 @@ _Empty until the hackathon starts. Format: 5-line summary · how to launch · 2-
 
 ## 3. The user and the environment
 
-- Demo domain: **TBD** (sample papers should come from it).
+- Demo domain: **polymers for additive manufacturing, with AI/ML**. Sample papers come from this field (§6).
 - The problem: readers who lose their place reread the same lines; audiobooks help with books. Existing open-source readers fail on papers (start at the first character, read everything, bad voices, no section selection).
 - **Machine:** Windows 11 Home, PowerShell 5.1 + Git Bash. RTX 4070 (12 GB VRAM, driver 617.42), 64 GB RAM.
   Disk: **D: ~840 GB free** (use it for models/caches), **C: 89 % full (~107 GB free)**: never let caches default to C:.
@@ -99,7 +99,8 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 - [x] Kokoro-82M pre-downloaded and GPU smoke test passed (results in §3). Done 2026-10-20.
 - [x] Ollama 0.40.6 installed; `qwen3.5:9b` + `gemma4:12b` pulled to D: and tested (§3). Done 2026-10-20.
 - [ ] Before kickoff: check that the Ollama icon is in the system tray (its server starts at login).
-- [ ] Pick 3–5 papers from your own field that are genuinely hard to read (equations, units, figures). arXiv IDs are ideal.
+- [x] Sample papers chosen from the demo domain (§6). Done 2026-10-20.
+- [ ] Download sample #5 by hand (MDPI blocks scripts): open `https://www.mdpi.com/2073-4360/13/14/2325/pdf` in a browser and save it as `D:\Github\SciReader\SciReader\samples\polym13142325.pdf`.
 - [ ] Kickoff session: open it directly on the repo folder (**not** in a worktree, so commits land on `main`) and pick **auto** mode in the message box (new sessions default to asking for permission, which would stall the unattended run). Keep-awake is already on, battery included, but a closed laptop lid still sleeps.
 - [ ] At kickoff: read the sponsor prize rules (Valency, Adaption, marimo) on Slack and note them in the kickoff prompt.
 
@@ -128,6 +129,21 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
 **Principles:** PDF-first · start anywhere · read like a scientist · faithful by default · fully offline & private · one-click models · focus aids for people who lose their place.
 
 **Novelty pillars:** (1) science-aware speech, (2) verified math narration, (3) SciSpeech-Bench, an open benchmark and the write-up figure, (4) fully offline on a consumer GPU, so it works on unpublished manuscripts, papers under review, and with Wi-Fi off.
+
+### Sample papers (chosen and verified 2026-10-20)
+
+All are in the demo domain. Licenses and counts were checked on arXiv and journal pages; "LaTeX" means arXiv has TeX source (usable as benchmark ground truth). PDFs are fetched by script (manifest in `samples/`) and gitignored.
+
+| # | Paper | Source | License | Content | Role |
+|---|---|---|---|---|---|
+| 1 | Physics-Informed Bayesian learning of electrohydrodynamic polymer jet printing dynamics (Commun. Eng. 2023, doi 10.1038/s44172-023-00069-0) | `nature.com/articles/s44172-023-00069-0.pdf` (4 MB; arXiv 2204.09513 is PDF-only, CC BY-NC-SA there) | CC BY 4.0 | 33 eqs, 9 figs | **Flagship demo**: physics + ML + polymer AM |
+| 2 | Polymer informatics at-scale with multitask graph neural networks (Chem. Mater. 2023) | arXiv `2209.13557` (LaTeX) | arXiv default (journal CC BY) | 14 display + 547 inline math, 6 figs | Dense symbols/units, normalizer stress test, bench |
+| 3 | ANNs for predicting mechanical properties of crystalline polyamide12 via MD (Polymers 2023) | arXiv `2307.10139` (LaTeX) | arXiv default (journal CC BY) | 7 display + 85 inline, 28 fig panels | PA12, MD + ANN, units, figures, bench |
+| 4 | First steps towards ML for prediction and pre-correction in direct laser writing (2025) | arXiv `2511.23306` (LaTeX, 11 MB PDF) | CC BY 4.0 | 4 display + 132 inline, 11 figs, 7 tables | Two-photon polymerization + ML, tables, bench |
+| 5 | A critical review for synergic kinetics and strategies for enhanced photopolymerizations for 3D-printing and AM (Polymers 2021, 13, 2325) | `mdpi.com/2073-4360/13/14/2325/pdf`, **manual browser download** to `samples/polym13142325.pdf` | CC BY 4.0 | 10 display eqs, 23 figs | Kinetics + chemistry schemes, two-column journal layout |
+| B | Open Polymer Challenge: post-competition report (2025) | arXiv `2512.08896` (LaTeX) | CC BY 4.0 | 6 display + 62 inline, 5 figs | Backup for #5, bench |
+
+**Gotchas (2026-10-20):** the arXiv search API returned 429 "Rate exceeded" on the first call; OpenAlex works (arXiv source filter `locations.source.id:S4306400194`; no key, shared ~$0.10/day budget per IP, about 100 requests). `arxiv.org/abs|html|pdf|src` all respond. MDPI and Europe PMC return 403 to scripted PDF downloads; Nature and arXiv PDFs download fine.
 
 **Competitors (closed, cloud, subscription):** Paper2Audio, Audiolizer, Listening, Audeus, Speechify, ElevenReader. None is open source or local, and none publishes how faithfully it renders math.
 
@@ -159,8 +175,7 @@ Times are from kickoff. Details in the kickoff prompt §7.
 
 ## 9. Open questions for the user
 
-1. Domain, and 3–5 sample papers?
-2. Sponsor prize rules (Valency / Adaption / marimo): is one worth targeting? (marimo is cheap to target: the benchmark analysis could be a marimo notebook.)
+1. Sponsor prize rules (Valency / Adaption / marimo): is one worth targeting? (marimo is cheap to target: the benchmark analysis could be a marimo notebook.)
 
 ---
 

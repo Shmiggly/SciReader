@@ -8,8 +8,14 @@
 
 ## Before sending (2 minutes)
 
-- Domain: ______
-- Papers I want in `samples/` (arXiv IDs, or PDFs I already dropped in `samples/`): ______
+- Domain: **polymers for additive manufacturing (3D printing), with AI/ML.** Demo on papers from this field.
+- Papers for `samples/` (chosen and verified 2026-10-20; details in NOTES §6). Download them with a small script driven by `samples/manifest.json` (URL, license, role). Gitignore the PDFs themselves, so the repo stays small and arXiv-licensed copies aren't redistributed.
+  1. **Flagship demo:** "Physics-Informed Bayesian learning of electrohydrodynamic polymer jet printing dynamics", Communications Engineering 2023 (CC BY 4.0, 33 equations, 9 figures). PDF: `https://www.nature.com/articles/s44172-023-00069-0.pdf` (arXiv 2204.09513 is PDF-only).
+  2. arXiv `2209.13557` "Polymer informatics at-scale with multitask graph neural networks": dense inline math (547 inline, 14 display), LaTeX source.
+  3. arXiv `2307.10139` "Artificial neural networks for predicting mechanical properties of crystalline polyamide12 via molecular dynamics": PA12, MD + ANN, units, many figures, LaTeX source.
+  4. arXiv `2511.23306` "First steps towards machine learning for prediction and pre-correction in direct laser writing" (CC BY 4.0 on arXiv): two-photon polymerization + ML, tables, LaTeX source.
+  5. "A critical review for synergic kinetics and strategies for enhanced photopolymerizations for 3D-printing and additive manufacturing", Polymers 2021, 13, 2325 (CC BY 4.0, 10 kinetics equations, 23 figures, two-column journal layout). **MDPI blocks scripted downloads (403)**: I download it by hand to `samples/polym13142325.pdf`. If it isn't there, skip it and use the backup.
+  - Backup: arXiv `2512.08896` "Open Polymer Challenge: post-competition report" (CC BY 4.0, LaTeX source).
 - LLM access (fixed, nothing to fill): **no cloud API, no key.** Everything runs locally; Ollama already has `qwen3.5:9b` and `gemma4:12b`.
 - Sponsor prize rules learned at kickoff (Valency / Adaption / marimo): ______
 - Anything else that changed since last night: ______
@@ -144,7 +150,7 @@ P0 = must be in the demo. P1 = should. P2 = stretch. Build in that order.
 
 Goal: one clear figure for the write-up and a reusable open benchmark.
 
-- **Data:** ~200 display equations, plus ~100 inline expressions and ~100 unit/chemistry snippets, from 15–25 open-access arXiv papers across physics, chemistry, materials science and math (prefer CC-BY). Store arXiv IDs and extracted LaTeX, not PDFs. **Ground truth is the LaTeX from the arXiv source tarball, not OCR.** Respect arXiv etiquette: ≤ 1 request per 3 s, descriptive User-Agent.
+- **Data:** ~200 display equations, plus ~100 inline expressions and ~100 unit/chemistry snippets, from 15–25 open-access arXiv papers across physics, chemistry, materials science and math (prefer CC-BY). Store arXiv IDs and extracted LaTeX, not PDFs. **Ground truth is the LaTeX from the arXiv source tarball, not OCR.** Respect arXiv etiquette: ≤ 1 request per 3 s, descriptive User-Agent. Include samples 2–4 and the backup (they have LaTeX source), and fill up with polymer/materials papers first. Gotchas from 2026-10-20: the arXiv search API (`export.arxiv.org/api`) returned "429 Rate exceeded" even on the first call. Search with OpenAlex instead (`api.openalex.org/works`, filter `locations.source.id:S4306400194` for arXiv; no key, but a shared free budget of about 100 requests a day per IP). `arxiv.org/abs`, `/html`, `/pdf` and `/src` all worked. A HEAD on `/src/<id>` tells TeX source (`application/gzip`) from PDF-only (`application/pdf`).
 - **Conditions:**
   - (a) naive: what a generic reader speaks (the PDF text layer of the equation region);
   - (b) SRE ClearSpeak from the source LaTeX;
@@ -160,7 +166,7 @@ Goal: one clear figure for the write-up and a reusable open benchmark.
 
 ## 7. Milestones (times from kickoff; adjust if behind, but keep the order)
 
-- **M0 (0:00–0:20) Setup:** verify the toolchain (uv, Python 3.12, Node LTS, git) and that Ollama is up with both models (`ollama list`); scaffold the monorepo, `.gitignore`, `.env.example`, README skeleton, `.claude/launch.json` for the dev servers. Download 3–5 sample papers into `samples/` (from "Before sending"; otherwise pick equation-heavy open-access arXiv papers in physics, physical chemistry, materials and math; gitignore PDFs that aren't CC-BY). Start parser model downloads in the background (Kokoro-82M is already in the HF cache on D:). Commit.
+- **M0 (0:00–0:20) Setup:** verify the toolchain (uv, Python 3.12, Node LTS, git) and that Ollama is up with both models (`ollama list`); scaffold the monorepo, `.gitignore`, `.env.example`, README skeleton, `.claude/launch.json` for the dev servers. Fetch the sample papers listed in "Before sending" into `samples/` (manifest + download script; PDFs gitignored). Start parser model downloads in the background (Kokoro-82M is already in the HF cache on D:). Commit.
 - **M1 (0:20–1:15) Parse + speak, backend only:** Docling → Document JSON for all samples, plus an inspection script that prints block types and reading order; sentence splitter; normalizer + tests (subagent); Kokoro synthesizes a sentence to WAV; MinerU bake-off, time-boxed (subagent, separate directory). Commit.
 - **M2 (1:15–2:15) Vertical slice:** frontend PDF viewer + overlays + click-to-read + playback bar + sentence and word highlight + auto-scroll + prefetch + audio cache; skip headers, footers, citations and bibliography. Screenshot. Commit. **This is the minimum I want to see when I'm back.**
 - **M3 (2:15–3:00) Math + models + focus:** SRE equation speech and equation modes; model manager panel with download progress; focus mode; outline sidebar with click-to-read. Commit.
@@ -172,7 +178,7 @@ Goal: one clear figure for the write-up and a reusable open benchmark.
 
 ## 8. Definition of done for the demo
 
-On a real, equation-heavy physics or chemistry paper:
+On the flagship sample (the polymer jet printing paper, 33 equations):
 1. Open it; the outline appears after a parse of about a minute.
 2. Click a sentence in Section 2: audio starts within ~1.5 s, the highlight on the PDF tracks the speech, and the page auto-scrolls.
 3. Citation markers aren't read; running headers and page numbers are skipped.
@@ -195,7 +201,7 @@ On a real, equation-heavy physics or chemistry paper:
 ## 10. Demo story (design the product for this)
 
 - **0:00–0:30:** the problem: readers reread the same line; audiobooks help; existing readers fail on papers (show a generic reader mangling an equation and reading "[12]"; even a good neural voice says "1.12 eV at 300 K" as "one point one two ee-vee at three hundred kay").
-- **0:30–2:30:** SciReader on a real paper: click to start anywhere, highlight + focus mode, an equation spoken naturally with its verification badge, a figure described, explain/ask with citations, a new voice in one click. Turn Wi-Fi off on camera, and everything keeps working.
+- **0:30–2:30:** SciReader on a real paper from the demo domain (the polymer jet printing flagship): click to start anywhere, highlight + focus mode, an equation spoken naturally with its verification badge, a figure described, explain/ask with citations, a new voice in one click. Turn Wi-Fi off on camera, and everything keeps working.
 - **2:30–3:30:** the SciSpeech-Bench figure: generic pipelines mangle X % of equations, unverified local-LLM narration silently alters Y %, verification catches Z % (show the Planck ambiguity as the concrete example).
 - **3:30–4:00:** open source, local, who it helps, what's next.
 
