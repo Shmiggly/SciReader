@@ -37,3 +37,7 @@ def test_equation_fragments_are_recognized():
     assert not is_fragment(None, None, junk, [90.0, 400.0, 240.0, 430.0], [eq9])
     assert is_fragment(None, None, "", [140.0, 315.0, 200.0, 335.0], [eq9])
     assert not is_fragment(None, None, "E = m c ^ { 2 }", [239.0, 280.5, 244.9, 344.2], [eq9])
+    # GNN paper p. 11: a duplicate piece of the equation below, numbered "1" from its own superscript "(1)".
+    assert is_fragment("1", None, "x _ { 0 } ^ { ( 1 ) }", [270.9, 447.7, 289.6, 461.5], [[269.3, 451.1, 342.7, 523.0]])
+    assert not is_fragment(None, None, "x _ { 0 } ^ { ( 1 ) } = [ 4 1 , 4 1 ]", [269.3, 451.1, 342.7, 523.0],
+                           [[270.9, 447.7, 289.6, 461.5]])

@@ -99,19 +99,19 @@ def clean_latex(latex: str) -> str:
 
 
 def is_fragment(number: str | None, label: str | None, latex: str | None, bbox, others) -> bool:
-    """A sliver the parser split off a neighbouring equation (flagship p. 13: a lone "2 2" matrix beside two
-    radicals): no number, no label, nothing readable, and thinner than 20 pt or mostly inside another equation."""
-    if number or label or latex_has_content(latex):
-        return False
+    """A piece the parser split off a neighbouring equation: mostly inside a larger equation's box (GNN paper p. 11:
+    a duplicate "x_0^(1)" that took its superscript for an equation number), or with no number, no label and nothing
+    readable, thin or partly inside a larger equation (flagship p. 13: a lone "2 2" matrix beside two radicals)."""
     x0, y0, x1, y1 = bbox
-    if x1 - x0 < 20 or y1 - y0 < 6:
-        return True
-    area = (x1 - x0) * (y1 - y0)
+    area = max((x1 - x0) * (y1 - y0), 1e-6)
+    empty = not (number or label or latex_has_content(latex))
     for o in others:
         ix, iy = min(x1, o[2]) - max(x0, o[0]), min(y1, o[3]) - max(y0, o[1])
-        if ix > 0 and iy > 0 and ix * iy >= 0.3 * area:
-            return True
-    return False
+        if ix > 0 and iy > 0 and (o[2] - o[0]) * (o[3] - o[1]) > area:
+            inside = ix * iy / area
+            if inside >= 0.6 or (empty and inside >= 0.3):
+                return True
+    return empty and (x1 - x0 < 20 or y1 - y0 < 6)
 
 
 def latex_has_content(latex: str | None) -> bool:
