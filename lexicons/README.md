@@ -5,6 +5,10 @@ Text-to-speech voices mispronounce scientific terms: they read `PEGDA` letter by
 `science-en.json` is the **SciReader list** that ships with the app: the seed of an open science
 pronunciation dataset (polymers, additive manufacturing, characterization, chemistry, ML, ...).
 
+`proposed-en.json` holds proposals nobody has listened to yet (`"checked": false`): terms the voice
+says wrong without help, found by comparing its phonemes with and without each entry. They are
+reviewed by ear in the app (Pronunciation → Review them) before they join the SciReader list.
+
 ## Your own dataset
 
 Every user has one personal dataset file (`.data/pronunciations.json`). It starts as a copy of the

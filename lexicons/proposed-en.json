@@ -1,0 +1,1959 @@
+{
+ "format": "scireader-pronunciations",
+ "version": 2,
+ "language": "en",
+ "name": "SciReader proposals (batch 1)",
+ "license": "CC BY 4.0",
+ "updated": "2026-10-22",
+ "base_hash": null,
+ "removed": [],
+ "entries": [
+  {
+   "term": "PI",
+   "say_as": "P-I",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": "photoinitiator; read 'pie' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MEW",
+   "say_as": "M-E-W",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "additive-manufacturing"
+   ],
+   "source": "base",
+   "note": "melt electrowriting; unsure, some say 'mew'",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PEN",
+   "say_as": "P-E-N",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(ethylene naphthalate)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ODE",
+   "say_as": "O-D-E",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "ordinary differential equation; read 'ode' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ODEs",
+   "say_as": "O-D-Es",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "ordinary differential equations",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ROC",
+   "say_as": "R-O-C",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "receiver operating characteristic; some say 'rock'",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "FIB",
+   "say_as": "F-I-B",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "focused ion beam",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PEKK",
+   "say_as": "peck",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(ether ketone ketone)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PES",
+   "say_as": "P-E-S",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(ether sulfone)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GISAXS",
+   "say_as": "G-I-sacks",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "grazing-incidence small-angle X-ray scattering",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GIWAXS",
+   "say_as": "G-I-wacks",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "grazing-incidence wide-angle X-ray scattering",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "XANES",
+   "say_as": "zanes",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "X-ray absorption near-edge structure",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "EXAFS",
+   "say_as": "ex-afs",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "extended X-ray absorption fine structure",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "NEXAFS",
+   "say_as": "nex-afs",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "near-edge X-ray absorption fine structure",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MALDI",
+   "say_as": "mal-dee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "matrix-assisted laser desorption/ionization",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MALDI-TOF",
+   "say_as": "mal-dee T-O-F",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "MALDI time-of-flight mass spectrometry",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "NOESY",
+   "say_as": "no-ee-zee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "nuclear Overhauser effect spectroscopy (NMR)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "DOSY",
+   "say_as": "doe-zee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "diffusion-ordered spectroscopy (NMR)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "DABCO",
+   "say_as": "dab-co",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "1,4-diazabicyclo[2.2.2]octane",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "DMAP",
+   "say_as": "dee-map",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "4-dimethylaminopyridine",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "TEA",
+   "say_as": "T-E-A",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "triethylamine or triethanolamine; read 'tee' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "APTES",
+   "say_as": "ap-tees",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "(3-aminopropyl)triethoxysilane",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "TEOS",
+   "say_as": "tee-oss",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "tetraethyl orthosilicate",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "InChI",
+   "say_as": "in-chee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "cheminformatics"
+   ],
+   "source": "base",
+   "note": "IUPAC International Chemical Identifier",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ChEMBL",
+   "say_as": "kembel",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "cheminformatics"
+   ],
+   "source": "base",
+   "note": "bioactivity database",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "QSAR",
+   "say_as": "Q-sar",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "cheminformatics"
+   ],
+   "source": "base",
+   "note": "quantitative structure-activity relationship",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ReLU",
+   "say_as": "ray-loo",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "rectified linear unit",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GELU",
+   "say_as": "jee-loo",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "Gaussian error linear unit",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "SiLU",
+   "say_as": "sigh-loo",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "sigmoid linear unit",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "tanh",
+   "say_as": "tanch",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "math",
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "hyperbolic tangent; read 'tan' without this",
+   "kind": "symbol",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "RMSprop",
+   "say_as": "R-M-S prop",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "optimizer",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "BERT",
+   "say_as": "bert",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "language model",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "SHAP",
+   "say_as": "shap",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "SHapley Additive exPlanations",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "t-SNE",
+   "say_as": "tee-snee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "t-distributed stochastic neighbor embedding",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ResNet",
+   "say_as": "rez-net",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "residual network",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PaiNN",
+   "say_as": "pain",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "polarizable atom interaction neural network",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "NequIP",
+   "say_as": "neh-quip",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "equivariant interatomic potential",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ALIGNN",
+   "say_as": "align",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "atomistic line graph neural network",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GAN",
+   "say_as": "gan",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "generative adversarial network",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GANs",
+   "say_as": "gans",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "generative adversarial networks",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "JAX",
+   "say_as": "jacks",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "array library",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "LAMMPS",
+   "say_as": "lamps",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "molecular dynamics code",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "GROMACS",
+   "say_as": "grow-macks",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "molecular dynamics code",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "VASP",
+   "say_as": "vasp",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "DFT code",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "CHARMM",
+   "say_as": "charm",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "force field and code",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "DREIDING",
+   "say_as": "dry-ding",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "force field",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ReaxFF",
+   "say_as": "ree-ax F-F",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "reactive force field",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "B3LYP",
+   "say_as": "B three lip",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "DFT functional",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Ewald",
+   "say_as": "eh-vald",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "Ewald summation; German name, many say 'ee-wald'",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Verlet",
+   "say_as": "ver-lay",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "simulation"
+   ],
+   "source": "base",
+   "note": "Verlet integration (French name)",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MOF",
+   "say_as": "moff",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "metal-organic framework",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MOFs",
+   "say_as": "moffs",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "metal-organic frameworks",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "COF",
+   "say_as": "coff",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "covalent organic framework",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "COFs",
+   "say_as": "coffs",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "covalent organic frameworks",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ZIF",
+   "say_as": "zif",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "zeolitic imidazolate framework",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PEDOT",
+   "say_as": "pee-dot",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(3,4-ethylenedioxythiophene)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PEDOT:PSS",
+   "say_as": "pee-dot P-S-S",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "PEDOT with poly(styrene sulfonate)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MXene",
+   "say_as": "max-een",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "2D transition-metal carbides/nitrides",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "MXenes",
+   "say_as": "max-eens",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "materials"
+   ],
+   "source": "base",
+   "note": "2D transition-metal carbides/nitrides",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "NIPAM",
+   "say_as": "nigh-pam",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "monomers"
+   ],
+   "source": "base",
+   "note": "N-isopropylacrylamide",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PNIPAM",
+   "say_as": "P-nigh-pam",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(N-isopropylacrylamide)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PAMAM",
+   "say_as": "pamam",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(amidoamine) dendrimer",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "TEGDMA",
+   "say_as": "teg-D-M-A",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "monomers"
+   ],
+   "source": "base",
+   "note": "triethylene glycol dimethacrylate",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PEGDMA",
+   "say_as": "peg-D-M-A",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "monomers"
+   ],
+   "source": "base",
+   "note": "poly(ethylene glycol) dimethacrylate",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "BET",
+   "say_as": "B-E-T",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "Brunauer-Emmett-Teller surface area; read 'bet' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "microCT",
+   "say_as": "micro C-T",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "micro-computed tomography",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "DMAc",
+   "say_as": "D-M-A-C",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "N,N-dimethylacetamide",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "PVAc",
+   "say_as": "P-V-A-C",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": "poly(vinyl acetate)",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "HA",
+   "say_as": "H-A",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "biomaterials"
+   ],
+   "source": "base",
+   "note": "hyaluronic acid or hydroxyapatite; read 'ha' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "NA",
+   "say_as": "N-A",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "optics"
+   ],
+   "source": "base",
+   "note": "numerical aperture; read 'nuh' without this",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "ROO",
+   "say_as": "R-O-O",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "peroxyl radical; read 'roo' without this",
+   "kind": "formula",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Iod",
+   "say_as": "iodonium",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": "iodonium salt, as abbreviated in photoinitiating systems",
+   "kind": "acronym",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "dimethylamino",
+   "say_as": "dye-meth-il-a-mee-no",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "diphenylphosphino",
+   "say_as": "dye-fen-il-fos-fee-no",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "homopolymerization",
+   "say_as": "homo-polymerization",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "polymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "coinitiator",
+   "say_as": "co-initiator",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "coinitiators",
+   "say_as": "co-initiators",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "thiyl",
+   "say_as": "thigh-il",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "thiyl radical",
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "thiol-yne",
+   "say_as": "thiol-ein",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "camphorquinone",
+   "say_as": "cam-for-kwin-own",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": "CQ, a visible-light photoinitiator",
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "dimethacrylate",
+   "say_as": "dye-meth-ack-rih-late",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "monomers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "chitosan",
+   "say_as": "kite-o-san",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "biomaterials"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "acylphosphine",
+   "say_as": "ass-il-fos-feen",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "bisacylphosphine",
+   "say_as": "bis-ass-il-fos-feen",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "hydroxyacetophenone",
+   "say_as": "hydroxy aceto-phenone",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "photopolymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "molecule",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Cauchy",
+   "say_as": "koh-shee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics",
+    "math"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Cauchy-Green",
+   "say_as": "koh-shee green",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics"
+   ],
+   "source": "base",
+   "note": "Cauchy-Green deformation tensor",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Cauchy-Born",
+   "say_as": "koh-shee born",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics"
+   ],
+   "source": "base",
+   "note": "Cauchy-Born rule",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Navier-Stokes",
+   "say_as": "nav-yay stokes",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Piola-Kirchhoff",
+   "say_as": "pee-oh-lah keer-koff",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics"
+   ],
+   "source": "base",
+   "note": "Piola-Kirchhoff stress",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Kirchhoff",
+   "say_as": "keer-koff",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Chhabra",
+   "say_as": "chab-ra",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Gervais",
+   "say_as": "zhehr-vay",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": "unsure: French name",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Carreau",
+   "say_as": "kah-roh",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "rheology"
+   ],
+   "source": "base",
+   "note": "Carreau model",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Arrhenius",
+   "say_as": "ar-ree-nee-us",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Huckel",
+   "say_as": "hoo-kel",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Hückel without the umlaut",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Voigt",
+   "say_as": "foyt",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics",
+    "spectroscopy"
+   ],
+   "source": "base",
+   "note": "German name; many say 'voyt'",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Kelvin-Voigt",
+   "say_as": "Kelvin foyt",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "rheology"
+   ],
+   "source": "base",
+   "note": "Kelvin-Voigt model",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Voigtian",
+   "say_as": "foyt-ian",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "spectroscopy"
+   ],
+   "source": "base",
+   "note": "Voigt line profile",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Péclet",
+   "say_as": "pay-clay",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": "Péclet number",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Peclet",
+   "say_as": "pay-clay",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": "Péclet number",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Damköhler",
+   "say_as": "dahm-ker-ler",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids",
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Damköhler number",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Damkohler",
+   "say_as": "dahm-ker-ler",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids",
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Damköhler number",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Ohnesorge",
+   "say_as": "ohnuh-zorga",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": "Ohnesorge number",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Ostwald-de Waele",
+   "say_as": "ost-vald duh vah-luh",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "rheology"
+   ],
+   "source": "base",
+   "note": "power-law fluid model",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Poiseuille",
+   "say_as": "poy-zoy",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": "Poiseuille flow (French name)",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Hagen-Poiseuille",
+   "say_as": "hah-ghen poy-zoy",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "fluids"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Eulerian",
+   "say_as": "oy-leer-ian",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math",
+    "fluids"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Lagrangian",
+   "say_as": "la-grahn-jee-an",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math",
+    "physics"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Hermite",
+   "say_as": "er-meet",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "Hermite polynomials",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Legendre",
+   "say_as": "luh-zhahn-druh",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "Legendre polynomials",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Dirac",
+   "say_as": "dih-rack",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics",
+    "math"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Langevin",
+   "say_as": "lahnzh-vahn",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics",
+    "simulation"
+   ],
+   "source": "base",
+   "note": "Langevin dynamics (French name)",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Noether",
+   "say_as": "ner-ter",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics",
+    "math"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Charpy",
+   "say_as": "shar-pee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics"
+   ],
+   "source": "base",
+   "note": "Charpy impact test",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Brinell",
+   "say_as": "brih-nel",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "mechanics"
+   ],
+   "source": "base",
+   "note": "Brinell hardness",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Derjaguin",
+   "say_as": "dyer-yah-ghin",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics"
+   ],
+   "source": "base",
+   "note": "DLVO theory, Derjaguin approximation",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Buchwald-Hartwig",
+   "say_as": "book-wald hart-wig",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "amination",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Huisgen",
+   "say_as": "hoys-ghen",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Huisgen cycloaddition",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Staudinger",
+   "say_as": "schtau-dinger",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry",
+    "polymers"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Grignard",
+   "say_as": "green-yar",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Grignard reagent",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Knoevenagel",
+   "say_as": "noven-ah-gul",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Knoevenagel condensation",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Baeyer-Villiger",
+   "say_as": "bye-er vill-ig-er",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "chemistry"
+   ],
+   "source": "base",
+   "note": "Baeyer-Villiger oxidation",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "de Gennes",
+   "say_as": "duh zhen",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "polymers",
+    "physics"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Fresnel",
+   "say_as": "freh-nel",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "optics"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Mie",
+   "say_as": "mee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "optics"
+   ],
+   "source": "base",
+   "note": "Mie scattering; read 'my' without this",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Shockley-Queisser",
+   "say_as": "shock-lee kwy-ser",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "energy"
+   ],
+   "source": "base",
+   "note": "Shockley-Queisser limit",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Peltier",
+   "say_as": "pell-tee-eh",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "physics"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Randles-Sevcik",
+   "say_as": "randles shev-chick",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "electrochemistry"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Bode",
+   "say_as": "boh-dee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "electrochemistry",
+    "control"
+   ],
+   "source": "base",
+   "note": "Bode plot",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Sauerbrey",
+   "say_as": "zow-er-bry",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "characterization"
+   ],
+   "source": "base",
+   "note": "Sauerbrey equation (QCM)",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Cholesky",
+   "say_as": "sho-les-kee",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "Cholesky decomposition",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Krylov",
+   "say_as": "krih-loff",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": "Krylov subspace",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Runge-Kutta",
+   "say_as": "roong-uh koo-tah",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "math"
+   ],
+   "source": "base",
+   "note": null,
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Kullback-Leibler",
+   "say_as": "kull-back lye-bler",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "statistics",
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "KL divergence",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Mahalanobis",
+   "say_as": "mah-hah-lah-noh-bis",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "statistics"
+   ],
+   "source": "base",
+   "note": "Mahalanobis distance",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "Matérn",
+   "say_as": "mah-tern",
+   "ipa": null,
+   "case_sensitive": true,
+   "tags": [
+    "statistics",
+    "machine-learning"
+   ],
+   "source": "base",
+   "note": "Matérn kernel",
+   "kind": "name",
+   "checked": false,
+   "added": "2026-10-22"
+  },
+  {
+   "term": "kriging",
+   "say_as": "kree-ghing",
+   "ipa": null,
+   "case_sensitive": false,
+   "tags": [
+    "statistics"
+   ],
+   "source": "base",
+   "note": "Gaussian-process regression in geostatistics; also Kriging",
+   "kind": "word",
+   "checked": false,
+   "added": "2026-10-22"
+  }
+ ]
+}

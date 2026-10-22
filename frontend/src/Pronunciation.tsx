@@ -71,6 +71,7 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
   const [link, setLink] = useState("");
   const [browseKey, setBrowseKey] = useState(0);
   const [allSuggested, setAllSuggested] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
   const dupSection = useRef<HTMLElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -92,10 +93,10 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
     setBrowseKey((k) => k + 1);
   };
 
-  const say = async (key: string, text: string) => {
+  const say = async (key: string, text: string, raw = false) => {
     setBusy(key);
     try {
-      const r = await api.post<{ audio_url: string }>("/api/tts/say", { text, voice });
+      const r = await api.post<{ audio_url: string }>("/api/tts/say", { text, voice, raw });
       audio.current?.pause();
       audio.current = new Audio(r.audio_url);
       await audio.current.play();
@@ -197,12 +198,28 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
           anyone's (same file for everyone). Type how a term should sound: a plain respelling like “peg-dah”, or letters like “T G”.
         </div>
         {msg && <div className="offline ok">{msg}</div>}
-        {view && view.duplicates.length > 0 && (
+        {view && view.duplicates.length > 0 && !reviewing && (
           <button className="mk mk-dup dup-notice" onClick={() => dupSection.current?.scrollIntoView({ block: "start", behavior: "smooth" })}>
             ⚠ {view.duplicates.length} term{view.duplicates.length > 1 ? "s have" : " has"} two pronunciations: choose below
           </button>
         )}
-        {!view ? (
+        {view && view.dataset.unchecked > 0 && !reviewing && (
+          <div className="row review-call">
+            <span className="mk mk-check">to check</span>
+            <span>{view.dataset.unchecked} pronunciation{view.dataset.unchecked > 1 ? "s" : ""} in your dataset nobody has listened to yet.</span>
+            <button className="primary" onClick={() => setReviewing(true)}>Review them</button>
+          </div>
+        )}
+        {reviewing ? (
+          <Review
+            say={say}
+            onChange={changed}
+            onClose={() => {
+              setReviewing(false);
+              void changed();
+            }}
+          />
+        ) : !view ? (
           <div className="muted">Finding terms…</div>
         ) : (
           <>
@@ -318,7 +335,86 @@ function AddTerm({ busy, onAdd }: { busy: string | null; onAdd: (term: string, s
   );
 }
 
-type Say = (key: string, text: string) => Promise<void>;
+type Say = (key: string, text: string, raw?: boolean) => Promise<void>;
+
+/** One "to check" entry at a time: it plays as it appears; Enter keeps it (or saves what you typed), and the next
+ * one plays. "Without" plays the voice without the dataset, to hear what the entry changes. */
+function Review({ say, onChange, onClose }: { say: Say; onChange: () => Promise<void>; onClose: () => void }) {
+  const [queue, setQueue] = useState<Entry[] | null>(null);
+  const [i, setI] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    api.get<{ entries: Entry[] }>("/api/pronunciations?filter=unchecked&limit=5000").then((r) => setQueue(r.entries), (e) => setErr(String(e)));
+  }, []);
+  const e = queue?.[i];
+  useEffect(() => {
+    if (!e) return;
+    setDraft(e.say_as ?? "");
+    input.current?.focus();
+    void say(`rv:${e.term}`, e.term);
+  }, [e?.term, i]);
+
+  const next = () => setI((n) => n + 1);
+  const act = async (fn: () => Promise<unknown>) => {
+    try {
+      await fn();
+      void onChange();
+      next();
+    } catch (x) {
+      setErr(String(x));
+    }
+  };
+  const body = (x: Entry, say_as: string | null) => ({ term: x.term, say_as, kind: x.kind, tags: x.tags, note: x.note, case_sensitive: x.case_sensitive });
+  const confirm = () => {
+    if (!e) return;
+    const d = draft.trim();
+    if (d === (e.say_as ?? "")) void act(() => api.post("/api/pronunciations/check", { term: e.term, case_sensitive: e.case_sensitive }));
+    else void act(() => api.put("/api/pronunciations/entry", body(e, d || null)));
+  };
+
+  if (err) return <div className="error-box">{err}</div>;
+  if (!queue) return <div className="muted">Loading…</div>;
+  return (
+    <section className="pron-section review">
+      <h3>
+        Review <span className="mk mk-check">to check</span>{" "}
+        <span className="muted small">{Math.min(i + 1, queue.length)} of {queue.length}</span>
+        <button className="ghost" onClick={onClose}>Back to the lists</button>
+      </h3>
+      {!e ? (
+        <div className="offline ok">All done: every entry in your dataset has been listened to.</div>
+      ) : (
+        <div className="review-card">
+          <div className="review-term">{e.term}</div>
+          <div className="muted small">{[e.kind, e.note, e.tags.join(", "), sourceLabel(e.source)].filter(Boolean).join(" · ")}</div>
+          <div className="row">
+            <button onClick={() => void say(`rv:${e.term}`, e.term)} title="Play it again, as the dataset says it">▶ Again</button>
+            <button onClick={() => void say(`raw:${e.term}`, e.term, true)} title="How the voice says it without the dataset">▶ Without</button>
+            <input
+              ref={input}
+              value={draft}
+              onChange={(ev) => setDraft(ev.target.value)}
+              onKeyDown={(ev) => {
+                if (ev.key === "Enter") confirm();
+              }}
+              placeholder="as written"
+              aria-label={`How to say ${e.term}`}
+            />
+            <button onClick={() => void say(`rvd:${e.term}`, draft.trim() || e.term, !draft.trim())} title="Hear what you typed">▶ Mine</button>
+          </div>
+          <div className="row">
+            <button className="primary" onClick={confirm}>{draft.trim() === (e.say_as ?? "") ? "✓ Right (Enter)" : "Save (Enter)"}</button>
+            <button onClick={() => void act(() => api.put("/api/pronunciations/entry", body(e, null)))} title="The voice gets it right without help">Sounds right as written</button>
+            <button onClick={next} title="Decide later">Skip</button>
+            <button className="ghost" onClick={() => void act(() => api.post("/api/pronunciations/remove", { term: e.term, case_sensitive: e.case_sensitive }))}>Remove</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 function SuggestedRow({ t, busy, say, onPut }: { t: Suggested; busy: string | null; say: Say; onPut: (sayAs: string | null) => void }) {
   const [draft, setDraft] = useState("");

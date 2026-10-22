@@ -184,15 +184,17 @@ class SayReq(BaseModel):
     text: str
     voice: str = "af_heart"
     label: str = ""
+    raw: bool = False  # without the pronunciation dataset (to hear what an entry changes)
 
 
 @router.post("/tts/say")
 def say(req: SayReq) -> dict:
     """Speak arbitrary text (AI answers, explanations) through the same normalizer and voice."""
+    from ..speech.lexicon import Lexicon
     from ..speech.pipeline import speak
 
     text = (req.label + " " if req.label else "") + req.text
-    spoken = speak(text[:4000]).spoken
+    spoken = speak(text[:4000], lexicon=Lexicon() if req.raw else None).spoken
     k, meta = synth_cached(spoken, req.voice)
     return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken, "words": []}
 
