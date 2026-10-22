@@ -467,16 +467,24 @@ function endDetour(resume = true) {
 
 const EQ_REF = /\b(?:Eqs?\.|Eqn\.|Equations?)\s*\(?\s*(\d{1,3}[a-z]?)\s*\)?(?:\s*(?:and|,|–|-)\s*\(?(\d{1,3}[a-z]?)\)?)?/gi;
 
+/** The numbers an equation answers to: "6"; a stacked "1a,b" also to "1a", "1b" and "1". */
+function eqLabels(n: string | null | undefined): string[] {
+  const m = n ? /^(\d+)([a-z](?:,[a-z])*)$/.exec(n) : null;
+  return !n ? [] : m ? [n, ...m[2].split(",").map((l) => m[1] + l), m[1]] : [n];
+}
+
 /** Equation blocks cited by a sentence ("Eq. (3)", "Eqs. 4 and 5", IOP's "equation (9) and (10)"), in order. */
 export function citedEquations(sid: string | null): Block[] {
   const st = get();
   const e = sid ? st.index.get(sid) : undefined;
   if (!e || !st.doc || e.b.type === "equation") return [];
+  const eqs = st.doc.blocks.filter((x) => x.type === "equation" && x.eq_number);
   const out: Block[] = [];
   for (const m of e.s.text.matchAll(EQ_REF)) {
-    for (const n of [m[1], m[2]]) {
-      if (!n) continue;
-      const b = st.doc.blocks.find((x) => x.type === "equation" && x.eq_number === n);
+    for (const raw of [m[1], m[2]]) {
+      if (!raw) continue;
+      const n = raw.toLowerCase();
+      const b = eqs.find((x) => x.eq_number === n) ?? eqs.find((x) => eqLabels(x.eq_number).includes(n));
       if (b && !out.includes(b)) out.push(b);
     }
   }

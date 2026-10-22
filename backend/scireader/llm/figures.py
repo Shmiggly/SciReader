@@ -15,6 +15,7 @@ import threading
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 
+from ..parsing.captions import caption_label
 from ..store.docs import DocStore
 from . import ollama
 
@@ -146,7 +147,10 @@ def span_rects(entry: dict | None, a: int, z: int) -> list[list[float]]:
 def find_mentions(doc: dict, speech: dict | None = None) -> list[dict]:
     """All figure mentions in readable text, in reading order, with a first-mention flag per target and, given the
     speech index, the mention's boxes on the page (for clicking it)."""
-    figs = {f["number"]: f for f in doc["figures"] if f.get("number") and f.get("kind") == "figure"}
+    figs: dict[str, dict] = {}
+    for f in doc["figures"]:
+        if f.get("number") and f.get("kind") == "figure":
+            figs.setdefault(f["number"], f)  # the first one (a later copy is a pasted duplicate, as in MDPI)
     seen: set[str] = set()
     out = []
     for b in doc["blocks"]:
@@ -169,8 +173,13 @@ def find_mentions(doc: dict, speech: dict | None = None) -> list[dict]:
 
 
 def caption_text(doc: dict, fig: dict) -> str:
+    """The figure's caption from its label on (without running headers or printout lines before it)."""
     cb = next((b for b in doc["blocks"] if b["id"] == fig.get("caption_block_id")), None)
-    return re.sub(r"\s+", " ", cb["text"]).strip() if cb else ""
+    if not cb:
+        return ""
+    text = re.sub(r"\s+", " ", cb["text"]).strip()
+    lab = caption_label(text)
+    return text[lab[2]:] if lab else text
 
 
 def caption_part(caption: str, panels: list[str]) -> str:
@@ -224,6 +233,14 @@ def figure_for(doc: dict, number: str) -> dict | None:
     return next((f for f in doc["figures"] if f.get("number") == number and f.get("kind") == "figure"), None)
 
 
+def cached(descriptions: dict, key: str, fig: dict | None) -> dict | None:
+    """A ready description of a target, if it was made from this figure (a rebuild can renumber figures)."""
+    e = descriptions.get(key)
+    if not e or not e.get("description") or fig is None or e.get("figure_id", fig["id"]) != fig["id"]:
+        return None
+    return e
+
+
 def target(doc: dict, key: str, descriptions: dict) -> dict | None:
     """A figure target for the popup and the caption-only reading: label, panels, caption part and the AI
     description if it is ready."""
@@ -232,7 +249,7 @@ def target(doc: dict, key: str, descriptions: dict) -> dict | None:
     if fig is None:
         return None
     number, panels = parts
-    entry = descriptions.get(key) or {}
+    entry = cached(descriptions, key, fig) or {}
     return {"key": key, "figure_id": fig["id"], "label": f"Figure {number}", "panels": panels,
             "caption_part": entry.get("caption_part") or caption_part(caption_text(doc, fig), panels),
             "description": entry.get("description")}
@@ -241,12 +258,12 @@ def target(doc: dict, key: str, descriptions: dict) -> dict | None:
 def describe(store: DocStore, doc_id: str, doc: dict, key: str, detail: bool = False) -> dict:
     res = store.read_json(doc_id, "figures.json") or {}
     cache_key = key + (":detail" if detail else "")
-    if cache_key in res and res[cache_key].get("description"):
-        return res[cache_key]
     number, panels = split_key(key)
     fig = figure_for(doc, number)
     if fig is None:
         raise KeyError(f"No figure {number}")
+    if entry := cached(res, cache_key, fig):
+        return entry
     caption = caption_text(doc, fig)
     png = crop_png(str(store.pdf_path(doc_id)), fig["page"], fig["bbox"])
     label = f"Figure {number}"
@@ -304,8 +321,8 @@ def _prepare_all(store: DocStore, doc_id: str) -> None:
                 _status[doc_id] = {"state": "unavailable"}
             return
         keys = list(dict.fromkeys(m["key"] for m in find_mentions(doc)))
-        cached = store.read_json(doc_id, "figures.json") or {}
-        done = {k for k in keys if (cached.get(k) or {}).get("description")}
+        res = store.read_json(doc_id, "figures.json") or {}
+        done = {k for k in keys if cached(res, k, figure_for(doc, split_key(k)[0]))}
         failed = 0
         with _lock:
             _status[doc_id] = {"state": "running", "done": len(done), "total": len(keys)}

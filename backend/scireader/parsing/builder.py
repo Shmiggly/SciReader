@@ -15,6 +15,7 @@ from typing import Any, Callable
 
 from ..speech.math_speech import get_math_speech
 from ..speech.pipeline import expand_numbers, find_citations, get_lexicon, speak, split_sentences
+from .captions import caption_label, link_captions, printed_equation_number
 from .latex import clean_latex, equation_intro, extract_equation_number, is_fragment, latex_has_content, split_label
 from .pdfchars import PdfChar, PdfText, align, rects_for_span, restore_hyphens, superscript_mask
 
@@ -60,7 +61,6 @@ AFFILIATION = re.compile(
     r"(universit|institut|department|dept\.|laborator|college|school of|faculty|centre|center for|"
     r"@|e-?mail|corresponding author|correspondence)", re.I,
 )
-FIG_LABEL = re.compile(r"^\s*(fig(?:ure)?|table|scheme)\.?\s*(S?\d+[A-Za-z]?)", re.I)
 # Running headers Docling leaves inside text: a journal header line (MDPI "Polymers 2021, 13, 2325 5 of 24", also in
 # figures pasted from the review version: "Polymers 2021, 13, x FOR PEER REVIEW 7 of 25") or a printout's "Page 1 of 1".
 PAGE_MARK = re.compile(
@@ -373,6 +373,8 @@ def build_document(
                 block["skip_reason"] = "junk"  # not read, no badge, not checked
             else:
                 eq_counter += 1
+                if number is None:  # printed at the line's end but lost by the parser (IOP): "(6)", "(1a,b)"
+                    number = printed_equation_number(pdftext.pages[b.page], b.bbox)
             block["latex"] = latex
             block["latex_raw"] = latex_raw
             block["eq_number"] = number
@@ -421,6 +423,8 @@ def build_document(
         sup_cites = _superscript_citations(text, sup)
         sup_exps = _superscript_exponents(text, sup)
         marks = _page_marks(text, b.page)
+        if b.type == "caption" and (lab := caption_label(text)) and lab[2] > 0:
+            marks.append((0, lab[2]))  # furniture before the label ("Page 1 of 1 Printed by … on 2/24/2023")
 
         if b.type == "bib_entry":
             bib_counter += 1
@@ -475,7 +479,7 @@ def build_document(
                 words[sid]["exponents"] = exps
         out_blocks.append(block)
 
-    # Captions → figures; figure labels.
+    # Captions → figures: Docling's links and labels, then figures checked against the page (captions.py).
     for blk, b in zip(out_blocks, raw):
         if b.type == "caption":
             fig_id = caption_of.get(b.ref)
@@ -483,11 +487,11 @@ def build_document(
                 blk["figure_id"] = fig_id
                 fig = next(f for f in figures if f["id"] == fig_id)
                 fig["caption_block_id"] = blk["id"]
-                m = FIG_LABEL.match(blk["text"])
-                if m:
-                    kind = "Table" if m.group(1).lower().startswith("tab") else "Figure"
-                    fig["label"] = f"{kind} {m.group(2)}"
-                    fig["number"] = m.group(2)
+                lab = caption_label(blk["text"])
+                if lab:
+                    fig["label"] = f"{'Table' if lab[0] == 'table' else 'Figure'} {lab[1]}"
+                    fig["number"] = lab[1]
+    link_captions(figures, out_blocks)
     for f in figures:
         f.pop("_caption_refs", None)
 

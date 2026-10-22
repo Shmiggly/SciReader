@@ -64,9 +64,14 @@ def get_figures(doc_id: str) -> dict:
         raise HTTPException(404, "Not parsed yet")
     descs = store.read_json(doc_id, "figures.json") or {}
     speech = store.read_json(doc_id, "speech.json") or {}
-    return {"status": figures.status(doc_id), "mentions": figures.find_mentions(doc, speech),
-            "descriptions": {k: {"description": v.get("description"), "caption_part": v.get("caption_part"),
-                                 "label": v.get("label"), "panels": v.get("panels")} for k, v in descs.items()}}
+    ready = {}
+    for k in descs:
+        parts = figures.split_key(k.split(":")[0])
+        v = figures.cached(descs, k, figures.figure_for(doc, parts[0]) if parts else None)
+        if v:
+            ready[k] = {"description": v.get("description"), "caption_part": v.get("caption_part"),
+                        "label": v.get("label"), "panels": v.get("panels")}
+    return {"status": figures.status(doc_id), "mentions": figures.find_mentions(doc, speech), "descriptions": ready}
 
 
 @router.post("/docs/{doc_id}/figures/prepare")
@@ -109,7 +114,9 @@ def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = Fa
     if doc is None:
         raise HTTPException(404, "Not parsed yet")
     descs = store.read_json(doc_id, "figures.json") or {}
-    entry = None if caption_only else descs.get(key + (":detail" if detail else ""))
+    parts = figures.split_key(key)
+    fig = figures.figure_for(doc, parts[0]) if parts else None
+    entry = None if caption_only else figures.cached(descs, key + (":detail" if detail else ""), fig)
     if entry is None and detail and not caption_only and ollama.available():
         try:
             entry = figures.describe(store, doc_id, doc, key, detail=detail)
