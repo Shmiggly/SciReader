@@ -21,7 +21,7 @@ def test_shipped_lexicon_loads_and_has_required_entries():
     for term in "PLA ABS PETG TPU PDMS PEEK SLA DLP FFF FDM SLS MJF DIW DSC TGA DMA FTIR GPC SEM XRD".split():
         assert lex.get(term) is not None, term
     for e in lex.entries:
-        assert e.source == "shipped" and e.tags
+        assert e.source == "base" and e.tags and e.kind and e.checked
 
 
 def test_user_overrides_shipped(tmp_path):
@@ -31,7 +31,7 @@ def test_user_overrides_shipped(tmp_path):
     _write(user, [{"term": "PEGDA", "say_as": "peg-D-A"}])
     lex = Lexicon.load(shipped, user)
     assert lex.get("PEGDA").say_as == "peg-D-A"
-    assert lex.get("PEGDA").source == "user"
+    assert lex.get("PEGDA").source == "me"  # older files said "shipped" and "user"
     assert lex.find("PEGDA and Tg") == [(0, 5, "peg-D-A"), (10, 12, "T G")]
 
 
@@ -103,7 +103,8 @@ def test_ipa_entry_uses_misaki_markup_and_strip():
 
 
 def test_entry_dict_roundtrip():
-    e = LexiconEntry("PA12", "P-A twelve", tags=["polymers"], source="shipped", note="polyamide 12")
+    e = LexiconEntry("PA12", "P-A twelve", tags=["polymers"], source="base", note="polyamide 12", kind="acronym",
+                     checked=False, added="2026-10-22")
     assert LexiconEntry.from_dict(e.to_dict()) == e
 
 

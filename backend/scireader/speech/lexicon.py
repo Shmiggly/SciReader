@@ -24,15 +24,22 @@ def strip_markup(spoken: str) -> str:
     return _MARKUP_RE.sub(r"\1", spoken)
 
 
+# Older files said "shipped" / "user" / "imported" for what the dataset calls "base" / "me" / "import".
+_SOURCES = {"shipped": "base", "user": "me", "imported": "import"}
+
+
 @dataclass
 class LexiconEntry:
     term: str
-    say_as: str | None = None
+    say_as: str | None = None  # None: read as written
     ipa: str | None = None
     case_sensitive: bool = True
     tags: list[str] = field(default_factory=list)
-    source: str = "user"
+    source: str = "me"  # "base" (the SciReader list), "me", or "import:<dataset>"
     note: str | None = None
+    kind: str | None = None  # acronym, word, molecule, formula, unit, symbol, name, other
+    checked: bool = True  # False: proposed or imported, not yet heard and confirmed
+    added: str | None = None  # date it entered the dataset (YYYY-MM-DD)
 
     @property
     def spoken(self) -> str:
@@ -47,17 +54,21 @@ class LexiconEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any], default_source: str = "user") -> "LexiconEntry":
-        if not d.get("term"):
+    def from_dict(cls, d: dict[str, Any], default_source: str = "me") -> "LexiconEntry":
+        if not d.get("term") or not str(d["term"]).strip():
             raise ValueError(f"lexicon entry without term: {d!r}")
+        source = str(d.get("source") or default_source)
         return cls(
-            term=str(d["term"]),
-            say_as=d.get("say_as"),
-            ipa=d.get("ipa"),
+            term=str(d["term"]).strip(),
+            say_as=(str(d["say_as"]).strip() or None) if d.get("say_as") is not None else None,
+            ipa=d.get("ipa") or None,
             case_sensitive=bool(d.get("case_sensitive", True)),
-            tags=list(d.get("tags") or []),
-            source=str(d.get("source") or default_source),
-            note=d.get("note"),
+            tags=[str(t) for t in d.get("tags") or []],
+            source=_SOURCES.get(source, source),
+            note=d.get("note") or None,
+            kind=d.get("kind") or None,
+            checked=bool(d.get("checked", True)),
+            added=d.get("added") or None,
         )
 
 
@@ -183,13 +194,17 @@ class Lexicon:
 
     def find(self, text: str) -> list[tuple[int, int, str]]:
         """Whole-word, longest-first matches → (start, end, spoken replacement)."""
+        return [(a, b, e.spoken) for a, b, e in self.find_entries(text)]
+
+    def find_entries(self, text: str) -> list[tuple[int, int, LexiconEntry]]:
+        """Whole-word, longest-first matches → (start, end, entry)."""
         rx = self._regex or self._compile()
         out = []
         for m in rx.finditer(text):
             s = m.group()
             e = self._cs.get(s) or self._ci.get(s.lower())
             if e is not None:
-                out.append((m.start(), m.end(), e.spoken))
+                out.append((m.start(), m.end(), e))
         return out
 
     def __len__(self) -> int:

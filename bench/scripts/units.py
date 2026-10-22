@@ -134,7 +134,7 @@ def edit(a: str, b: str) -> int:
 def run() -> int:
     from misaki import en
 
-    from scireader.speech.pipeline import speak
+    from scireader.speech.pipeline import base_lexicon, speak
 
     from misaki import espeak
 
@@ -147,7 +147,7 @@ def run() -> int:
 
     rows = []
     for i, (cat, text, gold) in enumerate(SNIPPETS):
-        ours = speak(text).spoken
+        ours = speak(text, lexicon=base_lexicon()).spoken  # the base list, not a user's own dataset
         p_raw, p_ours, p_gold = ph(text), ph(ours), ph(gold)
         d_raw = edit(p_raw, p_gold) / max(1, len(p_gold))
         d_ours = edit(p_ours, p_gold) / max(1, len(p_gold))

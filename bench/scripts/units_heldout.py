@@ -174,7 +174,7 @@ def main() -> int:
 
     from misaki import en, espeak
 
-    from scireader.speech.pipeline import speak
+    from scireader.speech.pipeline import base_lexicon, speak
 
     picked = [json.loads(line) for line in data.read_text(encoding="utf-8").splitlines() if line.strip()]
     picked = [it for it in picked if not (it["text"] in fixes and fixes[it["text"]] is None)]
@@ -187,7 +187,7 @@ def main() -> int:
     for it in picked:
         it["gold"] = fixes.get(it["text"], it.get("gold") or it["gold_llm"])
         golds = [it["gold"]] + ([spell_formulas(it["text"])] if it["category"] == "chem" else [])
-        ours = speak(it["text"]).spoken
+        ours = speak(it["text"], lexicon=base_lexicon()).spoken  # the base list, not a user's own dataset
         p_raw, p_ours = ph(it["text"]), ph(ours)
         p_golds = [ph(g) for g in golds]
         it["scireader"] = ours

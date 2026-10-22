@@ -47,7 +47,13 @@ class Settings:
 
     @property
     def user_lexicon_path(self) -> Path:
+        """The older user lexicon (overrides of the base list); its entries move into the dataset on first use."""
         return self.data_dir / "lexicon.user.json"
+
+    @property
+    def pronunciations_path(self) -> Path:
+        """The user's own pronunciation dataset (speech/dataset.py)."""
+        return self.data_dir / "pronunciations.json"
 
     @property
     def state_path(self) -> Path:

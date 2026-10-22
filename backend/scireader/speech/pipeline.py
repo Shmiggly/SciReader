@@ -46,17 +46,29 @@ def expand_numbers(s: str) -> list[int]:
     return nums
 
 
+def _mtime(p) -> float:
+    return p.stat().st_mtime if p.exists() else 0.0
+
+
 @lru_cache(maxsize=1)
-def _lexicon_cached(mtime_user: float, mtime_shipped: float) -> Lexicon:  # noqa: ARG001 - cache key
-    s = get_settings()
-    return Lexicon.load(s.lexicon_path, s.user_lexicon_path)
+def _lexicon_cached(mtime_dataset: float, mtime_base: float, mtime_old_user: float) -> Lexicon:  # noqa: ARG001 - cache key
+    from .dataset import open_dataset
+
+    return open_dataset().lexicon()
 
 
 def get_lexicon() -> Lexicon:
+    """The pronunciations the voice uses: the user's dataset (speech/dataset.py)."""
     s = get_settings()
-    mu = s.user_lexicon_path.stat().st_mtime if s.user_lexicon_path.exists() else 0.0
-    ms = s.lexicon_path.stat().st_mtime if s.lexicon_path.exists() else 0.0
-    return _lexicon_cached(mu, ms)
+    return _lexicon_cached(_mtime(s.pronunciations_path), _mtime(s.lexicon_path), _mtime(s.user_lexicon_path))
+
+
+@lru_cache(maxsize=1)
+def base_lexicon() -> Lexicon:
+    """The base list alone (for benchmarks: a user's own additions must not change their numbers)."""
+    from .dataset import Dataset, base_list
+
+    return Dataset(entries=base_list(get_settings().lexicon_path)[0]).lexicon()
 
 
 # Dot accents on variables (time derivatives): "γ̇" -> "gamma dot".

@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from scireader.speech.pipeline import speak  # noqa: E402
+from scireader.speech.pipeline import base_lexicon, speak  # noqa: E402
 from scireader.tts.engine import audio_path, synth_cached  # noqa: E402
 
 OUT = ROOT / "bench" / "rating"
@@ -35,7 +35,7 @@ def main() -> int:
     for it in picked:
         for cond, name in CONDS.items():
             text = it[cond]
-            spoken = speak(text).spoken if cond != "a_naive" else text
+            spoken = speak(text, lexicon=base_lexicon()).spoken if cond != "a_naive" else text
             key, _ = synth_cached(spoken, "af_heart")
             clip_id = f"{len(clips):02d}"
             clips.append({"eq_id": it["id"], "latex": it["latex"], "condition": name, "spoken": spoken, "key": key})

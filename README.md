@@ -21,8 +21,8 @@ Researchers with dyslexia, ADHD or low vision, non-native readers, and anyone li
 **Read like a scientist**
 - Science-aware normalization (deterministic, 284 tests): units and compound units (`mW cm⁻²` → "milliwatts per square centimeter"), scientific notation, ±, ≈, ranges, Greek letters, sub/superscripts, chemical formulas and isotopes (`Fe₂O₃`, `Ca²⁺`, `¹³C`), abbreviations (Fig., Eq., et al., e.g.).
 - Equations are announced and read from LaTeX with the Speech Rule Engine, or with **verified AI narration** (below). Full / Brief (labeled AI summary) / Skip modes; → skips the rest of a long equation.
-- A shareable **pronunciation lexicon** (`lexicons/science-en.json`, 100+ polymer, additive-manufacturing and characterization terms: PEGDA → "peg-dah", Tg → "T G", PA12 → "P A twelve") plus your own lexicon, which overrides it.
-- A **pronunciation review screen** lists the terms in the open paper that the voice will probably say badly, ranked by frequency. You hear each one in context, type how it should sound, preview, and save; the fix applies everywhere at once. Lexicons export and import (with keep-mine / take-theirs on conflicts), the seed of an open, community-grown science pronunciation dataset.
+- A **pronunciation dataset** of your own that builds over time: it starts as the SciReader list (`lexicons/science-en.json`, 100+ polymer, additive-manufacturing and characterization terms: PEGDA → "peg-dah", Tg → "T G", PA12 → "P A twelve"), grows with every term you give a pronunciation, takes in updates of the list, and is one file in the same format for everyone, so it exports and imports (from a file or a link) between users.
+- The **Pronunciation screen** suggests the open paper's terms that the voice will probably say badly and your dataset doesn't have yet, most frequent first. Hear one in context, type how it should sound (or "Sounds right"), and it goes into your dataset at once, applies everywhere, and moves down to the paper's terms already in it. Two entries for one term (after an import) are marked and wait for you to choose; the whole dataset is searchable. It is the seed of an open, community-grown science pronunciation dataset.
 
 **Verified math narration** (the signature feature)
 0. The source is checked first. The PDF parser's formula OCR gives each equation's LaTeX; the same local model, as a vision model, reads the equation again from the page. If the two readings agree, the source is confirmed. If not, the PDF's own text layer decides: its glyphs come out of order but are exactly what is printed, so the reading whose symbols match them better wins. If that can't decide, the parser's reading is kept and marked uncertain. On the flagship paper (Springer, noisy OCR) 13 of 32 equations are confirmed, 17 take the page reading (K⁻¹ that the OCR read as K¹, y read as γ, and all 3 equations the parser garbled), the text layer sides with the parser on 1, and 1 is uncertain.
@@ -112,9 +112,9 @@ To start SciReader with a double-click, `./scripts/make-shortcut.ps1` puts a Sci
 
 Configuration lives in `.env` (see `.env.example`): data folder, model folder, Ollama URL and model names.
 
-## Pronunciation lexicons
+## Pronunciation datasets
 
-Entries are plain respellings ("peg-dah", "T G") with an optional IPA field; see [`lexicons/README.md`](lexicons/README.md) for the format. Share your file from the pronunciation screen and contribute field packs back. Lexicon annotations are CC BY 4.0.
+Entries are plain respellings ("peg-dah", "T G") with an optional IPA field; see [`lexicons/README.md`](lexicons/README.md) for the format, which is the same for the SciReader list, every personal dataset and every export. Share yours from the Pronunciation screen and contribute field packs back. Pronunciation annotations are CC BY 4.0.
 
 ## Licenses
 

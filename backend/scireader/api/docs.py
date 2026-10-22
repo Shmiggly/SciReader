@@ -193,11 +193,20 @@ def _check(doc_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# Pronunciation review and the user lexicon
+# Pronunciations: the user's dataset (speech/dataset.py) and the review screen
 
-from ..speech.lexicon import Lexicon, LexiconEntry  # noqa: E402
-from ..speech.pipeline import get_lexicon  # noqa: E402
-from ..speech.review import candidates  # noqa: E402
+from ..speech.dataset import Dataset, open_dataset, update_dataset  # noqa: E402
+from ..speech.lexicon import LexiconEntry  # noqa: E402
+from ..speech.review import entry_view, paper_view  # noqa: E402
+
+FILTERS = {
+    "all": lambda e, dups: True,
+    "mine": lambda e, dups: e.source == "me",
+    "base": lambda e, dups: e.source == "base",
+    "imported": lambda e, dups: e.source.startswith("import"),
+    "unchecked": lambda e, dups: not e.checked,
+    "duplicates": lambda e, dups: e.term.lower() in dups,
+}
 
 
 @router.get("/docs/{doc_id}/pronunciation")
@@ -206,76 +215,120 @@ def pronunciation(doc_id: str) -> dict:
     doc = store.document(doc_id)
     if doc is None:
         raise HTTPException(404, "Not parsed yet")
-    return {"terms": candidates(doc, get_lexicon())}
+    return paper_view(doc, open_dataset())
 
 
-def _user_lexicon() -> Lexicon:
-    s = get_settings()
-    return Lexicon.load(s.lexicon_path, s.user_lexicon_path)
-
-
-@router.get("/lexicon")
-def lexicon_all() -> dict:
-    lx = get_lexicon()
-    return {"entries": [e.to_dict() for e in lx.entries], "user_count": len(lx.user_entries)}
+@router.get("/pronunciations")
+def pronunciations(q: str = "", filter: str = "all", offset: int = 0, limit: int = 50) -> dict:  # noqa: A002
+    """Browse the dataset: a search on term, pronunciation and note, and a filter."""
+    ds = open_dataset()
+    dups = {ds.entries[g[0]].term.lower() for g in ds.duplicates()}
+    keep = FILTERS.get(filter, FILTERS["all"])
+    ql = q.strip().lower()
+    rows = [e for e in ds.entries if keep(e, dups) and (not ql or ql in e.term.lower() or ql in (e.say_as or "").lower()
+                                                        or ql in (e.note or "").lower())]
+    rows.sort(key=lambda e: e.term.lower())
+    return {"total": len(rows), "entries": [{**entry_view(e), "duplicate": e.term.lower() in dups} for e in rows[offset:offset + limit]],
+            "counts": {"all": len(ds.entries), **{k: sum(f(e, dups) for e in ds.entries) for k, f in FILTERS.items() if k != "all"}}}
 
 
 class EntryReq(BaseModel):
     term: str
-    say_as: str
+    say_as: str | None = None  # empty: read as written
     ipa: str | None = None
+    kind: str | None = None
     case_sensitive: bool = True
     tags: list[str] = []
-    note: str = ""
+    note: str | None = None
 
 
-@router.put("/lexicon/user")
-def lexicon_put(req: EntryReq) -> dict:
-    if not req.term.strip() or not req.say_as.strip():
-        raise HTTPException(400, "Term and pronunciation are required")
-    lx = _user_lexicon()
-    entry = LexiconEntry.from_dict({**req.model_dump(), "source": "user"})
-    lx.add(entry)
-    lx.save_user(get_settings().user_lexicon_path)
-    return entry.to_dict()
+@router.put("/pronunciations/entry")
+def pronunciation_put(req: EntryReq) -> dict:
+    """The user's pronunciation of a term (new, edited, or the pick between two entries): into the dataset at once."""
+    if not req.term.strip():
+        raise HTTPException(400, "A term is required")
+    entry = LexiconEntry.from_dict({**req.model_dump(), "say_as": (req.say_as or "").strip() or None})
+    return entry_view(update_dataset(lambda ds: ds.put(entry)))
 
 
-@router.delete("/lexicon/user/{term}")
-def lexicon_delete(term: str) -> dict:
-    lx = _user_lexicon()
-    ok = lx.remove(term)
-    lx.save_user(get_settings().user_lexicon_path)
-    return {"ok": ok}
+class TermReq(BaseModel):
+    term: str
+    case_sensitive: bool = True
+    index: int | None = None
 
 
-@router.get("/lexicon/export")
-def lexicon_export() -> FileResponse:
-    s = get_settings()
-    out = s.data_dir / "lexicon-export.json"
-    _user_lexicon().export(out, name="My SciReader pronunciations")
-    return FileResponse(out, media_type="application/json", filename="scireader-lexicon.json")
+@router.post("/pronunciations/check")
+def pronunciation_check(req: TermReq) -> dict:
+    """The user heard an entry and it is right."""
+    return {"ok": update_dataset(lambda ds: ds.check(req.term, req.case_sensitive))}
+
+
+@router.post("/pronunciations/remove")
+def pronunciation_remove(req: TermReq) -> dict:
+    return {"removed": update_dataset(lambda ds: ds.remove(req.term, req.index, req.case_sensitive))}
+
+
+@router.post("/pronunciations/keep")
+def pronunciation_keep(req: TermReq) -> dict:
+    """Two entries for a term: keep this one."""
+    kept = update_dataset(lambda ds: ds.keep(req.term, req.index or 0, req.case_sensitive))
+    if kept is None:
+        raise HTTPException(404, "No such entry")
+    return entry_view(kept)
+
+
+@router.get("/pronunciations/export")
+def pronunciations_export() -> FileResponse:
+    """The whole dataset, as one file anyone can import."""
+    out = get_settings().data_dir / "pronunciations-export.json"
+    open_dataset().write(out)
+    return FileResponse(out, media_type="application/json", filename="scireader-pronunciations.json")
 
 
 class ImportReq(BaseModel):
-    lexicon: dict
-    decisions: dict[str, str] = {}  # term -> "mine" | "theirs"
+    dataset: dict | list
+    name: str = ""
 
 
-@router.post("/lexicon/import")
-def lexicon_import(req: ImportReq) -> dict:
-    entries = [LexiconEntry.from_dict(e, default_source="imported") for e in req.lexicon.get("entries", []) if e.get("term")]
-    if not entries:
-        raise HTTPException(400, "No entries found in that file")
-    lx = _user_lexicon()
-    conflicts = lx.merge([e for e in entries if req.decisions.get(e.term) != "mine"])
-    # Merge keeps the user's version on conflict; apply "take theirs" decisions explicitly.
-    for e in entries:
-        if req.decisions.get(e.term) == "theirs":
-            lx.add(e)
-    lx.save_user(get_settings().user_lexicon_path)
-    pending = [c for c in conflicts if c.term not in req.decisions]
-    return {"added": len(entries) - len(conflicts), "conflicts": [
-        {"term": c.term, "mine": c.mine.to_dict(), "theirs": c.theirs.to_dict()} for c in pending]}
+def _import(data: dict | list, name: str) -> dict:
+    try:
+        incoming = Dataset.from_json(data)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    if not incoming.entries:
+        raise HTTPException(400, "No pronunciations found in that file")
+    label = (name or incoming.name or "dataset").strip()[:60]
+    return {**update_dataset(lambda ds: ds.merge(incoming.entries, f"import:{label}")), "name": label}
+
+
+@router.post("/pronunciations/import")
+def pronunciations_import(req: ImportReq) -> dict:
+    """Merge a dataset file into the user's: new terms are added, ones that sound different become two entries."""
+    return _import(req.dataset, req.name)
+
+
+class UrlReq(BaseModel):
+    url: str
+
+
+@router.post("/pronunciations/import-url")
+def pronunciations_import_url(req: UrlReq) -> dict:
+    """Import a dataset shared online (needs internet once, like arXiv import)."""
+    url = req.url.strip()
+    if not re.match(r"^https?://", url):
+        raise HTTPException(400, "Enter a web link (http or https)")
+    try:
+        r = httpx.get(url, timeout=20, follow_redirects=True, headers={"User-Agent": "SciReader"})
+        r.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"Couldn't download it (offline?): {exc.__class__.__name__}") from exc
+    if len(r.content) > 20_000_000:
+        raise HTTPException(400, "That file is too large for a pronunciation dataset")
+    try:
+        data = json.loads(r.content.decode("utf-8"))
+    except ValueError as exc:
+        raise HTTPException(400, "That link isn't a pronunciation dataset (JSON)") from exc
+    return _import(data, url.rstrip("/").rsplit("/", 1)[-1])
 
 
 # ---------------------------------------------------------------------------------------------
