@@ -102,7 +102,7 @@
 
 ---
 
-## 3. The user and the environment
+## 3. Domain and environment
 
 - Demo domain: **polymers for additive manufacturing, with AI/ML**. Sample papers come from this field (§6).
 - The problem: readers who lose their place reread the same lines; audiobooks help with books. Existing open-source readers fail on papers (start at the first character, read everything, bad voices, no section selection).
@@ -116,7 +116,7 @@
 - **Gotcha: Claude desktop is an MSIX-packaged app.** Shells it launches have writes to `%APPDATA%`/`%LOCALAPPDATA%` silently redirected to `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\…`, invisible to normal terminals (and it broke uv's Python junction). Keep tools and caches on D: through the env vars above. Installers run through winget/msiexec are unaffected.
 - **Gotcha: env changes need a restart.** Shells inherit the environment the Claude app started with. After installing tools or changing env vars, restart the Claude app (or refresh `$env:Path` from the registry inside the command).
 - **Gotcha: backslash-digit in generated code.** A regex backreference written as backslash-1 can land in a file as the control byte \x01 (it happened in `builder.py` and garbled numbers in captions, and again in a heredoc). Prefer `\g<1>` or a function in `re.sub`; `backend/tests/test_source_hygiene.py` fails on control characters in source. A heredoc also turned `\\begin` into `\begin` in a test (Python then reads `\b` as a backspace): write LaTeX in tests as raw strings, through the Edit tool.
-- **Gotcha: the browser pane while it's hidden**: its page runs in the background, so ResizeObserver, IntersectionObserver and requestAnimationFrame never fire and PDF pages stay gray. For testing only, replace those three with timer-based stand-ins from `javascript_tool` on the start screen, then open the paper.
+- **Gotcha: the browser pane while it's hidden:** its page runs in the background, so ResizeObserver, IntersectionObserver and requestAnimationFrame never fire and PDF pages stay gray. For testing only, replace those three with timer-based stand-ins from `javascript_tool` on the start screen, then open the paper.
 - **Gotcha: `.mjs` served as text/plain.** Python's `mimetypes` reads the Windows registry, which maps `.mjs` to text/plain on this machine, so the backend-served build couldn't load the pdf.js worker ("Setting up fake worker failed"). `main.py` registers text/javascript now. A browser that cached the old response needs one hard reload (or `fetch(url, {cache: 'reload'})` from its console).
 - **Gotcha: another app on the GPU starves the local AI.** With another app holding the RTX 4070 at 100 % (2026-10-21 evening), a cold flagship parse took 5 min 22 s (~100 s idle), the second reading managed 6 equations in 4 min, and Explain (the whole paper as context, ~20K tokens) processed 1K prompt tokens in 3 min, then timed out after 300 s. **Close GPU-heavy apps before recording the demo.** Unload a model at once with `curl http://127.0.0.1:11434/api/generate -d '{"model":"qwen3.5:9b","keep_alive":0}'` (Explain keeps it loaded for 30 min).
 - **Gotcha: PowerShell 5.1 + native stderr.** With `$ErrorActionPreference = "Stop"`, redirecting a native command's output (`*>`, `2>&1`) turns its stderr lines (uv prints "Using CPython…" there) into terminating errors. In test harnesses use `Start-Process -RedirectStandardOutput/-RedirectStandardError`.
@@ -192,7 +192,7 @@ Installs can trigger UAC prompts, which would stall an unattended agent, so they
   - **Preview tool gotcha:** the session's preview reads `.claude/launch.json` from the folder the session was opened on. This session was opened on the outer `D:\Github\SciReader`, so a copy lives there too (outside the repo).
 
 - **2026-10-21 · Plan walkthrough, step 9 (schedule, cuts, submission):**
-  - **Kickoff** Wed 6:30 AM Eastern. The first ~3 h run unattended.
+  - **Kickoff** Wed 6:30 AM Eastern; the first ~3 h run unattended.
   - **Questions:** the agent asks through `PushNotification` with a stated default and keeps working (no blocking questions unless everything is blocked).
   - **Effort:** Max for every session; "ultrathink" is added to the prompts as a backup.
   - **Sessions:** a fresh session per block, with a "Hand off" prompt.
@@ -356,7 +356,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 
 ## 9. Open questions for the user
 
-1. **Privacy before the repo goes public:** personal details to be removed before release.
+1. **Privacy before the repo goes public:** decided 2026-10-21: remove personal details from the files and from the whole git history (commit author emails included). The files are clean; the history rewrite waits for the user's go-ahead.
 2. **Self-graded adjudication:** the docs now say the agent adjudicated the 30 items; a 10-minute spot check of the 8 errors + 2 uncertain items in `bench/data/adjudication.json` by you would make it independent. Optional.
 3. **Video:** the demo script is updated (your go-ahead, 2026-10-21 evening); its "61 to 89 percent" and "more than one in three" are on the 70 equations the judge transcribes reliably, while the sentence says "220 equations". Say "on the equations our judge can check" if you want it exact.
 
