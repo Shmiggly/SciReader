@@ -69,7 +69,7 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
   const [moved, setMoved] = useState<string | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
   const [link, setLink] = useState("");
-  const [browseKey, setBrowseKey] = useState(0);
+  const [refresh, setRefresh] = useState(0);
   const [allSuggested, setAllSuggested] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const audio = useRef<HTMLAudioElement | null>(null);
@@ -90,7 +90,7 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
   const changed = async () => {
     clearSpeechCache(); // the reader picks the new pronunciation up at once
     await load();
-    setBrowseKey((k) => k + 1);
+    setRefresh((k) => k + 1); // the whole-dataset list refetches, staying open where it was
   };
 
   const say = async (key: string, text: string, raw = false) => {
@@ -107,13 +107,14 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
     }
   };
 
-  /** Give a term a pronunciation (empty: read as written): into the dataset at once. */
-  const put = async (term: string, say_as: string | null, extra: Partial<Entry> = {}) => {
+  /** Give a term a pronunciation (empty: read as written): into the dataset at once. `show`: scroll to its row in
+   * this paper's list and flash it (not for edits in the whole-dataset list, which stays where it is). */
+  const put = async (term: string, say_as: string | null, extra: Partial<Entry> = {}, show = true) => {
     setBusy(`put:${term}`);
     try {
       await api.put("/api/pronunciations/entry", { term, say_as, case_sensitive: true, tags: [], note: null, ...extra });
       setMsg(say_as ? `${term} → “${say_as}” is in your dataset now, for every paper.` : `${term} is in your dataset now: read as written.`);
-      setMoved(term);
+      if (show) setMoved(term);
       await changed();
     } catch (e) {
       setMsg(String(e));
@@ -276,7 +277,7 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
                   <tbody>
                     {view.known.map((k) => (
                       <EntryRow
-                        key={k.term}
+                        key={`${k.term}:${k.entry.say_as}`} // changed in another list: the row shows the new pronunciation
                         e={{ ...k.entry, duplicate: k.duplicate }}
                         count={k.count}
                         context={k.snippet}
@@ -293,10 +294,10 @@ export function Pronunciation({ onClose }: { onClose: () => void }) {
               )}
             </section>
             <DatasetBrowser
-              key={browseKey}
+              refresh={refresh}
               busy={busy}
               say={say}
-              onPut={(e, sayAs) => void put(e.term, sayAs, { kind: e.kind, tags: e.tags, note: e.note, case_sensitive: e.case_sensitive })}
+              onPut={(e, sayAs) => void put(e.term, sayAs, { kind: e.kind, tags: e.tags, note: e.note, case_sensitive: e.case_sensitive }, false)}
               onCheck={(e) => void post("/api/pronunciations/check", { term: e.term, case_sensitive: e.case_sensitive }, `${e.term}: checked.`)}
               onRemove={(e) => void post("/api/pronunciations/remove", { term: e.term, case_sensitive: e.case_sensitive }, `${e.term} removed from your dataset.`)}
             />
@@ -541,7 +542,10 @@ const FILTER_LABELS: Record<string, string> = {
   duplicates: "Two entries",
 };
 
-function DatasetBrowser({ busy, say, onPut, onCheck, onRemove }: {
+/** The whole dataset, searchable. It stays mounted while the screen is open: a change anywhere (`refresh`) refetches
+ * the list, keeping it open with its search, filter, length and scroll position. */
+function DatasetBrowser({ refresh, busy, say, onPut, onCheck, onRemove }: {
+  refresh: number;
   busy: string | null;
   say: Say;
   onPut: (e: Entry, sayAs: string | null) => void;
@@ -559,7 +563,7 @@ function DatasetBrowser({ busy, say, onPut, onCheck, onRemove }: {
       api.get<typeof page>(`/api/pronunciations?q=${encodeURIComponent(q)}&filter=${filter}&limit=${limit}`).then(setPage, () => undefined);
     }, 200);
     return () => window.clearTimeout(t);
-  }, [open, q, filter, limit]);
+  }, [open, q, filter, limit, refresh]);
   return (
     <section className="pron-section">
       <h3>
