@@ -87,3 +87,6 @@ def test_equation_numbers_printed_at_the_line_end():
     # A raised script glued to the formula, as in h^(1), is part of it.
     glued = _chars("h", 530) + _chars("(1)", 534.5, y=96, size=6.5, w=4.5)
     assert printed_equation_number(formula + glued, [300, 96, 548, 112]) is None
+    # IOP eq. 10: tall delimiters make most of the equation's characters large.
+    tall = _chars("(", 340, size=12.7) + _chars(")", 360, size=12.7) + _chars("⎛⎞⎝⎠", 380, size=12.7) + _chars("n,", 400)
+    assert printed_equation_number(tall + _chars("(10)", 535), [300, 98, 553, 112]) == "10"

@@ -166,8 +166,8 @@ def printed_equation_number(chars: list, bbox: list[float]) -> str | None:
             if c.ch == "(":
                 break
         m = PRINTED_NUMBER.fullmatch("".join(c.ch for c in number))
-        if not m or close.size < 0.8 * body:
-            continue  # not a number, or a raised script such as x^(1)
+        if not m or max(c.size for c in number) < 0.7 * body:
+            continue  # not a number, or a raised script such as x^(1) (tall delimiters make the body look large)
         left = [c for c in inside if c not in number and c.box[2] <= number[0].box[0] + 0.5
                 and c.box[1] < close.box[3] and c.box[3] > close.box[1]]
         if left and number[0].box[0] - max(c.box[2] for c in left) < 4:
