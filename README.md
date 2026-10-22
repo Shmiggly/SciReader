@@ -42,7 +42,7 @@ Each equation gets a badge in the PDF's margin: *checking*, ✓ verified, ? unce
 - Resume where you left off; recent papers; a clean text view (Atkinson Hyperlegible or OpenDyslexic); optional pause after each paragraph; audiobook export (one MP3 per section).
 
 **Figures and questions (all local AI, always labeled)**
-- When the text first mentions a figure, the figure pops up where it was mentioned and SciReader reads its caption and a short AI description. It is panel-aware: "Fig. 3b" describes only panel b. `D` asks for more detail.
+- When reading reaches a mention of a figure, the figure pops up there and SciReader reads a short AI description of it, once, wherever you started reading. It is panel-aware: "Fig. 3b" describes only panel b. The Figures menu switches to every mention, the caption only (no AI) or never. Click any "Fig. 3" in the text to see that figure and hear it without losing your place; `D` asks for more detail, and popups move by their header.
 - `E` on a sentence that cites "Eq. (4)" shows the equation over the text, reads it, and resumes.
 - Explain the current sentence (colleague level, or "Simpler"), ask the paper questions, or listen to a 1–2 minute summary. Answers come only from the paper and cite the sentences they use; citation chips jump to them on the PDF.
 
