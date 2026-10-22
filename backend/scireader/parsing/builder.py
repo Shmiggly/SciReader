@@ -61,6 +61,12 @@ AFFILIATION = re.compile(
     r"@|e-?mail|corresponding author|correspondence)", re.I,
 )
 FIG_LABEL = re.compile(r"^\s*(fig(?:ure)?|table|scheme)\.?\s*(S?\d+[A-Za-z]?)", re.I)
+# Running headers Docling leaves inside text: a journal header line (MDPI "Polymers 2021, 13, 2325 5 of 24", also in
+# figures pasted from the review version: "Polymers 2021, 13, x FOR PEER REVIEW 7 of 25") or a printout's "Page 1 of 1".
+PAGE_MARK = re.compile(
+    r"\b[A-Z][A-Za-z]+(?: [A-Z][A-Za-z]+){0,3} (?:19|20)\d\d, \d{1,4}, (?:x|\d{1,6})(?: FOR PEER REVIEW)? \d{1,3} of \d{1,3}\b"
+    r"|^Page \d{1,3} of \d{1,3}\b")
+PAGE_OF = re.compile(r"\b\d{1,3} of \d{1,3}\b")
 DOI = re.compile(r"\b10\.\d{4,9}/[^\s,;]+[^\s,;.)]")
 ARXIV = re.compile(r"arXiv[:\s]*(\d{4}\.\d{4,5})", re.I)
 DROP_CAP = re.compile(r"^([B-HJ-Z]) ([a-z]{1,})\b")
@@ -187,6 +193,8 @@ def apply_heuristics(blocks: list[RawBlock], pdftext: PdfText) -> dict:
         w = b.bbox[2] - b.bbox[0]
         if b.type in ("paragraph", "list_item", "other") and (w < 15 or not re.search(r"[A-Za-z]{2,}", b.text)):
             b.skip_reason = "junk"
+        elif b.type in ("paragraph", "list_item", "other", "caption") and not re.search(r"\w", PAGE_OF.sub("", PAGE_MARK.sub("", b.text))):
+            b.skip_reason = "page_furniture"  # nothing but running headers ("16 of 25")
 
     # Heading font sizes (for title and levels).
     for b in blocks:
@@ -412,6 +420,7 @@ def build_document(
                else [False] * len(text))
         sup_cites = _superscript_citations(text, sup)
         sup_exps = _superscript_exponents(text, sup)
+        marks = _page_marks(text, b.page)
 
         if b.type == "bib_entry":
             bib_counter += 1
@@ -444,6 +453,7 @@ def build_document(
                     drop.append((c0 - s0, c1 - s0))
                     citations.append({"sentence_id": sid, "span": [c0 - s0, c1 - s0], "bib_ids": [f"bib{n}" for n in nums],
                                       "rects": _rects(mapped, c0, c1)})
+            drop.extend((max(a, s0) - s0, min(z, s1) - s0) for a, z in marks if a < s1 and s0 < z)
             lead = _leading_citation(stext, text[:s0]) if b.type in ("paragraph", "abstract", "list_item") else None
             if lead and not any(a < lead[1] and lead[0] < z for a, z in drop):
                 drop.append(lead[:2])
@@ -530,6 +540,16 @@ def _word_boxes(stext: str, mapped: list[PdfChar | None], s0: int) -> list:
         rects = _rects(mapped, s0 + m.start(), s0 + m.end())
         if rects:
             out.append([m.start(), m.end(), rects])
+    return out
+
+
+def _page_marks(text: str, page: int) -> list[tuple[int, int]]:
+    """Running-header text inside a block, not to be spoken: a journal header line, or the block's own page number
+    at its start ("5 of 24 [A] to produce…" on page 5, where Docling merged the header into the paragraph)."""
+    out = [m.span() for m in PAGE_MARK.finditer(text)]
+    m = PAGE_OF.match(text)
+    if m and int(m.group(0).split()[0]) == page + 1 and not any(a <= m.start() < z for a, z in out):
+        out.append(m.span())
     return out
 
 
