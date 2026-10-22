@@ -54,8 +54,9 @@ def _chapters(doc: dict, speech: dict, eqs: dict, eq_mode: str) -> list[tuple[st
             if b["type"] == "equation":
                 chapters[-1][1].append(equation_spoken(b, eq_mode, eqs.get(b["id"])))
             else:
-                drop = [tuple(x) for x in speech.get(s["id"], {}).get("drop", [])]
-                chapters[-1][1].append(speak(s["text"], drop).spoken)
+                entry = speech.get(s["id"], {})
+                drop = [tuple(x) for x in entry.get("drop", [])]
+                chapters[-1][1].append(speak(s["text"], drop, exponents=[tuple(x) for x in entry.get("exponents", [])]).spoken)
     return [(t, lines) for t, lines in chapters if len(lines) > (0 if t == "Opening" else 1)]
 
 

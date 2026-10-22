@@ -6,8 +6,9 @@ import pytest
 
 from scireader.api.tts import LONG_WORDS, equation_spoken
 from scireader.llm.figures import spoken_for
-from scireader.parsing.builder import _leading_citation, _superscript_citations
+from scireader.parsing.builder import _leading_citation, _superscript_citations, _superscript_exponents
 from scireader.speech.math_words import natural, prepare_for_rules
+from scireader.speech.pipeline import exponent_words, speak
 
 needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="Node.js is required for MathJax")
 
@@ -104,6 +105,65 @@ def test_superscript_range_with_a_baseline_dash():
         sup[k] = True
     (a, b, nums), = _superscript_citations(text, sup)
     assert text[a:b].strip() == "12-16" and nums == [12, 13, 14, 15, 16]
+
+
+def _raised(template: str) -> tuple[str, list[bool]]:
+    """'R{2} values' → ('R2 values', mask with the braced characters raised), like the PDF text layer gives them."""
+    text, sup, up = [], [], False
+    for ch in template:
+        if ch in "{}":
+            up = ch == "{"
+            continue
+        text.append(ch)
+        sup.append(up)
+    return "".join(text), sup
+
+
+@pytest.mark.parametrize(
+    "template, exponents, cites",
+    [
+        ("RMSE and R{2} values of polyGNN", ["2"], []),  # GNN paper: was spoken "R values"
+        ("the posterior variance σ {2} .", ["2"], []),
+        ("the bimolecular termination (R {2} ).", ["2"], []),
+        ("simulation for 2×10{7} steps", ["7"], []),  # was "2×10 steps"
+        ("dielectric constant at 10{7} and 10{9} Hz", ["7", "9"], []),
+        ("51 for 10{1}.{78} Hz", ["1.78"], []),
+        ("I0 = 34 mW/cm {2} and", ["2"], []),
+        ("collector speed [mms -{1} ] in each axis", ["-1"], []),
+        ("a new output f n+{1} for", [], []),  # an index, read as printed
+        ("the {13}C NMR spectrum", [], []),
+        ("sustainability {1, 2} .", [], [[1, 2]]),
+        ("printing{12,13} and", [], [[12, 13]]),
+        ("Kuenneth et al. {5} showed", [], [[5]]),
+        ("in 2010{12} and", [], [[12]]),  # a year, not ten to the 12
+        ("emission at 405 nm{12} was", [], [[12]]),  # a unit, then a reference
+    ],
+)
+def test_superscript_exponents_are_not_citations(template, exponents, cites):
+    text, sup = _raised(template)
+    assert [text[a:b].replace(" ", "") for a, b in _superscript_exponents(text, sup)] == exponents
+    assert [nums for _, _, nums in _superscript_citations(text, sup)] == cites
+
+
+@pytest.mark.parametrize(
+    "template, spoken",
+    [
+        ("negative R{2} value", "negative R squared value"),
+        ("the posterior variance σ {2} .", "the posterior variance sigma squared ."),
+        ("simulation for 2×10{7} steps", "simulation for 2 times 10 to the 7 steps"),
+        ("at 10{7} and 10{9} Hz", "at 10 to the 7 and 10 to the 9 hertz"),
+        ("51 for 10{1}.{78} Hz", "51 for 10 to the 1.78 hertz"),
+        ("I = 34 mW/cm {2} and", "I equals 34 milliwatts per square centimeter and"),
+    ],
+)
+def test_exponents_are_spoken_as_powers(template, spoken):
+    text, sup = _raised(template)
+    norm = speak(text, exponents=_superscript_exponents(text, sup))
+    assert " ".join(norm.spoken.split()) == spoken
+
+
+def test_exponent_words():
+    assert [exponent_words(e) for e in ("1.78", "−0.5", "- 2.5")] == ["to the 1.78", "to the minus 0.5", "to the minus 2.5"]
 
 
 def test_final_r_respelled_for_the_voice_only():

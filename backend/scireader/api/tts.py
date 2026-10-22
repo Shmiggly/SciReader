@@ -126,7 +126,8 @@ def tts(doc_id: str, sentence_id: str, voice: str = "af_heart", eq_mode: str = "
         spoken = sentence["text"]
         norm = None
     else:
-        norm = speak(sentence["text"], [tuple(x) for x in entry.get("drop", [])])
+        norm = speak(sentence["text"], [tuple(x) for x in entry.get("drop", [])],
+                     exponents=[tuple(x) for x in entry.get("exponents", [])])
         spoken = norm.spoken
     if not spoken.strip():
         spoken = "."

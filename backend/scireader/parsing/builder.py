@@ -392,6 +392,7 @@ def build_document(
         sup = (superscript_mask(mapped) if b.type in ("paragraph", "abstract", "list_item", "caption") and not b.skip_reason
                else [False] * len(text))
         sup_cites = _superscript_citations(text, sup)
+        sup_exps = _superscript_exponents(text, sup)
 
         if b.type == "bib_entry":
             bib_counter += 1
@@ -429,8 +430,9 @@ def build_document(
                 drop.append(lead[:2])
                 citations.append({"sentence_id": sid, "span": list(lead[:2]), "bib_ids": [f"bib{n}" for n in lead[2]],
                                   "rects": _rects(mapped, s0 + lead[0], s0 + lead[1])})
+            exps = [(a - s0, z - s0) for a, z in sup_exps if s0 <= a and z <= s1]
             if b.skip_reason is None or b.type == "caption":
-                norm = speak(stext, drop, lexicon)
+                norm = speak(stext, drop, lexicon, exps)
                 spoken = norm.spoken
             else:
                 spoken = stext
@@ -440,6 +442,8 @@ def build_document(
             sentence = {"id": sid, "text": stext, "spoken": spoken, "rects": rects}
             block["sentences"].append(sentence)
             words[sid] = {"drop": sorted(drop), "words": _word_boxes(stext, mapped, s0)}
+            if exps:
+                words[sid]["exponents"] = exps
         out_blocks.append(block)
 
     # Captions → figures; figure labels.
@@ -528,8 +532,40 @@ def _leading_citation(stext: str, before: str) -> tuple[int, int, list[int]] | N
     return 0, m.end(), nums
 
 
-def _superscript_citations(text: str, sup: list[bool]) -> list[tuple[int, int, list[int]]]:
-    """Runs of superscripted digits/commas/dashes (e.g. 'printing12,13' or 'level 18 .') → citation spans."""
+_MINUS = "-−–"
+
+
+def _superscript_kind(text: str, i: int, j: int) -> str:
+    """Raised digits text[i:j] are a citation marker ("cite"), an exponent ("exp": R², σ², 10⁷, cm², s⁻¹) or part of
+    an expression read as printed ("keep": f_{n+1}, x^{(1)}, ¹³C). Exponents were dropped as citations: "R² values"
+    was spoken "R values", "10⁷ Hz" "10 Hz"."""
+    from ..speech.en.units import UNITS
+
+    glued = i > 0 and text[i - 1] != " "
+    end = i if glued else i - 1
+    start = end
+    while start > 0 and text[start - 1] != " ":
+        start -= 1
+    tok = text[start:end] if end > 0 else ""
+    if j < len(text) and text[j].isalpha() and text[j - 1].isdigit():
+        return "keep"  # a mass number or spin label before a symbol (¹³C, ³O₂)
+    if not tok:
+        return "cite"
+    if glued and tok[-1] in _MINUS:
+        return "exp"  # s⁻¹: a citation marker never starts with a minus
+    if tok[-1] in "([" or (glued and tok[-1] == "+"):
+        return "keep"
+    if re.search(r"(?:^|[^\d.])10$", tok):
+        return "exp"  # 10⁷, 2×10⁷ (but not a citation after 2010)
+    letters = re.search(r"[^\W\d_]+$", tok)
+    if letters and (len(letters.group(0)) == 1 or (letters.group(0) in UNITS and text[i:j].strip() in ("2", "3"))):
+        return "exp"  # a lone symbol (R², σ², (R²)) or a unit (cm², mW/cm², m³)
+    return "cite"
+
+
+def _superscript_runs(text: str, sup: list[bool]) -> list[tuple[int, int, str]]:
+    """Runs of superscripted digits/commas/dashes as (start, end, kind); see `_superscript_kind`. An exponent's span
+    includes its minus sign and decimals (10^1.78)."""
     out = []
     i = 0
     n = len(text)
@@ -546,17 +582,41 @@ def _superscript_citations(text: str, sup: list[bool]) -> list[tuple[int, int, l
                 i -= 2
                 while i > 0 and text[i - 1].isdigit():
                     i -= 1
-            run = text[i:j].strip(" ,–-")
-            nums = expand_numbers(run.replace(" ", ""))
-            if nums and all(0 < x < 1000 for x in nums):
-                a = i
-                if a > 0 and text[a - 1] == " ":
-                    a -= 1  # take the space Docling inserted before the marker
-                b = j
-                if b + 1 < n and text[b] == " " and text[b + 1] in ".,;:)":
-                    b += 1  # and the one it left before the following punctuation
-                out.append((a, b, nums))
+            kind = _superscript_kind(text, i, j)
+            if kind == "exp":
+                if i > 0 and text[i - 1] in _MINUS:
+                    i -= 1
+                while j + 1 < n and text[j] == "." and sup[j + 1] and text[j + 1].isdigit():
+                    j += 1
+                    while j < n and sup[j] and text[j].isdigit():
+                        j += 1
+            out.append((i, j, kind))
             i = j
         else:
             i += 1
     return out
+
+
+def _superscript_citations(text: str, sup: list[bool]) -> list[tuple[int, int, list[int]]]:
+    """Superscript citation markers (e.g. 'printing12,13' or 'level 18 .') → citation spans."""
+    out = []
+    n = len(text)
+    for i, j, kind in _superscript_runs(text, sup):
+        if kind != "cite":
+            continue
+        run = text[i:j].strip(" ,–-")
+        nums = expand_numbers(run.replace(" ", ""))
+        if nums and all(0 < x < 1000 for x in nums):
+            a = i
+            if a > 0 and text[a - 1] == " ":
+                a -= 1  # take the space Docling inserted before the marker
+            b = j
+            if b + 1 < n and text[b] == " " and text[b + 1] in ".,;:)":
+                b += 1  # and the one it left before the following punctuation
+            out.append((a, b, nums))
+    return out
+
+
+def _superscript_exponents(text: str, sup: list[bool]) -> list[tuple[int, int]]:
+    """Exponents printed as raised plain digits (R2, 107, cm2, s -1), to be spoken "squared", "to the 7"."""
+    return [(i, j) for i, j, kind in _superscript_runs(text, sup) if kind == "exp"]
