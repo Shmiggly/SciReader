@@ -1,20 +1,30 @@
-"""Download the sample papers listed in samples/manifest.json (stdlib only).
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["certifi>=2026.10.19"]
+# ///
+"""Download the sample papers listed in samples/manifest.json (stdlib + certifi).
 
-Usage:  uv run --no-project python scripts/fetch_samples.py
+Usage:  uv run scripts/fetch_samples.py
 Respects arXiv etiquette (one request every 3 s, descriptive User-Agent).
+TLS trusts certifi's bundle, not Python's default context: on Windows that loads the system roots into
+OpenSSL, which never sees Microsoft's blocklist, and accepted the leaked eMudhra intermediates (Oct 2026).
 """
 
 from __future__ import annotations
 
 import json
+import ssl
 import sys
 import time
 import urllib.request
 from pathlib import Path
 
+import certifi
+
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "samples"
 USER_AGENT = "SciReader/0.1 (open-source paper reader; hackathon dev; https://github.com/Shmiggly/SciReader)"
+TLS = ssl.create_default_context(cafile=certifi.where())
 
 
 def main() -> int:
@@ -35,7 +45,7 @@ def main() -> int:
         last_request = time.monotonic()
         req = urllib.request.Request(paper["url"], headers={"User-Agent": USER_AGENT})
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=120, context=TLS) as resp:
                 data = resp.read()
             if not data.startswith(b"%PDF"):
                 raise ValueError("response is not a PDF")

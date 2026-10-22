@@ -22,8 +22,9 @@ import json
 import random
 import re
 import sys
-import urllib.request
 from pathlib import Path
+
+import httpx
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
@@ -60,9 +61,12 @@ def fetch(aid: str) -> Path | None:
     PDF_DIR.mkdir(parents=True, exist_ok=True)
     p = PDF_DIR / f"{aid}.pdf"
     if not p.exists():
-        req = urllib.request.Request(f"https://arxiv.org/pdf/{aid}", headers={"User-Agent": "SciSpeech-Bench"})
+        # httpx trusts certifi; urllib's default context on Windows took the leaked eMudhra CAs (Oct 2026)
         try:
-            p.write_bytes(urllib.request.urlopen(req, timeout=60).read())
+            r = httpx.get(f"https://arxiv.org/pdf/{aid}", headers={"User-Agent": "SciSpeech-Bench"},
+                          follow_redirects=True, timeout=60)
+            r.raise_for_status()
+            p.write_bytes(r.content)
         except Exception as exc:  # noqa: BLE001
             print("  fetch failed", aid, exc)
             return None
