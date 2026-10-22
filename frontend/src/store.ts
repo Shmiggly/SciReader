@@ -138,6 +138,8 @@ interface State {
   /** The popup (detailKey) whose longer description ("More detail", D) is on its way: its button spins meanwhile. */
   figDetail: string | null;
   figMode: FigMode;
+  /** The reading position's highlight and the focus dimming are hidden (a click beside the pages while paused). */
+  highlightHidden: boolean;
   selection: string[] | null;
   eqRef: { blockId: string; sentenceId: string } | null;
   view: "pdf" | "text";
@@ -177,6 +179,7 @@ export const useStore = create<State>((set) => ({
   figPopup: null,
   figDetail: null,
   figMode: "first",
+  highlightHidden: false,
   selection: null,
   eqRef: null,
   view: "pdf",
@@ -193,7 +196,7 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, figDetail: null, selection: null, fitWidth: true });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, figDetail: null, highlightHidden: false, selection: null, fitWidth: true });
     narrated.clear();
     describedFigs.clear();
     figReady.clear();
@@ -548,8 +551,25 @@ export function jumpTo(sid: string) {
   audio.pause();
   kind = "sentence";
   detour = null;
-  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null, figDetail: null });
+  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null, figDetail: null, highlightHidden: false });
 }
+
+/** A click beside the pages (or beside the text column): while paused or stopped, hide the highlight and the focus
+ * dimming, keeping the reading position (Space, Continue or a click on a sentence bring them back). While reading it
+ * does nothing, so a stray click never stops the voice or the auto-follow. */
+export function hideHighlight() {
+  const st = get();
+  if (st.playing || st.loading || !st.current || st.highlightHidden) return;
+  useStore.setState({ highlightHidden: true });
+}
+
+// The hidden highlight comes back as soon as anything plays, the reading position moves, or follow is switched back
+// on ("Back to reading position").
+useStore.subscribe((s, prev) => {
+  if (s.highlightHidden && (s.current !== prev.current || (s.playing && !prev.playing) || (s.follow && !prev.follow))) {
+    useStore.setState({ highlightHidden: false });
+  }
+});
 
 /** Shift+click: select the sentences between the current one and the clicked one. */
 export function selectRangeTo(sid: string) {

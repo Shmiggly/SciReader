@@ -8,8 +8,9 @@ import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/opendyslexic/400.css";
 import type { Sentence } from "./api";
 import { badgeState, eqLatex } from "./Equations";
+import { onBackground } from "./PdfView";
 import { Popups } from "./Popups";
-import { type FigMention, figLabel, isReadable, openFigure, playSentence, useStore } from "./store";
+import { type FigMention, figLabel, hideHighlight, isReadable, openFigure, playSentence, useStore } from "./store";
 
 export const REFLOW_FONTS: Record<string, string> = {
   serif: "Georgia, 'Times New Roman', serif",
@@ -21,6 +22,8 @@ export const REFLOW_FONTS: Record<string, string> = {
 export function ReflowView() {
   const doc = useStore((s) => s.doc)!;
   const current = useStore((s) => s.current);
+  // The highlighted sentence: none while hidden (a click beside the column while paused); following uses `current`.
+  const cur = useStore((s) => (s.highlightHidden ? null : s.current));
   const follow = useStore((s) => s.follow);
   const r = useStore((s) => s.reflow);
   const eqResults = useStore((s) => s.eqResults);
@@ -46,7 +49,7 @@ export function ReflowView() {
 
   return (
     <div className="reflow-wrap">
-      <div className="reflow-scroller" ref={box}>
+      <div className="reflow-scroller" ref={box} onClick={(ev) => onBackground(ev) && hideHighlight()}>
         <article
           className="reflow"
           style={{ fontFamily: REFLOW_FONTS[r.font], fontSize: `${r.size}px`, lineHeight: r.lineHeight, maxWidth: `${r.width}ch` }}
@@ -57,7 +60,7 @@ export function ReflowView() {
             if (b.type === "heading") {
               const s = b.sentences[0];
               return (
-                <h2 key={b.id} data-sid={s.id} className={`${s.id === current ? "cur" : ""}${dim}`} onClick={() => click(s.id)}>
+                <h2 key={b.id} data-sid={s.id} className={`${s.id === cur ? "cur" : ""}${dim}`} onClick={() => click(s.id)}>
                   {s.text}
                 </h2>
               );
@@ -72,7 +75,7 @@ export function ReflowView() {
               }
               const st = badgeState(b, eqResults[b.id], eqState);
               return (
-                <div key={b.id} data-sid={s.id} className={`reflow-eq ${s.id === current ? "cur" : ""}`} onClick={() => click(s.id)}>
+                <div key={b.id} data-sid={s.id} className={`reflow-eq ${s.id === cur ? "cur" : ""}`} onClick={() => click(s.id)}>
                   <div dangerouslySetInnerHTML={{ __html: html }} />
                   <span className={`eq-badge static ${st}`}>{b.eq_number ? `(${b.eq_number}) ` : ""}{st}</span>
                 </div>
@@ -82,7 +85,7 @@ export function ReflowView() {
             return (
               <p key={b.id} className={`${cls}${dim}`}>
                 {b.sentences.map((s) => (
-                  <span key={s.id} data-sid={s.id} className={s.id === current ? "cur" : undefined} onClick={() => click(s.id)} title={s.spoken !== s.text ? `Spoken as: ${s.spoken}` : undefined}>
+                  <span key={s.id} data-sid={s.id} className={s.id === cur ? "cur" : undefined} onClick={() => click(s.id)} title={s.spoken !== s.text ? `Spoken as: ${s.spoken}` : undefined}>
                     {withFigureLinks(s, figMentions.get(s.id))}{" "}
                   </span>
                 ))}

@@ -7,7 +7,7 @@ import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
 import { type BadgeLayout, EquationBadge, layoutBadges } from "./Equations";
 import { Popups } from "./Popups";
-import { type FigMention, PRESETS, figLabel, openFigure, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
+import { type FigMention, PRESETS, figLabel, hideHighlight, openFigure, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -28,6 +28,14 @@ interface FigHit {
 }
 
 let programmaticScrollUntil = 0;
+
+/** A click on a scroller's own background: beside its content, not on what it holds and not on its scrollbars. */
+export function onBackground(ev: React.MouseEvent<HTMLElement>): boolean {
+  const el = ev.currentTarget;
+  if (ev.target !== el) return false;
+  const r = el.getBoundingClientRect();
+  return ev.clientX - r.left - el.clientLeft < el.clientWidth && ev.clientY - r.top - el.clientTop < el.clientHeight;
+}
 
 export function PdfView() {
   const doc = useStore((s) => s.doc)!;
@@ -224,7 +232,7 @@ export function PdfView() {
 
   return (
     <div className="pdf-wrap">
-      <div className="pdf-scroller" ref={scroller} tabIndex={-1}>
+      <div className="pdf-scroller" ref={scroller} tabIndex={-1} onClick={(ev) => onBackground(ev) && hideHighlight()}>
         {loadError && <div className="error-box">Couldn't open the PDF: {loadError}</div>}
         {doc.pages.map((p) => (
           <Page
@@ -476,14 +484,16 @@ function Overlay({ page, scale }: { page: number; scale: number }) {
   const current = useStore((s) => s.current);
   const word = useStore((s) => s.word);
   const focus = useStore((s) => s.focus);
+  const hidden = useStore((s) => s.highlightHidden);
   const presetKey = useStore((s) => s.preset);
   const preset = PRESETS[presetKey] ?? PRESETS.sun;
-  const e = sentenceAt(current);
+  // Hidden (a click beside the pages while paused): no highlight and no dimming; the reading position stays.
+  const e = hidden ? undefined : sentenceAt(current);
 
   const selection = useStore((s) => s.selection);
   const selRects = selection ? selection.flatMap((sid) => sentenceAt(sid)?.s.rects ?? []).filter((r) => r[0] === page) : [];
   const sentenceRects = e ? e.s.rects.filter((r) => r[0] === page) : [];
-  const wordRects = word ? word.rects.filter((r) => r[0] === page) : [];
+  const wordRects = word && !hidden ? word.rects.filter((r) => r[0] === page) : [];
 
   // Focus: the current paragraph stays bright, everything else is dimmed.
   let focusBox: React.CSSProperties | null = null;
