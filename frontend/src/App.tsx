@@ -5,9 +5,16 @@ import { ModelManager } from "./ModelManager";
 import { Reader } from "./Reader";
 import { useStore } from "./store";
 
+/** A paper being prepared: opened for the first time, or prepared again (Reload). */
+interface Opening {
+  id: string;
+  status: ParseStatus;
+  reload?: boolean;
+}
+
 export default function App() {
   const doc = useStore((s) => s.doc);
-  const [opening, setOpening] = useState<{ id: string; status: ParseStatus } | null>(null);
+  const [opening, setOpening] = useState<Opening | null>(null);
 
   const openDoc = useCallback(async (id: string) => {
     const d = await api.get<Doc>(`/api/docs/${id}`);
@@ -27,9 +34,9 @@ export default function App() {
     const t = window.setTimeout(async () => {
       try {
         const st = await api.get<ParseStatus>(`/api/docs/${opening.id}/status`);
-        setOpening({ id: opening.id, status: st });
+        setOpening({ ...opening, status: st });
       } catch (err) {
-        setOpening({ id: opening.id, status: { state: "error", message: String(err), progress: 0 } });
+        setOpening({ ...opening, status: { state: "error", message: String(err), progress: 0 } });
       }
     }, 600);
     return () => window.clearTimeout(t);
@@ -54,13 +61,7 @@ export default function App() {
   return <StartScreen opening={opening} setOpening={setOpening} />;
 }
 
-function StartScreen({
-  opening,
-  setOpening,
-}: {
-  opening: { id: string; status: ParseStatus } | null;
-  setOpening: (o: { id: string; status: ParseStatus } | null) => void;
-}) {
+function StartScreen({ opening, setOpening }: { opening: Opening | null; setOpening: (o: Opening | null) => void }) {
   const [recent, setRecent] = useState<RecentPaper[]>([]);
   const [samples, setSamples] = useState<Sample[]>([]);
   const [arxiv, setArxiv] = useState("");
@@ -88,6 +89,16 @@ function StartScreen({
     if (f) void run(api.upload(f));
   };
 
+  /** Reload: prepare a paper again with the current version (from its stored layout analysis), then open it. */
+  const reload = async (id: string) => {
+    setError(null);
+    try {
+      setOpening({ id, status: await api.post<ParseStatus>(`/api/docs/${id}/parse?rebuild=true`), reload: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   return (
     <div
       className={`start ${drag ? "dragging" : ""}`}
@@ -112,14 +123,20 @@ function StartScreen({
 
         {opening ? (
           <div className="card progress-card">
-            <div className="progress-title">{opening.status.state === "error" ? "Couldn't prepare this paper" : "Preparing the paper…"}</div>
+            <div className="progress-title">
+              {opening.status.state === "error" ? "Couldn't prepare this paper" : opening.reload ? "Preparing the paper again…" : "Preparing the paper…"}
+            </div>
             <div className="progress-msg">{opening.status.message}</div>
             {opening.status.state !== "error" && (
               <div className="progress">
                 <div className="progress-fill" style={{ width: `${Math.max(3, opening.status.progress * 100)}%` }} />
               </div>
             )}
-            <div className="muted small">The first open of a paper takes about a minute (layout, equations, tables). After that it opens instantly.</div>
+            <div className="muted small">
+              {opening.reload
+                ? "With the current version of SciReader, from the layout analysis stored on the first open: a few seconds. Equations that changed are checked again in the background."
+                : "The first open of a paper takes about a minute (layout, equations, tables). After that it opens instantly."}
+            </div>
             {opening.status.state === "error" && <button onClick={() => setOpening(null)}>Back</button>}
           </div>
         ) : (
@@ -146,10 +163,18 @@ function StartScreen({
                 <h2>Recent papers</h2>
                 <ul className="list">
                   {recent.map((r) => (
-                    <li key={r.id}>
+                    <li key={r.id} className="recent-item">
                       <button className="list-item" onClick={() => setOpening({ id: r.id, status: { state: "ready", message: "", progress: 1 } })}>
                         <span className="li-title">{r.title || r.name}</span>
                         {r.position?.section_title && <span className="muted small">Stopped in {r.position.section_title}</span>}
+                      </button>
+                      <button
+                        className="reload"
+                        onClick={() => void reload(r.id)}
+                        title="Prepare this paper again with the current version of SciReader, then open it (a few seconds; your place in it is kept)"
+                        aria-label={`Reload ${r.title || r.name}`}
+                      >
+                        ↻ Reload
                       </button>
                     </li>
                   ))}

@@ -114,9 +114,10 @@ def doc_status(doc_id: str) -> dict:
 
 
 @router.post("/docs/{doc_id}/parse")
-def reparse(doc_id: str, force: bool = False) -> dict:
+def reparse(doc_id: str, force: bool = False, rebuild: bool = False) -> dict:
+    """Prepare a paper again: `rebuild` (Reload) from its stored layout analysis, `force` with a new one."""
     _check(doc_id)
-    return jobs.start_parse(doc_id, store, force=force)
+    return jobs.start_parse(doc_id, store, force=force, rebuild=rebuild)
 
 
 @router.get("/docs/{doc_id}")
