@@ -63,15 +63,28 @@ def get_figures(doc_id: str) -> dict:
     if doc is None:
         raise HTTPException(404, "Not parsed yet")
     descs = store.read_json(doc_id, "figures.json") or {}
-    return {"status": figures.status(doc_id), "mentions": figures.find_mentions(doc),
+    speech = store.read_json(doc_id, "speech.json") or {}
+    return {"status": figures.status(doc_id), "mentions": figures.find_mentions(doc, speech),
             "descriptions": {k: {"description": v.get("description"), "caption_part": v.get("caption_part"),
                                  "label": v.get("label"), "panels": v.get("panels")} for k, v in descs.items()}}
 
 
 @router.post("/docs/{doc_id}/figures/prepare")
-def prepare_figures(doc_id: str) -> dict:
+def prepare_figures(doc_id: str, first: str = "") -> dict:
+    """Start (or keep) describing the mentioned figures; `first` (comma-separated targets) goes to the front."""
     _check(doc_id)
-    return figures.start(store, doc_id)
+    keys = [k for k in first.split(",") if figures.split_key(k)]
+    return figures.start(store, doc_id, first=keys)
+
+
+@router.get("/docs/{doc_id}/figures/key/{key}")
+def figure_target(doc_id: str, key: str) -> dict:
+    """One target for the figure popup: label, caption part, AI description (null until it is ready)."""
+    doc = _doc_or_404(doc_id)
+    t = figures.target(doc, key, store.read_json(doc_id, "figures.json") or {})
+    if t is None:
+        raise HTTPException(404, "Unknown figure")
+    return {**t, "status": figures.status(doc_id)}
 
 
 @router.get("/docs/{doc_id}/figures/{fig_id}/image")
@@ -88,34 +101,31 @@ def figure_image(doc_id: str, fig_id: str) -> Response:
 
 
 @router.get("/tts/{doc_id}/figure/{key}")
-def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = False) -> dict:
-    """Narration for a figure target: label + caption part + labeled AI description (if ready)."""
+def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = False, caption_only: bool = False) -> dict:
+    """Narration for a figure target: label + labeled AI description, or label + caption part when the description
+    isn't ready (or `caption_only`, the Figures menu's no-AI mode)."""
     _check(doc_id)
     doc = store.document(doc_id)
     if doc is None:
         raise HTTPException(404, "Not parsed yet")
     descs = store.read_json(doc_id, "figures.json") or {}
-    entry = descs.get(key + (":detail" if detail else ""))
-    if entry is None and detail and ollama.available():
+    entry = None if caption_only else descs.get(key + (":detail" if detail else ""))
+    if entry is None and detail and not caption_only and ollama.available():
         try:
             entry = figures.describe(store, doc_id, doc, key, detail=detail)
         except Exception:  # noqa: BLE001 - playback never waits on a failing AI
             entry = None
     if entry is None:
-        number = key.rstrip("abcdefgh")
-        fig = next((f for f in doc["figures"] if f.get("number") == number), None)
-        if fig is None:
+        entry = figures.target(doc, key, {})
+        if entry is None:
             raise HTTPException(404, "Unknown figure")
-        panels = list(key[len(number):])
-        entry = {"label": f"Figure {number}", "panels": panels,
-                 "caption_part": figures.caption_part(figures.caption_text(doc, fig), panels), "description": None}
     from ..speech.pipeline import speak
 
     spoken = speak(figures.spoken_for(entry)).spoken
     k, meta = synth_cached(spoken, voice)
     return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken,
-            "description": entry.get("description"), "label": entry.get("label"), "panels": entry.get("panels"),
-            "words": []}
+            "description": entry.get("description"), "caption_part": entry.get("caption_part"),
+            "label": entry.get("label"), "panels": entry.get("panels"), "words": []}
 
 
 # ---------------------------------------------------------------------------------------------

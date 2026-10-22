@@ -152,6 +152,7 @@ class ReadingState(BaseModel):
     speed: float | None = None
     voice: str | None = None
     eq_mode: str | None = None
+    fig_mode: str | None = None
 
 
 @router.get("/state/{doc_id}")
