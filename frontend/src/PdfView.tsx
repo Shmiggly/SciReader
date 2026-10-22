@@ -2,7 +2,7 @@
 // click-to-read hit testing, "spoken text" on hover, and figure and equation mentions that open them when clicked.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
-import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
+import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
 import { type BadgeLayout, EquationBadge, layoutBadges } from "./Equations";
@@ -35,6 +35,43 @@ interface MentionHit {
 }
 
 let programmaticScrollUntil = 0;
+
+type TextContent = Awaited<ReturnType<PDFPageProxy["getTextContent"]>>;
+type TextItem = Extract<TextContent["items"][number], { str: string }>;
+
+/** Does b carry on a's run of text: same line and size, starting where a ends (a ligature like "fi" is often a run
+ * of its own)? */
+function continues(a: TextItem, b: TextItem): boolean {
+  const [a0, a1, a2, a3, ax, ay] = a.transform as number[];
+  const [b0, b1, b2, b3, bx, by] = b.transform as number[];
+  if (a1 || a2 || b1 || b2 || !b.str) return false; // rotated text stays as it is
+  const h = Math.abs(a3) || Math.abs(a0);
+  const gap = bx - (ax + a.width);
+  return h > 0 && Math.abs(by - ay) < h * 0.2 && Math.abs(Math.abs(b3 || b0) - h) < h * 0.2 && gap > -h * 0.3 && gap < h * 0.15;
+}
+
+/** A page's text runs joined where they continue each other on a line. The browser's find matches within a run, so
+ * "efficiency" set as "ef" + "fi" + "ciency" would never be found. */
+function joinRuns(tc: TextContent): TextContent {
+  const items: TextContent["items"] = [];
+  let last: TextItem | null = null;
+  for (const it of tc.items) {
+    if (!("str" in it)) {
+      items.push(it);
+      last = null;
+    } else if (last && continues(last, it)) {
+      last.str += it.str;
+      last.width = (it.transform[4] as number) + it.width - (last.transform[4] as number);
+      last.hasEOL = it.hasEOL;
+      if (it.hasEOL) last = null;
+    } else {
+      const copy = { ...it };
+      items.push(copy);
+      last = it.hasEOL ? null : copy;
+    }
+  }
+  return { ...tc, items };
+}
 
 /** A click on a scroller's own background: beside its content, not on what it holds and not on its scrollbars. */
 export function onBackground(ev: React.MouseEvent<HTMLElement>): boolean {
@@ -340,6 +377,35 @@ function Page({ index, width, height, scale, pdf, hits, cites, mentions, badges,
     };
   }, [pdf, visible, scale, index]);
 
+  // The page's text as a transparent layer over the canvas (pdf.js), so the browser's find (Ctrl+F) and text
+  // selection work on the page. Laid out for every page, not only visible ones: find only sees text in the page.
+  const textDiv = useRef<HTMLDivElement>(null);
+  const textLayer = useRef<{ layer: pdfjs.TextLayer; page: PDFPageProxy } | null>(null);
+  useEffect(() => {
+    const container = textDiv.current;
+    if (!pdf || !container) return;
+    let cancelled = false;
+    let layer: pdfjs.TextLayer | null = null;
+    void pdf.getPage(index + 1).then(async (page) => {
+      const text = await page.getTextContent();
+      if (cancelled) return;
+      layer = new pdfjs.TextLayer({ textContentSource: joinRuns(text), container, viewport: page.getViewport({ scale: useStore.getState().scale }) });
+      textLayer.current = { layer, page };
+      layer.render().catch(() => undefined);
+    });
+    return () => {
+      cancelled = true;
+      layer?.cancel();
+      textLayer.current = null;
+      container.replaceChildren();
+    };
+  }, [pdf, index]);
+  useEffect(() => {
+    // Zoom: the layer follows --scale-factor (CSS); update() refits each run of text to the new size.
+    const t = textLayer.current;
+    t?.layer.update({ viewport: t.page.getViewport({ scale }) });
+  }, [scale]);
+
   const hitTest = (ev: React.MouseEvent): string | null => {
     const rect = div.current!.getBoundingClientRect();
     const x = (ev.clientX - rect.left) / scale;
@@ -360,7 +426,7 @@ function Page({ index, width, height, scale, pdf, hits, cites, mentions, badges,
   };
 
   const onClick = (ev: React.MouseEvent) => {
-    if (window.getSelection()?.toString()) return;
+    if (!ev.shiftKey && window.getSelection()?.toString()) return; // text was selected (dragged), not clicked
     const f = !ev.shiftKey && mentionAt(ev);
     if (f) {
       // The figure or equation opens over the page; reading stays where it is.
@@ -451,10 +517,12 @@ function Page({ index, width, height, scale, pdf, hits, cites, mentions, badges,
         setCite(null);
         setMentionHot(null);
       }}
+      onMouseDown={(ev) => ev.shiftKey && ev.preventDefault()} // Shift+click selects sentences, not text
       data-page={index}
-      style={{ width: width * scale, height: height * scale, cursor: mentionHot ? "zoom-in" : undefined }}
+      style={{ width: width * scale, height: height * scale, cursor: mentionHot ? "zoom-in" : undefined, "--scale-factor": scale } as React.CSSProperties}
     >
       <canvas ref={canvas} style={{ width: width * scale, height: height * scale }} />
+      <div className="textLayer" ref={textDiv} />
       <Overlay page={index} scale={scale} />
       <EquationLayer page={index} scale={scale} badges={badges} />
       {mentionHot && <MentionTip m={mentionHot.m} page={index} scale={scale} x={mentionHot.x} y={mentionHot.y} pageWidth={width * scale} />}

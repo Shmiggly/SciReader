@@ -301,6 +301,13 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
 function useKeyboard() {
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
+      if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && ev.key.toLowerCase() === "f") {
+        // The browser's find (left to it): while reading, stop following the voice, so the view stays on what is
+        // found ("Back to reading position" returns).
+        const st = useStore.getState();
+        if (st.playing || st.loading) useStore.setState({ follow: false });
+        return;
+      }
       const t = ev.target as HTMLElement;
       if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
       if (ev.ctrlKey || ev.metaKey || ev.altKey) return;

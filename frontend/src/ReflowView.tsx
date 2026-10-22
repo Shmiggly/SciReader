@@ -96,6 +96,11 @@ export function ReflowView() {
         </article>
       </div>
       <Popups view="text" />
+      {!follow && current && (
+        <button className="back-to-reading" onClick={() => useStore.setState({ follow: true })}>
+          ↓ Back to reading position
+        </button>
+      )}
     </div>
   );
 }

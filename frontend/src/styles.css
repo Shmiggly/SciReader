@@ -89,6 +89,24 @@ select, input[type="text"], input:not([type]) {
 .pdf-scroller { position: absolute; inset: 0; overflow: auto; background: var(--viewer-bg); padding: 16px 0 40px; outline: none; overflow-anchor: none; scrollbar-gutter: stable; }
 .pdf-page { position: relative; margin: 0 auto 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); cursor: pointer; overflow: hidden; }
 .pdf-page canvas { display: block; }
+/* The page's text (pdf.js text layer, rules from pdfjs-dist/web/pdf_viewer.css): transparent over the canvas, so the
+   browser's find (Ctrl+F) and text selection work. --scale-factor is set per page (PdfView.tsx). */
+.pdf-page { --user-unit: 1; --total-scale-factor: calc(var(--scale-factor) * var(--user-unit)); --scale-round-x: 1px; --scale-round-y: 1px; }
+.textLayer {
+  position: absolute; text-align: initial; inset: 0; overflow: clip; opacity: 1; line-height: 1; letter-spacing: normal; word-spacing: normal;
+  text-size-adjust: none; forced-color-adjust: none; transform-origin: 0 0; z-index: 0;
+  --min-font-size: 1; --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size)); --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.textLayer :is(span, br) { color: transparent; position: absolute; white-space: pre; cursor: inherit; transform-origin: 0% 0%; user-select: text; }
+.textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1; --font-height: 0; font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1; --rotate: 0deg; transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.textLayer .markedContent { display: contents; }
+.textLayer span[role="img"] { user-select: none; }
+.textLayer ::selection { background: rgba(0, 0, 255, 0.25); color: transparent; }
+.textLayer br::selection { background: transparent; }
+.textLayer .endOfContent { display: block; position: absolute; inset: 100% 0 0; z-index: 0; user-select: none; }
 .overlay { position: absolute; inset: 0; pointer-events: none; }
 .hl-sentence, .hl-word { position: absolute; border-radius: 3px; mix-blend-mode: multiply; }
 .hl-word { transition: left 0.06s, top 0.06s, width 0.06s; }
