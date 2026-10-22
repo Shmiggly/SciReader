@@ -4,13 +4,13 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 evening (listening check complete: 3 rounds with the user, all fixes in)
+**Last updated:** 2026-10-21 21:55 EDT (launch-path check from a clean clone: passes; exponent, Springer-prose and page-header fixes pushed)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you. Updated 16:45 after the prompt-fix experiment (item 8, tag `m6.4-prompts`).**
+**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you. Updated 16:45 after the prompt-fix experiment (item 8, tag `m6.4-prompts`), and 21:55 after the launch-path check (item 10).**
 
 **Done this block**
 1. **Second reading of the page.** In the background equation job, before narration, `qwen3.5:9b` (the reader model, as a vision model) transcribes each equation's crop. If it agrees with Docling's LaTeX, the source is confirmed. If not, the PDF text layer decides: its glyph order is useless but its symbols are what is printed, so both readings are compared with it as bags of symbols (Springer glyphs mapped, radical bars, TeX tall-delimiter pieces, label and number removed). A tie keeps Docling's reading and marks it disputed. The chosen LaTeX drives the rules reading, the narration and the gate; both readings are kept (`equations.json` → `source`). The popover has a Source line (which reading, whether they agreed) and both readings under Check details. Code: `backend/scireader/llm/page_reading.py`, `_source()` in `equations.py`.
@@ -24,13 +24,19 @@
 
 9. **Listening check (evening, with you).** You rated 30 clips (round 1, on a private page). Fixed (commit `xxxxxxx`): natural equation wording by default (no "sub", "parenthesis" for "open paren", "times" after a fraction, "d power", "where", "evaluated at", err → error, kinetics [A] → "the concentration of A", d[A]/dt → "the derivative of … with respect to time"; `speech/math_words.py`); reading modes Auto (default: a reading over 50 words becomes "a long equation" + the labeled AI summary) / Full / Precise (the explicit wording the gate checks and the benchmark scores) / Brief / Skip; figure narration goes straight to the AI description; panel letters as letters ("Figure 1 A"); pauses around "(AM)" and inside repeat-unit formulas; "type one"; lexicon: SMILES, hertz, log10Hz, (meth)acrylate, N vinyl carbazole, multi-fidelity; citation markers no longer read ("12-16" as "to", "19 Another…"). **Round 2 for you:** a second private page: Before/After per fix, and two picks by ear (the final R of eq 8: as now, "ar" or "capital R"; "multi-fidelity" vs "multi fidelity").
 
+10. **Launch-path check (21:00–21:55, side session; commits `xxxxxxx`, `xxxxxxx`, `xxxxxxx`).** Clean clone of the private repo + `setup.ps1`: exit 0 in 50 s (uv, npm and Hugging Face caches already on D:; a new machine also downloads ~3 GB), and the clone builds byte-identical UI assets. `dev.ps1 -NoBrowser -Port 8766`: backend up in ~5 s, `.mjs` served as text/javascript, the flagship parsed cold in 5 min 22 s (another app held the GPU at 100 %; ~100 s when idle), 32 badges appeared, a clicked sentence played and moved on, the Equations menu has Auto / Full / Precise / Brief / Skip. Main checkout: 415 backend tests pass (was 390), the frontend builds and typechecks. 2-minute test: every step passes except Explain, which timed out after 300 s under the same GPU load (§3). **Fixed** (all papers rebuilt; sentence ids and equation checks unchanged):
+   - raised exponents were dropped as citation markers: "R² values" was spoken "R values", "2×10⁷ steps" "2 by 10 steps", "10⁷ and 10⁹ Hz" "10 and 10 hertz", "mW/cm²" "per centimeter", "σ²" "sigma". Now "R squared", "2 times 10 to the 7", "milliwatts per square centimeter" (34 sentences in 5 papers; `_superscript_kind` in `builder.py`, `exponents` in `speech.json`);
+   - Springer prose: "K ϵ R" is read "K in R", the curvature "θ 0" "theta prime" (their prime is a narrow "0" glyph);
+   - running headers inside text are not read: MDPI "5 of 24 [A]…", "…and the Polymers 2021, 13, x FOR PEER REVIEW 7 of 25", "16 of 25" blocks, PA12 "Page 1 of 1" (13 sentences, 3 blocks).
+
 **How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
 **2-minute test:** flagship from Recent → page 13 → eq 27's ✓ badge (K⁻¹; Source: "the PDF's text layer matches qwen3.5:9b's reading…") → eq 21 (y = f(x), x ∈ Rᵈ) → eq 11 (unreadable before, now read from the page) → Check details shows both readings → ✦ AI → Explain → Aa Pronunciation → ¶ Text view.
 
 **Still broken or weak**
 - Round 2 done (your picks: "ar" for a final R, said for the voice only; "multi-fidelity"). Round 3 (formula pauses "C H 2, 11... C, O... N H", a pause before plus/minus between terms, eq 8): all four confirmed by you. **The listening check is complete** (3 rounds, commits `xxxxxxx`, `xxxxxxx`).
-- Springer prose: ∈ printed as ϵ is read "epsilon" ("K epsilon R nxn"), θ′ as "theta 0"; a page header leaks into a sentence ("5 of 24 [A]…", MDPI) and "Page 1 of 1" from a figure (PA12); the chemical subscript in "(R 2 )" is dropped as a citation (MDPI).
+- Prose leftovers: "mm s⁻¹" glued as "mms" is read "mms to the minus 1" (flagship captions); MDPI's exponent 0.5 (only the 5 raised) still loses its 5; a header that ended a caption leaves a short pause; a word split across pages stays split ("ization experiments…", MDPI p. 9); "andmoving" (flagship p. 13).
+- Explain/Ask on a busy GPU: the timeout message says "Ollama is not reachable: ReadTimeout" when Ollama is only slow (§3).
 - Flagship: 24 of 32 still use the rules reading. The failures are now mostly narrator and checker slips: "Theta" without "capital" (eq 14 comes back as θ), "end exponent" written back as `^{\exp}` (eqs 12, 13), "evaluated at" written back as (Z=0), a checker adding "where" (eq 21). Both readers still misread eq 3 (θ_jl) and eq 9 (E′_t).
 - The gate passes narrations with extra explanatory words when the math round-trips (eq 27: "…where the subscript on y runs from one to n").
 - Vision-model notation quirks leave 3 disputes on PA12 (`\mathop{\mathrm{argmin}}`, `\left\|` for `||`, text inside `\mathrm`).
@@ -51,7 +57,7 @@
 2. **Prompt fixes: tried, not shipped** (item 8). What is left on the flagship is narrator and checker variance (eq 23 lost its ✓ on a reworded narration); more prompt rules made things worse on the benchmark.
 3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
 4. Later, when you say so: the video (`docs/demo_script.md` has the current numbers and a line on the second reading since 2026-10-21 evening; equation 27's popover shows the Source line). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
-5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted.
+5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted; so can `D:\scratch\scireader-clone2\` (the clean-clone test, with its own .venv) and `D:\scratch\clone2-logs\`.
 
 ---
 
@@ -112,6 +118,7 @@
 - **Gotcha: backslash-digit in generated code.** A regex backreference written as backslash-1 can land in a file as the control byte \x01 (it happened in `builder.py` and garbled numbers in captions, and again in a heredoc). Prefer `\g<1>` or a function in `re.sub`; `backend/tests/test_source_hygiene.py` fails on control characters in source. A heredoc also turned `\\begin` into `\begin` in a test (Python then reads `\b` as a backspace): write LaTeX in tests as raw strings, through the Edit tool.
 - **Gotcha: the browser pane while it's hidden**: its page runs in the background, so ResizeObserver, IntersectionObserver and requestAnimationFrame never fire and PDF pages stay gray. For testing only, replace those three with timer-based stand-ins from `javascript_tool` on the start screen, then open the paper.
 - **Gotcha: `.mjs` served as text/plain.** Python's `mimetypes` reads the Windows registry, which maps `.mjs` to text/plain on this machine, so the backend-served build couldn't load the pdf.js worker ("Setting up fake worker failed"). `main.py` registers text/javascript now. A browser that cached the old response needs one hard reload (or `fetch(url, {cache: 'reload'})` from its console).
+- **Gotcha: another app on the GPU starves the local AI.** With another app holding the RTX 4070 at 100 % (2026-10-21 evening), a cold flagship parse took 5 min 22 s (~100 s idle), the second reading managed 6 equations in 4 min, and Explain (the whole paper as context, ~20K tokens) processed 1K prompt tokens in 3 min, then timed out after 300 s. **Close GPU-heavy apps before recording the demo.** Unload a model at once with `curl http://127.0.0.1:11434/api/generate -d '{"model":"qwen3.5:9b","keep_alive":0}'` (Explain keeps it loaded for 30 min).
 - **Gotcha: PowerShell 5.1 + native stderr.** With `$ErrorActionPreference = "Stop"`, redirecting a native command's output (`*>`, `2>&1`) turns its stderr lines (uv prints "Using CPython…" there) into terminating errors. In test harnesses use `Start-Process -RedirectStandardOutput/-RedirectStandardError`.
 - **GPU + TTS smoke test (2026-10-20, passed).** Scratch venv `D:\scratch\gpu-smoke\.venv` (outside the repo; disposable).
   - PyTorch **2.14.1+cu132** (CUDA 13.2), installed with `uv pip install torch --torch-backend=auto`. Sees the RTX 4070; 20 × 4096² matmuls in 0.18 s. Wheels are now in the uv cache on D:, so the project install will be fast.
@@ -379,10 +386,3 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 - Keep it under ~400 lines. Move finished narrative (what was done, what was learned) to `docs/DEVLOG.md` (append-only; it feeds the write-up).
 - Dates are absolute (YYYY-MM-DD). Note "unverified" next to anything not yet checked.
 - Prompts live in `docs/prompts/`: `kickoff.md` (first message at kickoff) and `followups.md` (checkpoint, resume, iterate, unattended, ship).
-
-## 2026-10-21 evening: the listening check (with the user)
-
-- **The user's ears found what no metric did.** 30 clips rendered exactly as the app plays them, on a private page with a note per clip; 18 notes came back. Most were about equation wording: a scientist does not say "sub", "open parenthesis" or "d-th power", says "where" for the comma before a condition, "times" after a fraction, "the concentration of A" for [A] and "the derivative of … with respect to time" for d[A]/dt. Long equations (35 s and 106 s) were "way too long to keep following".
-- **Exact and natural are different texts.** The gate needs the explicit wording to check a narration; a listener wants less. So the checked text stays explicit (Precise mode, what the benchmark scores) and the app speaks a deterministic rewrite of it by default. Auto mode replaces readings over 50 words with the labeled AI summary.
-- **The voice's phonemizer decides small things.** A lone "a" is the article (panel "Figure 1 a" became "uh"), an all-caps "SMILES" is spelled out, "N-vinylcarbazole" gets a short i while "N vinyl carbazole" gets the dictionary's long one. Checking misaki's phonemes before asking the user made most fixes one try.
-- **Some bugs were visible without listening:** citation ranges with a baseline dash ("12-16" read as "to") and markers the sentence splitter moved to the next sentence ("19 Another…"). Round 2 gives the user Before/After pairs and two A/B picks (a weak final R; "multi-fidelity").
