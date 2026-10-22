@@ -17,11 +17,11 @@ needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="Node.js is
     [
         # Rule-based readings (Speech Rule Engine, ClearSpeak).
         ("y equals f of x comma x is a member of R to the d-th power", "", "y equals f of x where x is a member of R to the d power"),
-        ("f sub high of x equals rho f sub low of x plus f sub err of x", "", "f high of x equals rho f low of x plus f error of x"),
+        ("f sub high of x equals rho f sub low of x plus f sub err of x", "", "f high of x equals rho f low of x, plus f error of x"),
         ("capital Theta vertical bar sub Z equals 0 equals 0", "", "capital Theta evaluated at Z equals 0 equals 0"),
-        ("the cosine of open paren theta minus psi close paren", "", "the cosine of parenthesis theta minus psi close parenthesis"),
+        ("the cosine of open paren theta minus psi close paren", "", "the cosine of parenthesis theta, minus psi close parenthesis"),
         (r"d of A over d of t equals negative open paren b I of A minus REG close paren", r"\frac { d [ A ] } { d t } = - ( b I [ A ] - \mathrm{REG} )",
-         "the derivative of the concentration of A with respect to time equals negative parenthesis b I times the concentration of A minus REG close parenthesis"),
+         "the derivative of the concentration of A with respect to time equals negative parenthesis b I times the concentration of A, minus REG close parenthesis"),
         # Verified AI narrations.
         ("f sub high of open parenthesis x close parenthesis equals rho times f sub low of open parenthesis x close parenthesis.", "",
          "f high of x equals rho times f low of x."),
@@ -29,8 +29,10 @@ needs_node = pytest.mark.skipif(shutil.which("node") is None, reason="Node.js is
          "m i comma j superscript k equals phi of x i comma e i."),
         ("d square bracket A close square bracket all over d t equals negative open parenthesis b I square bracket A close square bracket minus REG close parenthesis.",
          r"\frac { d [ A ] } { d t } = - ( b I [ A ] - \mathrm{REG} )",
-         "the derivative of the concentration of A with respect to time equals negative parenthesis b I times the concentration of A minus REG close parenthesis."),
+         "the derivative of the concentration of A with respect to time equals negative parenthesis b I times the concentration of A, minus REG close parenthesis."),
         ("y colon one to n, where the subscript on y runs from one to n", "", "y colon one to n, where the subscript on y runs from one to n"),
+        # A pause before a term, not inside an index or exponent, nor in plus or minus.
+        ("x sub n plus 1 equals e to the minus x plus y plus or minus z", "", "x n plus 1 equals e to the minus x, plus y, plus or minus z"),
         # Brackets are concentrations only in a kinetics equation (a time derivative of a bracketed quantity).
         ("E open bracket X close bracket", r"E [ X ]", "E open bracket X close bracket"),
     ],
@@ -102,3 +104,10 @@ def test_superscript_range_with_a_baseline_dash():
         sup[k] = True
     (a, b, nums), = _superscript_citations(text, sup)
     assert text[a:b].strip() == "12-16" and nums == [12, 13, 14, 15, 16]
+
+
+def test_final_r_respelled_for_the_voice_only():
+    from scireader.tts.engine import for_voice
+
+    assert for_voice("Equation 8, Charge: sigma equals R.") == "Equation 8, Charge: sigma equals ar."
+    assert for_voice("R sub j squared equals 1.") == "R sub j squared equals 1."

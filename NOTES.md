@@ -29,7 +29,7 @@
 **2-minute test:** flagship from Recent → page 13 → eq 27's ✓ badge (K⁻¹; Source: "the PDF's text layer matches qwen3.5:9b's reading…") → eq 21 (y = f(x), x ∈ Rᵈ) → eq 11 (unreadable before, now read from the page) → Check details shows both readings → ✦ AI → Explain → Aa Pronunciation → ¶ Text view.
 
 **Still broken or weak**
-- Waiting on your round-2 picks: the weak final R (eq 8) and "multifidelity".
+- Round 2 done (your picks: "ar" for a final R, said for the voice only; "multi-fidelity"). Round 3 (formula pauses "C H 2, 11... C, O... N H", a pause before plus/minus between terms, eq 8): on a private page
 - Springer prose: ∈ printed as ϵ is read "epsilon" ("K epsilon R nxn"), θ′ as "theta 0"; a page header leaks into a sentence ("5 of 24 [A]…", MDPI) and "Page 1 of 1" from a figure (PA12); the chemical subscript in "(R 2 )" is dropped as a citation (MDPI).
 - Flagship: 24 of 32 still use the rules reading. The failures are now mostly narrator and checker slips: "Theta" without "capital" (eq 14 comes back as θ), "end exponent" written back as `^{\exp}` (eqs 12, 13), "evaluated at" written back as (Z=0), a checker adding "where" (eq 21). Both readers still misread eq 3 (θ_jl) and eq 9 (E′_t).
 - The gate passes narrations with extra explanatory words when the math round-trips (eq 27: "…where the subscript on y runs from one to n").

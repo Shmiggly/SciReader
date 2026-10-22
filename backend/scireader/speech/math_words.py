@@ -35,6 +35,7 @@ def natural(spoken: str, latex: str = "") -> str:
     s = re.sub(r"\bopen paren(?:thesis)?\b", "parenthesis", s)
     s = re.sub(r"\bclose paren\b", "close parenthesis", s)
     s = _drop_unmatched_closers(s)
+    s = _pause_before_terms(s)
     s = re.sub(r"\bvertical bar (?:sub|subscript)\b", "evaluated at", s)
     s = re.sub(r"\bend (?:sub|subscript)\b,?\s*", "", s)
     s = re.sub(r"(?<!\bthe )\b(?:sub|subscript)\s+(?=\S)", "", s)  # "the subscript on y" is a noun: kept
@@ -44,6 +45,18 @@ def natural(spoken: str, latex: str = "") -> str:
     s = re.sub(r"\berr\b", "error", s)
     s = re.sub(r"\s+", " ", s)
     return s.strip()
+
+
+def _pause_before_terms(s: str) -> str:
+    """A short pause (comma) before "plus" or "minus" between terms (user: "take a pause before saying + or -"), not
+    inside a subscript or an exponent ("x sub n plus 1", "e to the minus x"), where it would split the index."""
+    out, last = [], 0
+    for m in re.finditer(r"(?<=\w) (plus|minus)\b", s):
+        if set(s[:m.start()].split()[-2:]) & {"sub", "subscript", "superscript", "the", "to", "or"}:
+            continue
+        out += [s[last:m.start()], ","]
+        last = m.start()
+    return "".join(out) + s[last:]
 
 
 def _drop_unmatched_closers(s: str) -> str:

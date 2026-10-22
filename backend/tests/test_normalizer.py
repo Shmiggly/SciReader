@@ -220,7 +220,7 @@ CASES = [
     ("Stress (MPa)", "Stress (megapascals)"),
     ("most type-I photoinitiators", "most type-one photoinitiators"),
     ("Phase II and Class IV", "Phase two and Class four"),
-    ("formula [-(CH2)11C(O)NH-]n as shown", "formula C H 2, 11, C, O, N H, n as shown"),
+    ("formula [-(CH2)11C(O)NH-]n as shown", "formula C H 2, 11... C, O... N H as shown"),  # user: small pause, bigger pause
     ("Table 2", "Table 2"),
     ("Sec. 2.3", "Section 2.3"),
     ("as in Ref. [12]", "as in Reference [12]"),

@@ -201,36 +201,42 @@ def _rule_chemistry(text: str, sp: _Spans) -> None:
             sp.add(m.start(), m.end(), spoken)
 
 
-# A polymer repeat unit such as "[-(CH2)11C(O)NH-]n": each group is followed by a short pause (a comma) before the
-# reading goes on ("C H 2, 11, C, O, N H, n"); bond dashes and the brackets are not spoken.
+# A polymer repeat unit such as "[-(CH2)11C(O)NH-]n", read the way a chemist does (user): "C H 2, 11 ... C, O ... N H".
+# A group with a count is one chunk, an atom with a bracketed substituent ("C(O)", the carbonyl) is one chunk, other
+# atoms are one chunk; commas pause inside a chunk, an ellipsis (a longer pause) between chunks. Bond dashes, the
+# brackets and the repeat index n are not spoken.
 _REPEAT_UNIT_RE = re.compile(r"(?<!\S)\[?[-–—]?(?:\([A-Za-z0-9]+\)\d*|[A-Z][a-z]?\d*|[-–—=])+[-–—]?\]?n?(?=[\s,.;:]|$)")
-_REPEAT_PART_RE = re.compile(r"\(([A-Za-z0-9]+)\)(\d*)|([A-Z][a-z]?\d*)|(n)$")
+_REPEAT_PART_RE = re.compile(r"\(([A-Za-z0-9]+)\)(\d*)|([A-Z][a-z]?\d*)")
 
 
 def _rule_repeat_units(text: str, sp: _Spans) -> None:
+    def say(f: str) -> str:
+        return CH.speak_formula(f, "") or " ".join(f)
+
     for m in _REPEAT_UNIT_RE.finditer(text):
         tok = m.group().rstrip()
         if "(" not in tok or sum(c.isupper() for c in tok) < 2 or not ("[" in tok or tok.startswith(("-", "–"))):
             continue
-        words: list[str] = []
+        chunks: list[str] = []
         run: list[str] = []
         for p in _REPEAT_PART_RE.finditer(tok):
             if p.group(3):
                 run.append(p.group(3))
-                continue
-            if run:
-                words.append(CH.speak_formula("".join(run), "") or " ".join(run))
-                run = []
-            if p.group(1):
-                words.append(CH.speak_formula(p.group(1), "") or p.group(1))
-                if p.group(2):
-                    words.append(p.group(2))
-            elif p.group(4):
-                words.append("n")
+            elif p.group(2):  # "(CH2)11"
+                if run:
+                    chunks.append(say("".join(run)))
+                    run = []
+                chunks.append(f"{say(p.group(1))}, {p.group(2)}")
+            else:  # "C(O)": the atom before the bracket carries it
+                atom = run.pop() if run else ""
+                if run:
+                    chunks.append(say("".join(run)))
+                    run = []
+                chunks.append(", ".join(x for x in (say(atom) if atom else "", say(p.group(1))) if x))
         if run:
-            words.append(CH.speak_formula("".join(run), "") or " ".join(run))
-        if len(words) >= 2:
-            sp.add(m.start(), m.start() + len(tok), ", ".join(words))
+            chunks.append(say("".join(run)))
+        if len(chunks) >= 2:
+            sp.add(m.start(), m.start() + len(tok), "... ".join(chunks))
 
 
 # "type-I photoinitiators", "Phase II": Roman numerals after a kind word are numbers.

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import re
 import threading
 import time
 from dataclasses import dataclass
@@ -163,11 +164,23 @@ def audio_path(key: str) -> Path:
     return get_settings().audio_dir / f"{key}.wav"
 
 
+# Respellings for the voice only (the text keeps the symbol): a lone "R" ending an utterance came out weak and
+# short; "ar" was the user's pick in an A/B listening test (2026-10-21).
+_VOICE_FIXES = [(re.compile(r"(?<![\w'])R(?=[.!?]?\s*$)"), "ar")]
+
+
+def for_voice(spoken: str) -> str:
+    for rx, rep in _VOICE_FIXES:
+        spoken = rx.sub(rep, spoken)
+    return spoken
+
+
 def synth_cached(spoken: str, voice: str, speed: float = 1.0) -> tuple[str, dict]:
     """Return (key, meta) with meta = {duration, words: [{start, end, s0, s1}]}; synthesizes on a miss."""
     import soundfile as sf
 
     eng = get_engine()
+    spoken = for_voice(spoken)
     key = cache_key(eng.id, voice, speed, spoken)
     wav = audio_path(key)
     meta_path = wav.with_suffix(".json")
