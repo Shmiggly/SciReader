@@ -4,13 +4,13 @@
 > Update it at every milestone and after every decision, gotcha or environment change.
 > Keep it current: delete what is no longer true instead of stacking corrections. History goes to `docs/DEVLOG.md`.
 
-**Last updated:** 2026-10-21 22:05 EDT (launch-path check from a clean clone: passes, re-run on an idle GPU; exponent, Springer-prose and page-header fixes pushed)
+**Last updated:** 2026-10-21 23:05 EDT (privacy pass: personal details removed from the files and the whole git history, force-pushed; launch-path check passes)
 
 ---
 
 ## 0. When you're back (agent writes this at the end of each unattended stretch)
 
-**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you. Updated 16:45 after the prompt-fix experiment (item 8, tag `m6.4-prompts`), and 22:05 after the launch-path check (item 10).**
+**Written 13:45 EDT Wed, end of the equation-quality block (side session from 12:42). All pushed; tag `m6.3-equations`; 355 backend tests pass; the frontend builds. Popover screenshots (flagship p. 13, eqs 27 and 21) were sent to you. Updated 16:45 after the prompt-fix experiment (item 8, tag `m6.4-prompts`), 22:05 after the launch-path check (item 10), and 23:05 after the privacy pass (item 11).**
 
 **Done this block**
 1. **Second reading of the page.** In the background equation job, before narration, `qwen3.5:9b` (the reader model, as a vision model) transcribes each equation's crop. If it agrees with Docling's LaTeX, the source is confirmed. If not, the PDF text layer decides: its glyph order is useless but its symbols are what is printed, so both readings are compared with it as bags of symbols (Springer glyphs mapped, radical bars, TeX tall-delimiter pieces, label and number removed). A tie keeps Docling's reading and marks it disputed. The chosen LaTeX drives the rules reading, the narration and the gate; both readings are kept (`equations.json` → `source`). The popover has a Source line (which reading, whether they agreed) and both readings under Check details. Code: `backend/scireader/llm/page_reading.py`, `_source()` in `equations.py`.
@@ -28,6 +28,8 @@
    - raised exponents were dropped as citation markers: "R² values" was spoken "R values", "2×10⁷ steps" "2 by 10 steps", "10⁷ and 10⁹ Hz" "10 and 10 hertz", "mW/cm²" "per centimeter", "σ²" "sigma". Now "R squared", "2 times 10 to the 7", "milliwatts per square centimeter" (34 sentences in 5 papers; `_superscript_kind` in `builder.py`, `exponents` in `speech.json`);
    - Springer prose: "K ϵ R" is read "K in R", the curvature "θ 0" "theta prime" (their prime is a narrow "0" glyph);
    - running headers inside text are not read: MDPI "5 of 24 [A]…", "…and the Polymers 2021, 13, x FOR PEER REVIEW 7 of 25", "16 of 25" blocks, PA12 "Page 1 of 1" (13 sentences, 3 blocks).
+
+11. **Privacy pass (22:30–23:05, your go-ahead).** Personal details are gone from the files and from every past version: schedule and whereabouts, education and career plans, the first-person reading story (now a general problem statement in the README, write-ups and demo script; you can still tell it in the video), account usage notes, the local user name in paths, private page links, and the personal email on all commits (now GitHub's private noreply address; this repo's `user.email` is set to it). The history was rewritten with `git-filter-repo` (dates kept, all 10 tags moved), verified (no mention and no old commit id left in any version; only 9 doc files differ from the originals) and force-pushed. **All commit ids changed.** GitHub may keep the old commits reachable by their exact id until it cleans up; no file quotes one. A local backup of the old history and the rewrite rules are in `D:\scratch\history-rewrite\` (delete it once you're happy).
 
 **How to launch:** double-click **SciReader** on the desktop (made by `scripts/make-shortcut.ps1` on 2026-10-21; close its minimized console to stop), or `./scripts/dev.ps1` from any terminal (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
@@ -55,7 +57,7 @@
 **Next**
 1. **Nothing goes public until the user says so** (repo visibility, posts, uploads; user, 2026-10-21 08:40). Pushing to the private repo is fine.
 2. **Prompt fixes: tried, not shipped** (item 8). What is left on the flagship is narrator and checker variance (eq 23 lost its ✓ on a reworded narration); more prompt rules made things worse on the benchmark.
-3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version), `README.md`, and the privacy question in §9.
+3. Your review: `docs/writeup_onepage.md` (~626 words now, with a line on the second reading; `docs/writeup.md` is the long version) and `README.md`.
 4. Later, when you say so: the video (`docs/demo_script.md` has the current numbers and a line on the second reading since 2026-10-21 evening; equation 27's popover shows the Source line). Thu: freeze 14:00 (`demo-ready`), then M7 as in §8.
 5. `D:\scratch\eq-second-reading\` (the first experiment) is superseded and can be deleted; so can `D:\scratch\scireader-clone2\` (the clean-clone test, with its own .venv) and `D:\scratch\clone2-logs\`.
 
@@ -136,7 +138,7 @@
 - **Gotcha: SymPy's LaTeX parser (lark backend) failed on 6 of 8 equations** (`\Delta`, `\varepsilon`, `\hbar`, `\nabla`, integrals, `\mathrm`). Plain string similarity is also misleading (0.70 for a correct Arrhenius round trip). The verifier needs canonicalized structural comparison (see §5).
 - Test scripts and outputs are in the scratchpad and `D:\scratch\gpu-smoke\out` (throwaway, not project code).
 - **Repo:** local `D:\Github\SciReader\SciReader`, branch `main`, remote `origin` = https://github.com/Shmiggly/SciReader (**PRIVATE** until submission; flipping it public is in M7). The outer `D:\Github\SciReader` folder only holds this repo.
-- **GitHub:** account `Shmiggly`, gh logged in over HTTPS (token in Windows Credential Manager, config in `D:\tools\gh`). `gh auth setup-git` is done, so `git push` uses gh's login. That needs `GH_CONFIG_DIR` in the environment: restart the Claude app, or set `$env:GH_CONFIG_DIR = 'D:\tools\gh'` in the command. Git identity: `Shmiggly` (global config). In PowerShell 5.1, commit with `git commit -F <file>` because here-strings piped to `-F -` don't arrive.
+- **GitHub:** account `Shmiggly`, gh logged in over HTTPS (token in Windows Credential Manager, config in `D:\tools\gh`). `gh auth setup-git` is done, so `git push` uses gh's login. That needs `GH_CONFIG_DIR` in the environment: restart the Claude app, or set `$env:GH_CONFIG_DIR = 'D:\tools\gh'` in the command. Git identity: `Shmiggly`; this repo's `user.email` is GitHub's private noreply address (repo config, set 2026-10-21), so commits don't expose a personal email. In PowerShell 5.1, commit with `git commit -F <file>` because here-strings piped to `-F -` don't arrive.
 
 ---
 
@@ -356,7 +358,7 @@ Details in the kickoff prompt §7. **Clock schedule** (Eastern, the machine's ti
 
 ## 9. Open questions for the user
 
-1. **Privacy before the repo goes public:** decided 2026-10-21: remove personal details from the files and from the whole git history (commit author emails included). The files are clean; the history rewrite waits for the user's go-ahead.
+1. **Privacy before the repo goes public:** done 2026-10-21 (§0 item 11): files and the whole git history are clean, commits use GitHub's noreply email.
 2. **Self-graded adjudication:** the docs now say the agent adjudicated the 30 items; a 10-minute spot check of the 8 errors + 2 uncertain items in `bench/data/adjudication.json` by you would make it independent. Optional.
 3. **Video:** the demo script is updated (your go-ahead, 2026-10-21 evening); its "61 to 89 percent" and "more than one in three" are on the 70 equations the judge transcribes reliably, while the sentence says "220 equations". Say "on the equations our judge can check" if you want it exact.
 
