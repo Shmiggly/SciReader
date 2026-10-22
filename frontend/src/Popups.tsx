@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { api, type Rect } from "./api";
 import { EquationPopover } from "./Equations";
 import { FloatingPanel } from "./Float";
-import { type FigPopup, type PopAnchor, closeFigure, figureDetail, hearFigure, noteFigureReady, sentenceAt, useStore } from "./store";
+import { type FigPopup, type PopAnchor, closeFigure, detailKey, figureDetail, hearFigure, noteFigureReady, sentenceAt, useStore } from "./store";
 
 export type View = "pdf" | "text";
 
@@ -127,8 +127,10 @@ function useFigureTarget(pop: FigPopup | null): string | undefined {
 function FigurePanel({ view }: { view: View }) {
   const pop = useStore((s) => s.figPopup);
   const doc = useStore((s) => s.doc)!;
+  const detailFor = useStore((s) => s.figDetail);
   const job = useFigureTarget(pop);
   if (!pop) return null;
+  const detailBusy = detailFor === detailKey(pop);
   const fig = doc.figures.find((f) => f.id === pop.figure_id);
   const [x0, y0, x1, y1] = fig?.bbox ?? [0, 0, 4, 3];
   const noAi = job === "unavailable" || job === "error";
@@ -179,7 +181,9 @@ function FigurePanel({ view }: { view: View }) {
         </>
       )}
       <div className="eq-actions">
-        <button onClick={figureDetail} title="A longer AI description (D)">More detail (D)</button>
+        <button onClick={figureDetail} disabled={detailBusy} aria-busy={detailBusy} title={detailBusy ? "The local AI is writing a longer description…" : "A longer AI description (D)"}>
+          {detailBusy && <span className="spinner" />}More detail (D)
+        </button>
       </div>
     </FloatingPanel>
   );

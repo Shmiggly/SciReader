@@ -135,6 +135,8 @@ interface State {
   /** Figure id → reading-order index of the sentence with its last mention. */
   figLastMention: Map<string, number>;
   figPopup: FigPopup | null;
+  /** The popup (detailKey) whose longer description ("More detail", D) is on its way: its button spins meanwhile. */
+  figDetail: string | null;
   figMode: FigMode;
   selection: string[] | null;
   eqRef: { blockId: string; sentenceId: string } | null;
@@ -173,6 +175,7 @@ export const useStore = create<State>((set) => ({
   figMentions: new Map(),
   figLastMention: new Map(),
   figPopup: null,
+  figDetail: null,
   figMode: "first",
   selection: null,
   eqRef: null,
@@ -190,7 +193,7 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, selection: null, fitWidth: true });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, figDetail: null, selection: null, fitWidth: true });
     narrated.clear();
     describedFigs.clear();
     figReady.clear();
@@ -416,8 +419,9 @@ let detour: {
 } | null = null;
 let eqRefCursor: { sid: string; i: number } | null = null;
 
-/** Pause what is playing, play something else, then come back to the same spot (playing again if it was). */
-async function startDetour(load: () => Promise<{ audio_url: string }>): Promise<void> {
+/** Pause what is playing, play something else, then come back to the same spot (playing again if it was).
+ * `detailFor`: the figure popup whose "More detail" this is (its button spins until the audio starts). */
+async function startDetour(load: () => Promise<{ audio_url: string }>, detailFor: string | null = null): Promise<void> {
   const st = get();
   // A detour from a detour (E pressed again) keeps the original place.
   const d = detour ?? (detour = { src: audio.src, time: audio.currentTime, tts: st.tts, current: st.current, wasPlaying: st.playing, kind, audioSid, queue: figQueue });
@@ -426,7 +430,7 @@ async function startDetour(load: () => Promise<{ audio_url: string }>): Promise<
   kind = "detour";
   audioSid = d.current;
   figQueue = [];
-  useStore.setState({ word: null, loading: true, error: null });
+  useStore.setState({ word: null, loading: true, error: null, figDetail: detailFor });
   try {
     const r = await load();
     if (my !== token) return;
@@ -441,7 +445,20 @@ async function startDetour(load: () => Promise<{ audio_url: string }>): Promise<
     const msg = err instanceof Error ? err.message : String(err);
     endDetour();
     useStore.setState({ error: msg });
+  } finally {
+    detailDone(my);
   }
+}
+
+/** The key "More detail" requests are tracked by: a popup as opened (its seq) and the target it shows. */
+export function detailKey(p: FigPopup): string {
+  return `${p.seq}:${p.key}`;
+}
+
+/** A request that may have been "More detail" is over (playing, failed): its button stops spinning. Requests that
+ * replace it (a new token) set figDetail themselves. */
+function detailDone(my: number) {
+  if (my === token && get().figDetail) useStore.setState({ figDetail: null });
 }
 
 function endDetour(resume = true) {
@@ -508,7 +525,7 @@ export async function sayText(text: string, label = "") {
   const my = ++token;
   audio.pause();
   detour = null;
-  useStore.setState({ loading: true, word: null });
+  useStore.setState({ loading: true, word: null, figDetail: null });
   try {
     const r = await api.post<TtsResult>("/api/tts/say", { text, voice: get().voice, label });
     if (my !== token) return;
@@ -531,7 +548,7 @@ export function jumpTo(sid: string) {
   audio.pause();
   kind = "sentence";
   detour = null;
-  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null });
+  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null, figDetail: null });
 }
 
 /** Shift+click: select the sentences between the current one and the clicked one. */
@@ -573,15 +590,12 @@ async function playFigure(m: FigMention, detail = false): Promise<void> {
   audioSid = st.current;
   const captionOnly = st.figMode === "caption" && !detail;
   const prev = st.figPopup;
-  useStore.setState({
-    figPopup: {
-      key: m.key, figure_id: m.figure_id, label: figLabel(m), anchor: { sid: m.sentence_id, span: m.span, rects: m.rects ?? null },
-      description: prev?.key === m.key ? prev.description : null, caption: prev?.key === m.key ? prev.caption : null,
-      pinned: prev?.pinned ?? false, loading: true, origin: "narration", captionOnly, seq: prev ? prev.seq : ++figSeq,
-    },
-    word: null,
-    loading: true,
-  });
+  const pop: FigPopup = {
+    key: m.key, figure_id: m.figure_id, label: figLabel(m), anchor: { sid: m.sentence_id, span: m.span, rects: m.rects ?? null },
+    description: prev?.key === m.key ? prev.description : null, caption: prev?.key === m.key ? prev.caption : null,
+    pinned: prev?.pinned ?? false, loading: true, origin: "narration", captionOnly, seq: prev ? prev.seq : ++figSeq,
+  };
+  useStore.setState({ figPopup: pop, figDetail: detail ? detailKey(pop) : null, word: null, loading: true });
   try {
     const r = await api.get<FigTts>(figTtsUrl(m.key, detail, captionOnly));
     if (my !== token) return;
@@ -602,6 +616,8 @@ async function playFigure(m: FigMention, detail = false): Promise<void> {
     if (msg.includes("interrupted") || msg.includes("aborted")) return;
     useStore.setState((s) => ({ error: msg, loading: false, figPopup: s.figPopup ? { ...s.figPopup, loading: false } : null }));
     continueReading(); // a failing figure never stops the paper
+  } finally {
+    detailDone(my);
   }
 }
 
@@ -638,13 +654,13 @@ export function hearFigure(detail = false) {
         : {},
     );
     return r;
-  });
+  }, detail ? detailKey(p) : null);
 }
 
-/** `D`: more detail on the figure currently shown. */
+/** `D`: more detail on the figure currently shown (the local AI may take 5–15 s; pressing again meanwhile does nothing). */
 export function figureDetail() {
   const p = get().figPopup;
-  if (!p) return;
+  if (!p || get().figDetail === detailKey(p)) return;
   if (kind === "figure" && p.origin === "narration") {
     // While its description plays in the reading flow: the longer one replaces it, then reading goes on.
     figQueue = [];
@@ -668,7 +684,7 @@ export async function playSentence(sid: string): Promise<void> {
   const st = get();
   if (!st.doc || !st.index.has(sid)) return;
   audio.pause();
-  useStore.setState({ current: sid, loading: true, word: null, error: null, playing: true });
+  useStore.setState({ current: sid, loading: true, word: null, error: null, playing: true, figDetail: null });
   saveSoon();
   wantFiguresFrom(sid);
   try {
@@ -698,7 +714,7 @@ export function togglePlay() {
     audio.pause();
     // Paused while a detour was still loading: drop it, back to where reading was.
     if (kind === "detour" && detour && st.loading) endDetour(false);
-    useStore.setState({ playing: false, loading: false });
+    useStore.setState({ playing: false, loading: false, figDetail: null });
     return;
   }
   const own = kind === "sentence" ? st.tts?.sentence_id === st.current : kind !== "say" && audioSid === st.current;
@@ -724,7 +740,7 @@ export function stop() {
   audioSid = null;
   detour = null;
   figQueue = [];
-  useStore.setState({ playing: false, loading: false, word: null, tts: null });
+  useStore.setState({ playing: false, loading: false, word: null, tts: null, figDetail: null });
 }
 
 export function step(dir: 1 | -1) {

@@ -201,6 +201,7 @@ select, input[type="text"], input:not([type]) {
 .eq-source.page, .eq-source.vision_only { border-left-color: #b9cfea; }
 .eq-source.disputed, .eq-source.single, .eq-source.unreadable { border-left-color: #e8cf86; }
 .eq-actions { display: flex; justify-content: flex-end; }
+.eq-actions button[aria-busy="true"] { cursor: progress; color: var(--muted); }
 
 /* Figure popup, and figure mentions ("Fig. 3b") that open it */
 .fig-pop img { max-height: min(360px, 34vh); }
