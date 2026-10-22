@@ -38,11 +38,12 @@ samples/cache/
 bench/raw/
 bench/cache/
 
-# OS / editors
+# OS / editors / coding assistants (local config only)
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+.claude/
 *.log
 bench/rating/audio/
 bench/__marimo__/

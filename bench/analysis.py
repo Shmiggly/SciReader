@@ -22,28 +22,26 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md(
-        """
-        # SciSpeech-Bench: how faithfully do read-aloud pipelines speak math?
+    mo.md("""
+    # SciSpeech-Bench: how faithfully do read-aloud pipelines speak math?
 
-        Ground truth is the LaTeX from arXiv source tarballs (not OCR). For each display equation we take the
-        spoken text of each pipeline, ask an **independent model family** (`phi4:14b`) to write the speech back
-        as LaTeX, and compare both as canonical MathML trees: **exact** (same tree) or **faithful** (same symbols
-        in the same order; brackets or fraction grouping may differ).
+    Ground truth is the LaTeX from arXiv source tarballs (not OCR). For each display equation we take the
+    spoken text of each pipeline, ask an **independent model family** (`phi4:14b`) to write the speech back
+    as LaTeX, and compare both as canonical MathML trees: **exact** (same tree) or **faithful** (same symbols
+    in the same order; brackets or fraction grouping may differ).
 
-        | Condition | What is spoken |
-        |---|---|
-        | a · naive | the equation's glyphs in reading order, as a generic reader gets them from the PDF text layer |
-        | b · rules | Speech Rule Engine (ClearSpeak) from the source LaTeX |
-        | c · LLM | local LLM narration (`qwen3.5:9b`), unverified |
-        | d · LLM + verify | c, back-transcribed by `gemma4:12b` and checked; one repair; else rules (**SciReader**) |
-        | f · 4B | c and d with the smaller `qwen3.5:4b` narrator |
+    | Condition | What is spoken |
+    |---|---|
+    | a · naive | the equation's glyphs in reading order, as a generic reader gets them from the PDF text layer |
+    | b · rules | Speech Rule Engine (ClearSpeak) from the source LaTeX |
+    | c · LLM | local LLM narration (`qwen3.5:9b`), unverified |
+    | d · LLM + verify | c, back-transcribed by `gemma4:12b` and checked; one repair; else rules (**SciReader**) |
+    | f · 4B | c and d with the smaller `qwen3.5:4b` narrator |
 
-        The judge is the ceiling of this metric: it cannot write back every long equation even from a perfect
-        reading. So we also report the **judge-capable subset**: equations whose rule-based reading (b, which is
-        faithful by construction) the judge reconstructs.
-        """
-    )
+    The judge is the ceiling of this metric: it cannot write back every long equation even from a perfect
+    reading. So we also report the **judge-capable subset**: equations whose rule-based reading (b, which is
+    faithful by construction) the judge reconstructs.
+    """)
     return
 
 
