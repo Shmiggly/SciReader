@@ -1,18 +1,26 @@
 // The PDF, exactly as published (pdf.js canvas), with overlays: sentence/word highlight, focus dimming,
-// click-to-read hit testing and "spoken text" on hover.
+// click-to-read hit testing, "spoken text" on hover, and figure mentions that open their figure when clicked.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
-import { type BadgeLayout, EquationBadge, EquationPopover, layoutBadges } from "./Equations";
-import { fitInScroller, useFitInScroller } from "./fit";
-import { PRESETS, closeFigure, figureDetail, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
+import { type BadgeLayout, EquationBadge, layoutBadges } from "./Equations";
+import { Popups } from "./Popups";
+import { type FigMention, PRESETS, figLabel, openFigure, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
 interface HitRect {
   sid: string;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+interface FigHit {
+  m: FigMention;
   x0: number;
   y0: number;
   x1: number;
@@ -136,6 +144,22 @@ export function PdfView() {
     return m;
   }, [doc]);
 
+  // Figure mentions ("Fig. 3b"): page -> their boxes.
+  const figMentions = useStore((s) => s.figMentions);
+  const figs = useMemo(() => {
+    const m = new Map<number, FigHit[]>();
+    for (const ms of figMentions.values()) {
+      for (const f of ms) {
+        for (const r of f.rects ?? []) {
+          const arr = m.get(r[0]) ?? [];
+          arr.push({ m: f, x0: r[1], y0: r[2], x1: r[3], y1: r[4] });
+          m.set(r[0], arr);
+        }
+      }
+    }
+    return m;
+  }, [figMentions]);
+
   // Auto-follow: keep the current sentence in view.
   useLayoutEffect(() => {
     if (!follow || !current) return;
@@ -212,11 +236,13 @@ export function PdfView() {
             pdf={pdf}
             hits={hits.get(p.index) ?? []}
             cites={cites.get(p.index) ?? []}
+            figs={figs.get(p.index) ?? []}
             badges={badges}
             setRef={(el) => (pageRefs.current[p.index] = el)}
           />
         ))}
       </div>
+      <Popups view="pdf" />
       {!follow && current && (playing || true) && (
         <button className="back-to-reading" onClick={() => useStore.setState({ follow: true })}>
           ↓ Back to reading position
@@ -256,16 +282,18 @@ interface PageProps {
   pdf: PDFDocumentProxy | null;
   hits: HitRect[];
   cites: { x0: number; y0: number; x1: number; y1: number; bib: string[] }[];
+  figs: FigHit[];
   badges: BadgeLayout;
   setRef: (el: HTMLDivElement | null) => void;
 }
 
-function Page({ index, width, height, scale, pdf, hits, cites, badges, setRef }: PageProps) {
+function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, setRef }: PageProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
   const [hover, setHover] = useState<{ sid: string; x: number; y: number } | null>(null);
   const [cite, setCite] = useState<{ bib: string[]; x: number; y: number } | null>(null);
+  const [figHot, setFigHot] = useState<{ m: FigMention; x: number; y: number } | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -317,6 +345,12 @@ function Page({ index, width, height, scale, pdf, hits, cites, badges, setRef }:
 
   const onClick = (ev: React.MouseEvent) => {
     if (window.getSelection()?.toString()) return;
+    const f = !ev.shiftKey && figAt(ev);
+    if (f) {
+      // The figure opens over the page; reading stays where it is.
+      openFigure(f.m);
+      return;
+    }
     const c = citeAt(ev);
     if (c) {
       setCite(c);
@@ -341,8 +375,31 @@ function Page({ index, width, height, scale, pdf, hits, cites, badges, setRef }:
     return c ? { bib: c.bib, x: ev.clientX - rect.left, y: ev.clientY - rect.top } : null;
   };
 
+  /** The figure mention under the pointer (the smallest box wins where "Figs. 2–4" overlaps "Figs. 2"). */
+  const figAt = (ev: React.MouseEvent) => {
+    if (!figs.length) return null;
+    const rect = div.current!.getBoundingClientRect();
+    const x = (ev.clientX - rect.left) / scale;
+    const y = (ev.clientY - rect.top) / scale;
+    let best: FigHit | null = null;
+    for (const h of figs) {
+      if (x < h.x0 - 1 || x > h.x1 + 1 || y < h.y0 - 1 || y > h.y1 + 1) continue;
+      if (!best || (h.x1 - h.x0) * (h.y1 - h.y0) < (best.x1 - best.x0) * (best.y1 - best.y0)) best = h;
+    }
+    return best ? { m: best.m, x: ev.clientX - rect.left, y: ev.clientY - rect.top } : null;
+  };
+
   const onMove = (ev: React.MouseEvent) => {
-    if ((ev.target as HTMLElement).closest(".cite-tip, .fig-pop, .eq-pop")) return;
+    if ((ev.target as HTMLElement).closest(".cite-tip")) return;
+    const f = figAt(ev);
+    if (f) {
+      if (figHot?.m !== f.m) setFigHot(f);
+      window.clearTimeout(hoverTimer.current);
+      setHover(null);
+      setCite(null);
+      return;
+    }
+    if (figHot) setFigHot(null);
     const c = citeAt(ev);
     if (c) {
       setCite(c);
@@ -370,24 +427,39 @@ function Page({ index, width, height, scale, pdf, hits, cites, badges, setRef }:
         div.current = el;
         setRef(el);
       }}
-      style={{ width: width * scale, height: height * scale }}
       onClick={onClick}
       onMouseMove={onMove}
       onMouseLeave={() => {
         window.clearTimeout(hoverTimer.current);
         setHover(null);
         setCite(null);
+        setFigHot(null);
       }}
       data-page={index}
+      style={{ width: width * scale, height: height * scale, cursor: figHot ? "zoom-in" : undefined }}
     >
       <canvas ref={canvas} style={{ width: width * scale, height: height * scale }} />
       <Overlay page={index} scale={scale} />
-      <EquationLayer page={index} scale={scale} pageWidth={width * scale} badges={badges} />
-      <FigureLayer page={index} scale={scale} pageWidth={width * scale} />
-      <EqRefLayer page={index} scale={scale} pageWidth={width * scale} />
+      <EquationLayer page={index} scale={scale} badges={badges} />
+      {figHot && <FigTip m={figHot.m} page={index} scale={scale} x={figHot.x} y={figHot.y} pageWidth={width * scale} />}
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
       {cite && <CiteTip bib={cite.bib} x={cite.x} y={cite.y} pageWidth={width * scale} />}
     </div>
+  );
+}
+
+/** A hovered figure mention: outlined, with a hint that a click shows the figure. */
+function FigTip({ m, page, scale, x, y, pageWidth }: { m: FigMention; page: number; scale: number; x: number; y: number; pageWidth: number }) {
+  const left = Math.min(Math.max(8, x - 110), pageWidth - 240);
+  return (
+    <>
+      {(m.rects ?? []).filter((r) => r[0] === page).map((r, i) => (
+        <div key={i} className="fig-ref-hot" style={rectStyle(r, scale, 1)} />
+      ))}
+      <div className="hover-tip fig-tip" style={{ left, top: y + 18 }}>
+        {figLabel(m)}: click to see it
+      </div>
+    </>
   );
 }
 
@@ -471,14 +543,14 @@ function HoverTip({ sid, x, y, pageWidth }: { sid: string; x: number; y: number;
   );
 }
 
-function EquationLayer({ page, scale, pageWidth, badges }: { page: number; scale: number; pageWidth: number; badges: BadgeLayout }) {
+function EquationLayer({ page, scale, badges }: { page: number; scale: number; badges: BadgeLayout }) {
   const doc = useStore((s) => s.doc)!;
   const eqOpen = useStore((s) => s.eqOpen);
   const [hot, setHot] = useState<string | null>(null);
   const eqs = useMemo(() => doc.blocks.filter((b) => b.type === "equation" && b.page === page && badges.pos.has(b.id)), [doc, page, badges]);
   if (!eqs.length) return null;
   const open = eqs.find((b) => b.id === eqOpen);
-  // The equation a badge belongs to is outlined while the badge is hovered or its details are open.
+  // The equation a badge belongs to is outlined while the badge is hovered or its details are open (in Popups.tsx).
   const target = eqs.find((b) => b.id === hot) ?? open;
   return (
     <div className="eq-layer">
@@ -486,63 +558,6 @@ function EquationLayer({ page, scale, pageWidth, badges }: { page: number; scale
       {eqs.map((b) => (
         <EquationBadge key={b.id} b={b} pos={badges.pos.get(b.id)!} compact={badges.compact} onHover={setHot} />
       ))}
-      {open && <EquationPopover b={open} scale={scale} pageWidth={pageWidth} />}
-    </div>
-  );
-}
-
-function FigureLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
-  const pop = useStore((s) => s.figPopup);
-  const doc = useStore((s) => s.doc)!;
-  const ref = useRef<HTMLDivElement>(null);
-  useFitInScroller(ref);
-  if (!pop) return null;
-  const e = sentenceAt(pop.sentence_id);
-  const r = e?.s.rects[e.s.rects.length - 1];
-  if (!r || r[0] !== page) return null;
-  const w = Math.min(520, pageWidth - 16);
-  const left = Math.max(8, Math.min(r[1] * scale, pageWidth - w - 8));
-  return (
-    <div className="fig-pop" ref={ref} style={{ left, top: r[4] * scale + 10, width: w }} onClick={(ev) => ev.stopPropagation()}>
-      <div className="eq-pop-head">
-        <b>{pop.label}</b>
-        <button className={pop.pinned ? "toggle on" : "toggle"} onClick={() => useStore.setState({ figPopup: { ...pop, pinned: !pop.pinned } })} title="Keep this open">
-          📌
-        </button>
-        <button className="ghost" onClick={closeFigure} aria-label="Close">✕</button>
-      </div>
-      <img src={`/api/docs/${doc.id}/figures/${pop.figure_id}/image`} alt={pop.label} onLoad={() => fitInScroller(ref.current)} />
-      <div className="fig-desc">
-        <span className="ai-label">AI description</span>{" "}
-        {pop.loading ? "…" : pop.description ?? "Not ready yet: reading the caption only."}
-      </div>
-      <div className="eq-actions">
-        <button onClick={figureDetail} title="More detail (D)">More detail (D)</button>
-      </div>
-    </div>
-  );
-}
-
-function EqRefLayer({ page, scale, pageWidth }: { page: number; scale: number; pageWidth: number }) {
-  const ref = useStore((s) => s.eqRef);
-  const doc = useStore((s) => s.doc)!;
-  const res = useStore((s) => (ref ? s.eqResults[ref.blockId] : undefined));
-  if (!ref) return null;
-  const e = sentenceAt(ref.sentenceId);
-  const r = e?.s.rects[0];
-  const b = doc.blocks.find((x) => x.id === ref.blockId);
-  if (!r || r[0] !== page || !b) return null;
-  const w = Math.min(560, pageWidth - 16);
-  const left = Math.max(8, Math.min(r[1] * scale, pageWidth - w - 8));
-  const [x0, y0, x1, y1] = b.bbox;
-  const verdict = res?.verdict;
-  return (
-    <div className="fig-pop eqref-pop" style={{ left, top: Math.max(4, r[2] * scale - 150), width: w }} onClick={(ev) => ev.stopPropagation()}>
-      <div className="eq-pop-head">
-        <b>Equation {b.eq_number} (page {b.page + 1})</b>
-        {verdict && <span className={`eq-badge static ${verdict}`}>{verdict}</span>}
-      </div>
-      <img src={`/api/docs/${doc.id}/crop?page=${b.page}&x0=${x0}&y0=${y0}&x1=${x1}&y1=${y1}`} alt={`Equation ${b.eq_number}`} />
     </div>
   );
 }

@@ -11,9 +11,11 @@ import { ReflowSettings, ReflowView } from "./ReflowView";
 import { Pronunciation } from "./Pronunciation";
 import {
   type EqMode,
-  type FigMention,
+  type FigMode,
+  FIG_MODES,
   citedEquations,
   figureDetail,
+  loadFigures,
   readCitedEquation,
   PRESETS,
   SKIP_LABELS,
@@ -22,6 +24,7 @@ import {
   playSentence,
   saveNow,
   sentenceAt,
+  setFigMode,
   setSpeed,
   setVoiceOrMode,
   setVolume,
@@ -49,6 +52,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
         if (st.speed) p.speed = st.speed;
         if (st.voice) p.voice = st.voice;
         if (st.eq_mode) p.eqMode = (st.eq_mode === "full" ? "auto" : st.eq_mode) as EqMode;
+        p.figMode = FIG_MODES.includes(st.fig_mode as FigMode) ? (st.fig_mode as FigMode) : "first";
         useStore.setState(p);
         if (st.position?.sentence_id && sentenceAt(st.position.sentence_id)) {
           setResume(st.position);
@@ -63,11 +67,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   useKeyboard();
   useEquationChecks(doc.id);
   useEffect(() => {
-    api.get<{ mentions: FigMention[] }>(`/api/docs/${doc.id}/figures`).then((r) => {
-      const byS = new Map<string, FigMention[]>();
-      for (const m of r.mentions) byS.set(m.sentence_id, [...(byS.get(m.sentence_id) ?? []), m]);
-      useStore.setState({ figMentions: byS, mentionedFigs: new Set(r.mentions.map((m) => m.figure_id)) });
-    }, () => undefined);
+    void loadFigures(doc.id);
     void api.post(`/api/docs/${doc.id}/figures/prepare`).catch(() => undefined);
   }, [doc.id]);
 
@@ -163,6 +163,7 @@ function PlaybackBar() {
   const voice = useStore((s) => s.voice);
   const volume = useStore((s) => s.volume);
   const eqMode = useStore((s) => s.eqMode);
+  const figMode = useStore((s) => s.figMode);
   const focus = useStore((s) => s.focus);
   const error = useStore((s) => s.error);
   const tts = useStore((s) => s.tts);
@@ -221,6 +222,15 @@ function PlaybackBar() {
             <option value="skip">Skip</option>
           </select>
         </label>
+        <label title="When reading stops at a figure mention to show the figure and describe it (click a mention to see a figure any time)">
+          <span className="ctl-label">Figures</span>
+          <select value={figMode} onChange={(ev) => setFigMode(ev.target.value as FigMode)}>
+            <option value="first">First encounter (AI)</option>
+            <option value="every">Every mention (AI)</option>
+            <option value="caption">Caption only</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
         <label title="Volume">
           <span className="ctl-label">Vol</span>
           <input type="range" min={0} max={1} step={0.05} value={volume} onChange={(ev) => setVolume(Number(ev.target.value))} />
@@ -260,10 +270,6 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
           Announce section titles
         </label>
         <label className="check">
-          <input type="checkbox" checked={useStore((s) => s.figuresOn)} onChange={(ev) => useStore.setState({ figuresOn: ev.target.checked })} />
-          Describe figures at first mention (AI, labeled)
-        </label>
-        <label className="check">
           <input type="checkbox" checked={useStore((s) => s.autoPause)} onChange={(ev) => useStore.setState({ autoPause: ev.target.checked })} />
           Pause after each paragraph (Space continues)
         </label>
@@ -283,7 +289,8 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
         </div>
       </section>
       <section className="muted small">
-        Keys: Space play/pause · ←/→ sentence · Shift+←/→ paragraph · +/− speed · F focus · E cited equation · D figure detail
+        Keys: Space play/pause · ←/→ sentence · Shift+←/→ paragraph · +/− speed · F focus · E cited equation · D figure detail.
+        Figures (playback bar) sets when reading stops to describe a figure; click “Fig. 3” in the text to see a figure any time. Popups move by their header.
       </section>
     </aside>
   );

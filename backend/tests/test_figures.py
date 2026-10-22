@@ -14,6 +14,8 @@ def test_case_and_style_variants():
     assert refs("listed in Fig. 2A. Plotted in Fig. 3B)") == [("Fig. 2A", "2", "a"), ("Fig. 3B", "3", "b")]
     assert refs("in figure 4(a), and in figure 4(c), respectively") == [("figure 4(a)", "4", "a"), ("figure 4(c)", "4", "c")]
     assert refs("Figure 5 (a) , there was") == [("Figure 5 (a)", "5", "a")]
+    assert refs("we show a fluid element infigure 1.") == [("figure 1", "1", "")]  # glued by the text layer
+    assert refs("configure 3 and prefigure 2") == []
 
 
 def test_panel_lists_and_ranges():

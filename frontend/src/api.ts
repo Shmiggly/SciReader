@@ -98,6 +98,7 @@ export interface PaperState {
   speed?: number;
   voice?: string;
   eq_mode?: string;
+  fig_mode?: string;
 }
 
 async function check<T>(r: Response): Promise<T> {

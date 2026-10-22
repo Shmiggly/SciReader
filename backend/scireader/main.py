@@ -63,7 +63,8 @@ if dist.exists():
         candidate = (dist / path).resolve()
         if path and candidate.is_file() and dist.resolve() in candidate.parents:
             return FileResponse(candidate)
-        return FileResponse(dist / "index.html")
+        # Revalidated on every load, so a rebuilt UI shows up without a hard reload (the assets it names are hashed).
+        return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 def run() -> None:

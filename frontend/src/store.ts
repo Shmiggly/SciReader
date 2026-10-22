@@ -1,11 +1,17 @@
 // App state (zustand) and the playback engine: per-sentence audio, prefetch, word timing, media keys.
 import { create } from "zustand";
-import { api, type Block, type Doc, type Sentence, type TtsResult, type TtsWord } from "./api";
+import { api, type Block, type Doc, type Rect, type Sentence, type TtsResult, type TtsWord } from "./api";
 import type { EqResult } from "./Equations";
 
 // "auto": natural wording, long equations as their AI summary; "full_all": natural wording at any length;
 // "precise": the explicit wording the gate checks ("sub", "open paren"). A saved "full" (the old default) loads as "auto".
 export type EqMode = "auto" | "full_all" | "precise" | "brief" | "skip";
+
+// When playback stops at a figure mention to show the figure and describe it: "first": the first time playback reaches
+// a mention of it, wherever reading started (each panel letter once, the whole figure once); "every": at every mention;
+// "caption": like "first", but reads the caption, no AI; "off": never interrupts (captions are read where they are).
+export type FigMode = "first" | "every" | "caption" | "off";
+export const FIG_MODES: FigMode[] = ["first", "every", "caption", "off"];
 
 export const SKIP_LABELS: Record<string, string> = {
   page_furniture: "Page headers, footers, page numbers",
@@ -34,20 +40,63 @@ export interface FigMention {
   panels: string[];
   figure_id: string;
   first: boolean;
+  /** The mention's boxes on the page (absent for OCR'd papers). */
+  rects?: Rect[];
+}
+
+/** Where a popup opens: next to a mention or a sentence (the PDF page or the text view). */
+export interface PopAnchor {
+  sid: string;
+  span: [number, number] | null;
+  rects: Rect[] | null;
 }
 
 export interface FigPopup {
   key: string;
   figure_id: string;
-  sentence_id: string;
   label: string;
+  anchor: PopAnchor;
   description: string | null;
+  caption: string | null;
   pinned: boolean;
   loading: boolean;
+  /** "narration": opened by playback at a mention (closes with the next sentence unless pinned); "click": opened by
+   * the reader (stays until closed, and "Hear it" returns to the reading position afterwards). */
+  origin: "narration" | "click";
+  captionOnly: boolean;
+  /** Changes when a popup is opened anew (it is then placed next to its mention); narration that replaces the content
+   * of an open popup keeps it, so a popup stays where it was dragged while it is open. */
+  seq: number;
 }
 
+/** Figure targets described in this session: "3" for the whole figure, "3:b" per panel letter. */
 const narrated = new Set<string>();
+/** Figures described in this session (their captions are not read again where they are). */
+const describedFigs = new Set<string>();
 let figQueue: FigMention[] = [];
+let figSeq = 0;
+
+function figUnits(m: { number: string; panels: string[] }): string[] {
+  return m.panels.length ? m.panels.map((p) => `${m.number}:${p}`) : [m.number];
+}
+
+export function figLabel(m: { number: string; panels: string[] }): string {
+  return `Figure ${m.number}${m.panels.length ? `, panel${m.panels.length > 1 ? "s" : ""} ${m.panels.join(", ")}` : ""}`;
+}
+
+/** The figures to describe after a sentence ends, in the current mode (each target once per sentence). */
+export function dueFigures(sid: string): FigMention[] {
+  const st = get();
+  if (st.figMode === "off") return [];
+  const seen = new Set<string>();
+  const out: FigMention[] = [];
+  for (const m of st.figMentions.get(sid) ?? []) {
+    if (seen.has(m.key)) continue;
+    seen.add(m.key);
+    if (st.figMode === "every" || figUnits(m).some((u) => !narrated.has(u))) out.push(m);
+  }
+  return out;
+}
 
 interface Entry {
   s: Sentence;
@@ -81,10 +130,12 @@ interface State {
   eqState: string;
   eqMessage: string;
   eqOpen: string | null;
+  /** Figure mentions by sentence. */
   figMentions: Map<string, FigMention[]>;
-  mentionedFigs: Set<string>;
+  /** Figure id → reading-order index of the sentence with its last mention. */
+  figLastMention: Map<string, number>;
   figPopup: FigPopup | null;
-  figuresOn: boolean;
+  figMode: FigMode;
   selection: string[] | null;
   eqRef: { blockId: string; sentenceId: string } | null;
   view: "pdf" | "text";
@@ -120,9 +171,9 @@ export const useStore = create<State>((set) => ({
   eqMessage: "",
   eqOpen: null,
   figMentions: new Map(),
-  mentionedFigs: new Set(),
+  figLastMention: new Map(),
   figPopup: null,
-  figuresOn: true,
+  figMode: "first",
   selection: null,
   eqRef: null,
   view: "pdf",
@@ -139,8 +190,12 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), mentionedFigs: new Set(), figPopup: null, selection: null, fitWidth: true });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, selection: null, fitWidth: true });
     narrated.clear();
+    describedFigs.clear();
+    figReady.clear();
+    figOrder = [];
+    lastWanted = "";
   },
   set: (p) => set(p),
 }));
@@ -155,9 +210,74 @@ export function isReadable(b: Block): boolean {
   if (b.type === "heading" && !st.announceSections) return false;
   if (b.type === "figure" || b.type === "table") return false;
   if (b.skip_reason === "junk") return false;
-  if (b.type === "caption" && st.figuresOn && b.figure_id && st.mentionedFigs.has(b.figure_id)) return false;
+  if (b.type === "caption" && captionTakenOver(b)) return false;
   if (b.skip_reason && st.skips[b.skip_reason] !== false) return false;
   return b.sentences.length > 0;
+}
+
+/** A mentioned figure's caption isn't read where it is when the figure was described at a mention in this session, or
+ * will be at a later one; otherwise (reading started after its mentions) it is, so no figure goes by unannounced. */
+function captionTakenOver(b: Block): boolean {
+  const st = get();
+  if (st.figMode === "off" || !b.figure_id) return false;
+  const last = st.figLastMention.get(b.figure_id);
+  if (last === undefined) return false;
+  if (describedFigs.has(b.figure_id)) return true;
+  return last > (st.index.get(b.sentences[0]?.id)?.idx ?? Infinity);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Figure mentions: loading, and preparing the descriptions the reader is about to reach first.
+
+/** Mentions in reading order (reading-order index of their sentence). */
+let figOrder: { idx: number; m: FigMention }[] = [];
+/** Targets whose AI description is ready. */
+const figReady = new Set<string>();
+let lastWanted = "";
+
+export async function loadFigures(docId: string) {
+  try {
+    const r = await api.get<{ mentions: FigMention[]; descriptions: Record<string, { description: string | null }> }>(`/api/docs/${docId}/figures`);
+    const st = get();
+    if (st.doc?.id !== docId) return;
+    const byS = new Map<string, FigMention[]>();
+    const last = new Map<string, number>();
+    figOrder = [];
+    for (const m of r.mentions) {
+      byS.set(m.sentence_id, [...(byS.get(m.sentence_id) ?? []), m]);
+      const idx = st.index.get(m.sentence_id)?.idx;
+      if (idx === undefined) continue;
+      figOrder.push({ idx, m });
+      last.set(m.figure_id, Math.max(idx, last.get(m.figure_id) ?? -1));
+    }
+    for (const [k, d] of Object.entries(r.descriptions)) if (d.description) figReady.add(k);
+    useStore.setState({ figMentions: byS, figLastMention: last });
+    if (st.current) wantFiguresFrom(st.current);
+  } catch {
+    /* not parsed yet, or the backend is busy: no figure narration */
+  }
+}
+
+/** Ask the background job to describe the next few targets from a sentence on first (reading may start anywhere). */
+function wantFiguresFrom(sid: string) {
+  const st = get();
+  const at = st.index.get(sid)?.idx;
+  if (!st.doc || at === undefined || st.figMode === "caption" || st.figMode === "off") return;
+  const keys: string[] = [];
+  for (const { idx, m } of figOrder) {
+    if (idx < at || keys.includes(m.key) || figReady.has(m.key)) continue;
+    if (st.figMode === "first" && figUnits(m).every((u) => narrated.has(u))) continue;
+    keys.push(m.key);
+    if (keys.length === 3) break;
+  }
+  const wanted = keys.join(",");
+  if (!wanted || wanted === lastWanted) return;
+  lastWanted = wanted;
+  void api.post(`/api/docs/${st.doc.id}/figures/prepare?first=${wanted}`).catch(() => undefined);
+}
+
+export function noteFigureReady(key: string, description: string | null) {
+  if (description) figReady.add(key);
 }
 
 function nextReadable(fromIdx: number, dir: 1 | -1): string | null {
@@ -219,7 +339,10 @@ function prefetch(fromSid: string, n = 4) {
 
 function tick() {
   const { tts, word } = get();
-  if (tts) {
+  if (kind !== "sentence") {
+    // A detour or a figure description: no word of the paused sentence is being spoken.
+    if (word) useStore.setState({ word: null });
+  } else if (tts) {
     const t = audio.currentTime;
     let w: TtsWord | null = null;
     for (const x of tts.words) {
@@ -240,35 +363,29 @@ audio.addEventListener("play", () => {
 audio.addEventListener("pause", () => cancelAnimationFrame(raf));
 audio.addEventListener("ended", () => {
   cancelAnimationFrame(raf);
-  const st = get();
-  const cur = st.current;
-  if (eqRefResume) {
-    const r = eqRefResume;
-    eqRefResume = null;
-    useStore.setState({ eqRef: null, tts: r.tts, current: r.current });
-    if (r.wasPlaying && r.src) {
-      audio.src = r.src;
-      audio.currentTime = r.time;
-      audio.playbackRate = get().speed;
-      void audio.play().then(() => useStore.setState({ playing: true }));
-    } else useStore.setState({ playing: false });
+  if (kind === "detour") {
+    if (detour) endDetour();
+    else useStore.setState({ playing: false, word: null });
     return;
   }
-  if (oneShot) {
-    oneShot = false;
+  if (kind === "say") {
     useStore.setState({ playing: false, word: null });
     return;
   }
-  // Figure narration: after the sentence that first mentions a figure (or panel), describe it.
-  if (!figPlaying && cur && st.figuresOn) {
-    const ms = (st.figMentions.get(cur) ?? []).filter((m) => m.first && !narrated.has(m.key));
-    if (ms.length) figQueue = ms;
-  }
+  // Figure narration: after a sentence that mentions a figure (or panel) due in the Figures mode, show and describe it.
+  const cur = get().current;
+  if (kind === "sentence" && cur) figQueue = dueFigures(cur);
+  continueReading();
+});
+
+/** After a sentence or a figure description: the next due figure, else the next sentence. */
+function continueReading() {
   if (figQueue.length) {
     void playFigure(figQueue.shift()!);
     return;
   }
-  figPlaying = false;
+  const st = get();
+  const cur = st.current;
   if (st.figPopup && !st.figPopup.pinned) useStore.setState({ figPopup: null });
   const e = cur ? st.index.get(cur) : undefined;
   const next = e ? nextReadable(e.idx, 1) : null;
@@ -279,15 +396,78 @@ audio.addEventListener("ended", () => {
   }
   if (next) void playSentence(next);
   else useStore.setState({ playing: false, word: null });
-});
+}
 
-let figPlaying = false;
-let eqRefResume: { src: string; time: number; tts: TtsResult | null; current: string | null; wasPlaying: boolean } | null = null;
+/** What the audio element holds: a sentence, a figure description in the reading flow, a detour (a cited equation, a
+ * figure heard from its popup: reading resumes where it was afterwards) or AI text read once. */
+type AudioKind = "sentence" | "figure" | "detour" | "say";
+let kind: AudioKind = "sentence";
+/** The sentence the loaded audio belongs to: play resumes it only while that sentence is current. */
+let audioSid: string | null = null;
+let detour: {
+  src: string;
+  time: number;
+  tts: TtsResult | null;
+  current: string | null;
+  wasPlaying: boolean;
+  kind: AudioKind;
+  audioSid: string | null;
+  queue: FigMention[];
+} | null = null;
 let eqRefCursor: { sid: string; i: number } | null = null;
 
-const EQ_REF = /\b(?:Eqs?\.|Eqn\.|Equations?)\s*\(?\s*(\d{1,3}[a-z]?)\s*\)?(?:\s*(?:and|,|–|-)\s*\(?(\d{1,3}[a-z]?)\)?)?/g;
+/** Pause what is playing, play something else, then come back to the same spot (playing again if it was). */
+async function startDetour(load: () => Promise<{ audio_url: string }>): Promise<void> {
+  const st = get();
+  // A detour from a detour (E pressed again) keeps the original place.
+  const d = detour ?? (detour = { src: audio.src, time: audio.currentTime, tts: st.tts, current: st.current, wasPlaying: st.playing, kind, audioSid, queue: figQueue });
+  const my = ++token;
+  audio.pause();
+  kind = "detour";
+  audioSid = d.current;
+  figQueue = [];
+  useStore.setState({ word: null, loading: true, error: null });
+  try {
+    const r = await load();
+    if (my !== token) return;
+    audio.src = r.audio_url;
+    audio.playbackRate = get().speed;
+    audio.volume = get().volume;
+    await audio.play();
+    if (my !== token) return;
+    useStore.setState({ loading: false, playing: true });
+  } catch (err) {
+    if (my !== token) return;
+    const msg = err instanceof Error ? err.message : String(err);
+    endDetour();
+    useStore.setState({ error: msg });
+  }
+}
 
-/** Equation blocks cited by a sentence ("Eq. (3)", "Eqs. 4 and 5"), in order. */
+function endDetour(resume = true) {
+  const d = detour!;
+  detour = null;
+  kind = d.kind;
+  audioSid = d.audioSid;
+  figQueue = d.queue;
+  useStore.setState({ eqRef: null, tts: d.tts, current: d.current, loading: false });
+  if (d.src) {
+    audio.src = d.src;
+    audio.currentTime = d.time;
+    audio.playbackRate = get().speed;
+  }
+  if (resume && d.wasPlaying && d.src) {
+    const my = token;
+    void audio.play().then(
+      () => my === token && useStore.setState({ playing: true }),
+      () => my === token && useStore.setState({ playing: false }),
+    );
+  } else useStore.setState({ playing: false });
+}
+
+const EQ_REF = /\b(?:Eqs?\.|Eqn\.|Equations?)\s*\(?\s*(\d{1,3}[a-z]?)\s*\)?(?:\s*(?:and|,|–|-)\s*\(?(\d{1,3}[a-z]?)\)?)?/gi;
+
+/** Equation blocks cited by a sentence ("Eq. (3)", "Eqs. 4 and 5", IOP's "equation (9) and (10)"), in order. */
 export function citedEquations(sid: string | null): Block[] {
   const st = get();
   const e = sid ? st.index.get(sid) : undefined;
@@ -311,35 +491,21 @@ export async function readCitedEquation() {
   const i = eqRefCursor && eqRefCursor.sid === st.current ? (eqRefCursor.i + 1) % refs.length : 0;
   eqRefCursor = { sid: st.current, i };
   const b = refs[i];
-  if (!eqRefResume) {
-    eqRefResume = { src: audio.src, time: audio.currentTime, tts: st.tts, current: st.current, wasPlaying: st.playing };
-  }
-  const my = ++token;
-  audio.pause();
-  useStore.setState({ eqRef: { blockId: b.id, sentenceId: st.current }, word: null, loading: true });
-  try {
-    const r = await fetchTts(b.sentences[0].id);
-    if (my !== token) return;
-    audio.src = r.audio_url;
-    audio.playbackRate = get().speed;
-    await audio.play();
-    useStore.setState({ loading: false, playing: true });
-  } catch (err) {
-    eqRefResume = null;
-    useStore.setState({ eqRef: null, loading: false, error: err instanceof Error ? err.message : String(err) });
-  }
+  useStore.setState({ eqRef: { blockId: b.id, sentenceId: st.current } });
+  await startDetour(() => fetchTts(b.sentences[0].id));
 }
-let oneShot = false;
 
 /** Read arbitrary (AI) text aloud once, without continuing the paper afterwards. */
 export async function sayText(text: string, label = "") {
   const my = ++token;
   audio.pause();
+  detour = null;
   useStore.setState({ loading: true, word: null });
   try {
     const r = await api.post<TtsResult>("/api/tts/say", { text, voice: get().voice, label });
     if (my !== token) return;
-    oneShot = true;
+    kind = "say";
+    audioSid = null;
     useStore.setState({ tts: null });
     audio.src = r.audio_url;
     audio.playbackRate = get().speed;
@@ -355,7 +521,9 @@ export async function sayText(text: string, label = "") {
 export function jumpTo(sid: string) {
   token++;
   audio.pause();
-  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null });
+  kind = "sentence";
+  detour = null;
+  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null });
 }
 
 /** Shift+click: select the sentences between the current one and the clicked one. */
@@ -372,41 +540,108 @@ export function selectRangeTo(sid: string) {
   useStore.setState({ selection: st.order.slice(lo, Math.min(hi + 1, lo + 40)) });
 }
 
+interface FigTts extends TtsResult {
+  description: string | null;
+  caption_part: string | null;
+}
+
+function figTtsUrl(key: string, detail: boolean, captionOnly: boolean): string {
+  const { doc, voice } = get();
+  return `/api/tts/${doc!.id}/figure/${key}?voice=${encodeURIComponent(voice)}${detail ? "&detail=true" : ""}${captionOnly ? "&caption_only=true" : ""}`;
+}
+
+function markDescribed(m: { number: string; panels: string[]; figure_id: string }) {
+  for (const u of figUnits(m)) narrated.add(u);
+  describedFigs.add(m.figure_id);
+}
+
+/** In the reading flow: show the figure where it was mentioned and describe it (playback never waits for the AI: the
+ * caption is read if the description isn't ready). */
 async function playFigure(m: FigMention, detail = false): Promise<void> {
   const my = ++token;
   const st = get();
-  narrated.add(m.key);
-  figPlaying = true;
-  const label = `Figure ${m.number}${m.panels.length ? `, panel${m.panels.length > 1 ? "s" : ""} ${m.panels.join(", ")}` : ""}`;
+  markDescribed(m);
+  kind = "figure";
+  audioSid = st.current;
+  const captionOnly = st.figMode === "caption" && !detail;
+  const prev = st.figPopup;
   useStore.setState({
-    figPopup: { key: m.key, figure_id: m.figure_id, sentence_id: m.sentence_id, label, description: null, pinned: st.figPopup?.pinned ?? false, loading: true },
+    figPopup: {
+      key: m.key, figure_id: m.figure_id, label: figLabel(m), anchor: { sid: m.sentence_id, span: m.span, rects: m.rects ?? null },
+      description: prev?.key === m.key ? prev.description : null, caption: prev?.key === m.key ? prev.caption : null,
+      pinned: prev?.pinned ?? false, loading: true, origin: "narration", captionOnly, seq: prev ? prev.seq : ++figSeq,
+    },
     word: null,
     loading: true,
   });
   try {
-    const r = await api.get<TtsResult & { description: string | null }>(
-      `/api/tts/${st.doc!.id}/figure/${m.key}?voice=${encodeURIComponent(st.voice)}${detail ? "&detail=true" : ""}`,
-    );
+    const r = await api.get<FigTts>(figTtsUrl(m.key, detail, captionOnly));
     if (my !== token) return;
-    useStore.setState((s) => ({ figPopup: s.figPopup ? { ...s.figPopup, description: r.description, loading: false } : null, tts: null }));
+    if (!detail) noteFigureReady(m.key, r.description);
+    useStore.setState((s) => ({
+      figPopup: s.figPopup?.key === m.key ? { ...s.figPopup, description: captionOnly ? s.figPopup.description : r.description, caption: r.caption_part, loading: false } : s.figPopup,
+      tts: null,
+    }));
     audio.src = r.audio_url;
     audio.playbackRate = get().speed;
+    audio.volume = get().volume;
     await audio.play();
+    if (my !== token) return;
     useStore.setState({ loading: false, playing: true });
   } catch (err) {
     if (my !== token) return;
-    figPlaying = false;
-    useStore.setState({ loading: false, error: err instanceof Error ? err.message : String(err) });
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("interrupted") || msg.includes("aborted")) return;
+    useStore.setState((s) => ({ error: msg, loading: false, figPopup: s.figPopup ? { ...s.figPopup, loading: false } : null }));
+    continueReading(); // a failing figure never stops the paper
   }
+}
+
+/** The mention a popup was opened from, as a narration target. */
+function popupMention(p: FigPopup): FigMention {
+  const [, number = "", letters = ""] = /^(\d+)([a-z]*)$/.exec(p.key) ?? [];
+  return { sentence_id: p.anchor.sid, span: p.anchor.span ?? [0, 0], key: p.key, number, panels: letters.split("").filter(Boolean), figure_id: p.figure_id, first: false, rects: p.anchor.rects ?? undefined };
+}
+
+/** Click on a figure mention: show the figure with its AI description, without moving the reading position. */
+export function openFigure(m: FigMention) {
+  const st = get();
+  if (!st.doc) return;
+  useStore.setState({
+    figPopup: {
+      key: m.key, figure_id: m.figure_id, label: figLabel(m), anchor: { sid: m.sentence_id, span: m.span, rects: m.rects ?? null },
+      description: null, caption: null, pinned: true, loading: true, origin: "click", captionOnly: st.figMode === "caption", seq: ++figSeq,
+    },
+  });
+}
+
+/** "Hear it" in the figure popup (and `D` once its narration is over): read it, then go back to where reading was. */
+export function hearFigure(detail = false) {
+  const p = get().figPopup;
+  if (!p || !get().doc) return;
+  const captionOnly = p.captionOnly && !detail;
+  markDescribed(popupMention(p));
+  void startDetour(async () => {
+    const r = await api.get<FigTts>(figTtsUrl(p.key, detail, captionOnly));
+    if (!detail) noteFigureReady(p.key, r.description);
+    useStore.setState((s) =>
+      s.figPopup?.key === p.key
+        ? { figPopup: { ...s.figPopup, description: captionOnly ? s.figPopup.description : r.description ?? s.figPopup.description, caption: r.caption_part ?? s.figPopup.caption, loading: false } }
+        : {},
+    );
+    return r;
+  });
 }
 
 /** `D`: more detail on the figure currently shown. */
 export function figureDetail() {
   const p = get().figPopup;
   if (!p) return;
-  const m: FigMention = { sentence_id: p.sentence_id, span: [0, 0], key: p.key, number: p.key.replace(/[a-h]+$/, ""), panels: p.key.replace(/^\d+/, "").split("").filter(Boolean), figure_id: p.figure_id, first: true };
-  figQueue = [];
-  void playFigure(m, true);
+  if (kind === "figure" && p.origin === "narration") {
+    // While its description plays in the reading flow: the longer one replaces it, then reading goes on.
+    figQueue = [];
+    void playFigure(popupMention(p), true);
+  } else hearFigure(true);
 }
 
 export function closeFigure() {
@@ -416,9 +651,9 @@ export function closeFigure() {
 export async function playSentence(sid: string): Promise<void> {
   const my = ++token;
   figQueue = [];
-  figPlaying = false;
-  oneShot = false;
-  eqRefResume = null;
+  kind = "sentence";
+  audioSid = sid;
+  detour = null;
   if (get().eqRef) useStore.setState({ eqRef: null });
   if (get().selection) useStore.setState({ selection: null });
   if (get().figPopup && !get().figPopup!.pinned) useStore.setState({ figPopup: null });
@@ -427,6 +662,7 @@ export async function playSentence(sid: string): Promise<void> {
   audio.pause();
   useStore.setState({ current: sid, loading: true, word: null, error: null, playing: true });
   saveSoon();
+  wantFiguresFrom(sid);
   try {
     const r = await fetchTts(sid);
     if (my !== token) return;
@@ -449,15 +685,23 @@ export async function playSentence(sid: string): Promise<void> {
 
 export function togglePlay() {
   const st = get();
-  if (st.playing) {
+  if (st.playing || st.loading) {
     token++;
     audio.pause();
+    // Paused while a detour was still loading: drop it, back to where reading was.
+    if (kind === "detour" && detour && st.loading) endDetour(false);
     useStore.setState({ playing: false, loading: false });
     return;
   }
-  if (st.current && audio.src && st.tts?.sentence_id === st.current && !audio.ended) {
+  const own = kind === "sentence" ? st.tts?.sentence_id === st.current : kind !== "say" && audioSid === st.current;
+  if (st.current && audio.src && own && !audio.ended) {
     audio.playbackRate = st.speed;
     void audio.play().then(() => useStore.setState({ playing: true }));
+    return;
+  }
+  if (kind === "figure" && own && st.figPopup?.origin === "narration") {
+    // Paused before the description started: play it now (the sentence was already read).
+    void playFigure(popupMention(st.figPopup));
     return;
   }
   const start = st.current ?? nextReadable(-1, 1);
@@ -468,6 +712,10 @@ export function stop() {
   token++;
   audio.pause();
   audio.removeAttribute("src");
+  kind = "sentence";
+  audioSid = null;
+  detour = null;
+  figQueue = [];
   useStore.setState({ playing: false, loading: false, word: null, tts: null });
 }
 
@@ -544,6 +792,14 @@ export function setVoiceOrMode(p: { voice?: string; eqMode?: EqMode }) {
   if (get().playing && cur) void playSentence(cur);
 }
 
+/** The Figures menu: takes effect at the next mention (nothing playing is interrupted). */
+export function setFigMode(figMode: FigMode) {
+  useStore.setState({ figMode });
+  saveSoon();
+  const cur = get().current;
+  if (cur) wantFiguresFrom(cur);
+}
+
 export function sentenceAt(sid: string | null): Entry | undefined {
   return sid ? get().index.get(sid) : undefined;
 }
@@ -570,6 +826,7 @@ export function saveNow() {
       speed: st.speed,
       voice: st.voice,
       eq_mode: st.eqMode,
+      fig_mode: st.figMode,
     })
     .catch(() => undefined);
 }

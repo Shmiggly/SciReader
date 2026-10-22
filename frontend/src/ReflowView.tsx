@@ -1,12 +1,15 @@
 // Clean text view: the parsed paper as one readable column, synced with playback (same highlight,
-// click-to-read). Adjustable font (incl. dyslexia-friendly), size, line spacing and width.
-import { useEffect, useMemo, useRef } from "react";
+// click-to-read, figure mentions that open their figure). Adjustable font (incl. dyslexia-friendly), size, line
+// spacing and width.
+import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import katex from "katex";
 import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/700.css";
 import "@fontsource/opendyslexic/400.css";
+import type { Sentence } from "./api";
 import { badgeState, eqLatex } from "./Equations";
-import { isReadable, playSentence, useStore } from "./store";
+import { Popups } from "./Popups";
+import { type FigMention, figLabel, isReadable, openFigure, playSentence, useStore } from "./store";
 
 export const REFLOW_FONTS: Record<string, string> = {
   serif: "Georgia, 'Times New Roman', serif",
@@ -22,6 +25,7 @@ export function ReflowView() {
   const r = useStore((s) => s.reflow);
   const eqResults = useStore((s) => s.eqResults);
   const eqState = useStore((s) => s.eqState);
+  const figMentions = useStore((s) => s.figMentions);
   const box = useRef<HTMLDivElement>(null);
 
   const blocks = useMemo(
@@ -41,52 +45,85 @@ export function ReflowView() {
   };
 
   return (
-    <div className="reflow-scroller" ref={box}>
-      <article
-        className="reflow"
-        style={{ fontFamily: REFLOW_FONTS[r.font], fontSize: `${r.size}px`, lineHeight: r.lineHeight, maxWidth: `${r.width}ch` }}
-      >
-        <h1>{doc.title}</h1>
-        {blocks.map((b) => {
-          const dim = !isReadable(b) ? " skipped" : "";
-          if (b.type === "heading") {
-            const s = b.sentences[0];
-            return (
-              <h2 key={b.id} data-sid={s.id} className={`${s.id === current ? "cur" : ""}${dim}`} onClick={() => click(s.id)}>
-                {s.text}
-              </h2>
-            );
-          }
-          if (b.type === "equation") {
-            const s = b.sentences[0];
-            let html = "";
-            try {
-              html = katex.renderToString(eqLatex(b, eqResults[b.id]), { displayMode: true, throwOnError: false, strict: "ignore" });
-            } catch {
-              html = "";
+    <div className="reflow-wrap">
+      <div className="reflow-scroller" ref={box}>
+        <article
+          className="reflow"
+          style={{ fontFamily: REFLOW_FONTS[r.font], fontSize: `${r.size}px`, lineHeight: r.lineHeight, maxWidth: `${r.width}ch` }}
+        >
+          <h1>{doc.title}</h1>
+          {blocks.map((b) => {
+            const dim = !isReadable(b) ? " skipped" : "";
+            if (b.type === "heading") {
+              const s = b.sentences[0];
+              return (
+                <h2 key={b.id} data-sid={s.id} className={`${s.id === current ? "cur" : ""}${dim}`} onClick={() => click(s.id)}>
+                  {s.text}
+                </h2>
+              );
             }
-            const st = badgeState(b, eqResults[b.id], eqState);
+            if (b.type === "equation") {
+              const s = b.sentences[0];
+              let html = "";
+              try {
+                html = katex.renderToString(eqLatex(b, eqResults[b.id]), { displayMode: true, throwOnError: false, strict: "ignore" });
+              } catch {
+                html = "";
+              }
+              const st = badgeState(b, eqResults[b.id], eqState);
+              return (
+                <div key={b.id} data-sid={s.id} className={`reflow-eq ${s.id === current ? "cur" : ""}`} onClick={() => click(s.id)}>
+                  <div dangerouslySetInnerHTML={{ __html: html }} />
+                  <span className={`eq-badge static ${st}`}>{b.eq_number ? `(${b.eq_number}) ` : ""}{st}</span>
+                </div>
+              );
+            }
+            const cls = b.type === "caption" ? "reflow-caption" : b.type === "bib_entry" ? "reflow-bib" : b.type === "abstract" ? "reflow-abstract" : "";
             return (
-              <div key={b.id} data-sid={s.id} className={`reflow-eq ${s.id === current ? "cur" : ""}`} onClick={() => click(s.id)}>
-                <div dangerouslySetInnerHTML={{ __html: html }} />
-                <span className={`eq-badge static ${st}`}>{b.eq_number ? `(${b.eq_number}) ` : ""}{st}</span>
-              </div>
+              <p key={b.id} className={`${cls}${dim}`}>
+                {b.sentences.map((s) => (
+                  <span key={s.id} data-sid={s.id} className={s.id === current ? "cur" : undefined} onClick={() => click(s.id)} title={s.spoken !== s.text ? `Spoken as: ${s.spoken}` : undefined}>
+                    {withFigureLinks(s, figMentions.get(s.id))}{" "}
+                  </span>
+                ))}
+              </p>
             );
-          }
-          const cls = b.type === "caption" ? "reflow-caption" : b.type === "bib_entry" ? "reflow-bib" : b.type === "abstract" ? "reflow-abstract" : "";
-          return (
-            <p key={b.id} className={`${cls}${dim}`}>
-              {b.sentences.map((s) => (
-                <span key={s.id} data-sid={s.id} className={s.id === current ? "cur" : undefined} onClick={() => click(s.id)} title={s.spoken !== s.text ? `Spoken as: ${s.spoken}` : undefined}>
-                  {s.text}{" "}
-                </span>
-              ))}
-            </p>
-          );
-        })}
-      </article>
+          })}
+        </article>
+      </div>
+      <Popups view="text" />
     </div>
   );
+}
+
+/** A sentence's text with its figure mentions as links (one per stretch of text where "Figs. 2–4" overlaps). */
+function withFigureLinks(s: Sentence, ms: FigMention[] | undefined): ReactNode {
+  if (!ms?.length) return s.text;
+  const out: ReactNode[] = [];
+  let at = 0;
+  for (const m of [...ms].sort((a, b) => a.span[0] - b.span[0] || a.span[1] - b.span[1])) {
+    const [a, z] = m.span;
+    if (a < at) continue;
+    out.push(s.text.slice(at, a));
+    out.push(
+      <button
+        key={a}
+        type="button"
+        className="fig-ref"
+        data-fig={`${s.id}:${a}`}
+        title={`${figLabel(m)}: show it and its AI description`}
+        onClick={(ev) => {
+          ev.stopPropagation();
+          openFigure(m);
+        }}
+      >
+        {s.text.slice(a, z)}
+      </button>,
+    );
+    at = z;
+  }
+  out.push(s.text.slice(at));
+  return out;
 }
 
 export function ReflowSettings() {

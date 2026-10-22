@@ -1,9 +1,9 @@
 // Verified equation narration in the UI: background polling, badges on the PDF, and the detail popover.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import { api, type Block, type Doc } from "./api";
-import { useFitInScroller } from "./fit";
+import { FloatingPanel } from "./Float";
 import { playSentence, useStore } from "./store";
 
 export interface EqAttempt { speech: string; back: string; result: string; diff: string }
@@ -211,11 +211,10 @@ export function EquationBadge({ b, pos, compact, onHover }: {
   );
 }
 
-export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: number; pageWidth: number }) {
+/** The details of an equation's check (badge click), in a panel that opens below the equation and can be dragged. */
+export function EquationPopover({ b, anchor }: { b: Block; anchor: () => DOMRect | null }) {
   const res = useStore((s) => s.eqResults[b.id]);
   const eqState = useStore((s) => s.eqState);
-  const ref = useRef<HTMLDivElement>(null);
-  useFitInScroller(ref);
   const st = badgeState(b, res, eqState);
   let html = "";
   try {
@@ -240,16 +239,24 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
       live = false;
     };
   }, [docId, b.id, eqMode, res?.verdict, res?.speech_ai]);
-  const left = Math.max(8, Math.min(b.bbox[0] * scale, pageWidth - 470));
   const last = res?.attempts?.[res.attempts.length - 1];
   const src = res?.source;
   return (
-    <div className="eq-pop" ref={ref} style={{ left, top: b.bbox[3] * scale + 8 }} onClick={(e) => e.stopPropagation()}>
-      <div className="eq-pop-head">
-        <b>{label}</b>
-        <span className={`eq-badge static ${st}`}>{LABEL[st] ?? st}</span>
-        <button className="ghost" onClick={() => useStore.setState({ eqOpen: null })} aria-label="Close">✕</button>
-      </div>
+    <FloatingPanel
+      className="eq-pop"
+      width={460}
+      openKey={b.id}
+      anchorKey=""
+      anchor={anchor}
+      label={label}
+      head={
+        <>
+          <b>{label}</b>
+          <span className={`eq-badge static ${st}`}>{LABEL[st] ?? st}</span>
+          <button className="ghost" onClick={() => useStore.setState({ eqOpen: null })} aria-label="Close">✕</button>
+        </>
+      }
+    >
       <div className="eq-katex" dangerouslySetInnerHTML={{ __html: html }} />
       <div className="eq-field">
         <div className="eq-field-label">Spoken now {st === "verified" ? "(AI narration, checked)" : "(rule-based reading)"}</div>
@@ -294,6 +301,6 @@ export function EquationPopover({ b, scale, pageWidth }: { b: Block; scale: numb
       <div className="eq-actions">
         <button className="primary" onClick={() => void playSentence(b.sentences[0].id)}>▶ Read it</button>
       </div>
-    </div>
+    </FloatingPanel>
   );
 }

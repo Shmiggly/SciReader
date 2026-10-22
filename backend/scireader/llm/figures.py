@@ -18,9 +18,10 @@ from concurrent.futures import ThreadPoolExecutor
 from ..store.docs import DocStore
 from . import ollama
 
-# A figure reference in running text, any case ("Fig. 3", "FIG. 3", IOP's "figure 4(a)"); a plural word may list
-# several figures ("Figures 16 and 17", "Figs. 9–10", "figures 4(a), (c), and 5(a)").
-_WORD = re.compile(r"\b(fig(?:ure)?(s?))\b\.?\s*(?=[Ss]?\d)", re.I)
+# A figure reference in running text, any case ("Fig. 3", "FIG. 3", IOP's "figure 4(a)"), also glued to the word
+# before it by the text layer ("infigure 1"); a plural word may list several figures ("Figures 16 and 17",
+# "Figs. 9–10", "figures 4(a), (c), and 5(a)").
+_WORD = re.compile(r"(?:\b|(?<=\bin)|(?<=\bof)|(?<=\bsee)|(?<=\band)|(?<=\bto))(fig(?:ure)?(s?))\b\.?\s*(?=[Ss]?\d)", re.I)
 _NUM = re.compile(r"([Ss]?)(\d{1,3})(?!\d)(?!\.\d)")
 # Panels right after the number: "3b", "2A", "2a-c", "4ai-ii" (sub-panel numerals are ignored), then ", b" / " and b".
 _ATTACHED = re.compile(r"([A-Za-z])(?:\s*[-–]\s*([A-Za-z]))?(?:[ivx]+(?:\s*[-–]\s*[ivx]+)?)?(?![A-Za-z0-9])")
