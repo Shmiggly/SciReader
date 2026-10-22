@@ -99,6 +99,24 @@ def repair_springer_math(text: str, mapped: list) -> tuple[str, list]:
     return text, out_m
 
 
+# ...and print ∈ as "ϵ" (U+03F5) and a prime as a narrow "0" glyph: "K ϵ R n×n" was read "K epsilon R", the
+# curvature "θ 0" (θ′) "theta 0". The second reading of equations maps the same confusables (page_reading.py).
+_SPRINGER_IN = re.compile(r"ϵ(?=\s?[A-Zℝ])")
+
+
+def repair_springer_symbols(text: str, mapped: list) -> str:
+    """"KϵR" → "K∈R"; a "0" a third as wide as a digit after a symbol → "′". Same length, so the char map holds."""
+    text = _SPRINGER_IN.sub("∈", text)
+    chars = list(text)
+    for k, ch in enumerate(chars):
+        c = mapped[k] if k < len(mapped) else None
+        if ch == "0" and c is not None and c.box[2] - c.box[0] < 0.3 * c.size:
+            before = text[:k].rstrip()
+            if before and before[-1].isalpha():
+                chars[k] = "′"
+    return "".join(chars)
+
+
 def _compound(left: str, right: str) -> bool:
     """A hyphen at a line end is part of the word when both halves are words and the joined form isn't one:
     "physics-based", "data-driven" (but "how-ever" → "however", "pro-cessing" → "processing")."""
@@ -387,6 +405,7 @@ def build_document(
         if meta.get("springer_glyphs"):
             text = SPRINGER_DECIMAL.sub(r"\1.\2", text.translate(SPRINGER_GLYPHS))
             text, mapped = repair_springer_math(text, mapped)
+            text = repair_springer_symbols(text, mapped)
         block["text"] = text
 
         sup = (superscript_mask(mapped) if b.type in ("paragraph", "abstract", "list_item", "caption") and not b.skip_reason
