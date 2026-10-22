@@ -29,7 +29,7 @@
    - Springer prose: "K ϵ R" is read "K in R", the curvature "θ 0" "theta prime" (their prime is a narrow "0" glyph);
    - running headers inside text are not read: MDPI "5 of 24 [A]…", "…and the Polymers 2021, 13, x FOR PEER REVIEW 7 of 25", "16 of 25" blocks, PA12 "Page 1 of 1" (13 sentences, 3 blocks).
 
-**How to launch:** `./scripts/dev.ps1` (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
+**How to launch:** double-click **SciReader** on the desktop (made by `scripts/make-shortcut.ps1` on 2026-10-21; close its minimized console to stop), or `./scripts/dev.ps1` from any terminal (Edge app window; `-NoBrowser`, `-Rebuild` after frontend changes, `-Port`). Dev: `uv run --directory backend uvicorn scireader.main:app --port 8765` + `npm --prefix frontend run dev` → http://localhost:5173.
 
 **2-minute test:** flagship from Recent → page 13 → eq 27's ✓ badge (K⁻¹; Source: "the PDF's text layer matches qwen3.5:9b's reading…") → eq 21 (y = f(x), x ∈ Rᵈ) → eq 11 (unreadable before, now read from the page) → Check details shows both readings → ✦ AI → Explain → Aa Pronunciation → ¶ Text view.
 

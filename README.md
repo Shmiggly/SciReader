@@ -108,6 +108,8 @@ cd SciReader
 
 If PowerShell refuses to run scripts, use `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1` (and the same for `dev.ps1`). Development with hot reload: `./scripts/dev.ps1 -Hot`. Sample papers: `uv run --no-project python scripts/fetch_samples.py`.
 
+To start SciReader with a double-click, `./scripts/make-shortcut.ps1` puts a SciReader shortcut on the desktop. It opens the app window and keeps the backend in a minimized console; close that console to stop SciReader.
+
 Configuration lives in `.env` (see `.env.example`): data folder, model folder, Ollama URL and model names.
 
 ## Pronunciation lexicons
