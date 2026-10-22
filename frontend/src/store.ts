@@ -69,6 +69,25 @@ export interface FigPopup {
   seq: number;
 }
 
+/** A reference to a numbered equation in the text ("Eq. (3)", "equation (9)"): a click shows the equation. */
+export interface EqMention {
+  sentence_id: string;
+  span: [number, number];
+  number: string;
+  block_id: string;
+  rects?: Rect[];
+}
+
+/** An equation over the reading area: cited by the current sentence (`E`: it closes when its reading ends, unless
+ * pinned) or clicked in the text (pinned: it stays until closed). */
+export interface EqPopup {
+  blockId: string;
+  anchor: PopAnchor;
+  prefer: "above" | "below";
+  pinned: boolean;
+  seq: number;
+}
+
 /** Figure targets described in this session: "3" for the whole figure, "3:b" per panel letter. */
 const narrated = new Set<string>();
 /** Figures described in this session (their captions are not read again where they are). */
@@ -135,13 +154,18 @@ interface State {
   /** Figure id → reading-order index of the sentence with its last mention. */
   figLastMention: Map<string, number>;
   figPopup: FigPopup | null;
-  /** The popup (detailKey) whose longer description ("More detail", D) is on its way: its button spins meanwhile. */
-  figDetail: string | null;
+  /** The AI request on its way ("More detail" on a figure popup: detailKey; an equation's AI description:
+   * "eq:<block id>"): its button spins until the audio starts. */
+  aiBusy: string | null;
   figMode: FigMode;
   /** The reading position's highlight and the focus dimming are hidden (a click beside the pages while paused). */
   highlightHidden: boolean;
   selection: string[] | null;
-  eqRef: { blockId: string; sentenceId: string } | null;
+  eqPopup: EqPopup | null;
+  /** Equation mentions by sentence. */
+  eqMentions: Map<string, EqMention[]>;
+  /** AI descriptions of equations by block id, as far as they were made. */
+  eqDescriptions: Record<string, string>;
   view: "pdf" | "text";
   autoPause: boolean;
   reflow: { font: string; size: number; lineHeight: number; width: number };
@@ -177,11 +201,13 @@ export const useStore = create<State>((set) => ({
   figMentions: new Map(),
   figLastMention: new Map(),
   figPopup: null,
-  figDetail: null,
+  aiBusy: null,
   figMode: "first",
   highlightHidden: false,
   selection: null,
-  eqRef: null,
+  eqPopup: null,
+  eqMentions: new Map(),
+  eqDescriptions: {},
   view: "pdf",
   autoPause: false,
   reflow: { font: "atkinson", size: 19, lineHeight: 1.7, width: 70 },
@@ -196,7 +222,7 @@ export const useStore = create<State>((set) => ({
         }
       }
     }
-    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, figDetail: null, highlightHidden: false, selection: null, fitWidth: true });
+    set({ doc, index, order, current: null, tts: null, word: null, playing: false, error: null, eqResults: {}, eqState: "idle", eqOpen: null, figMentions: new Map(), figLastMention: new Map(), figPopup: null, aiBusy: null, highlightHidden: false, selection: null, eqPopup: null, eqMentions: new Map(), eqDescriptions: {}, fitWidth: true });
     narrated.clear();
     describedFigs.clear();
     figReady.clear();
@@ -310,13 +336,13 @@ export function clearSpeechCache() {
   ttsCache.clear();
 }
 
-function ttsUrl(sid: string): string {
-  const { doc, voice, eqMode } = get();
+function ttsUrl(sid: string, eqMode: EqMode = get().eqMode): string {
+  const { doc, voice } = get();
   return `/api/tts/${doc!.id}/${sid}?voice=${encodeURIComponent(voice)}&eq_mode=${eqMode}`;
 }
 
-function fetchTts(sid: string): Promise<TtsResult> {
-  const url = ttsUrl(sid);
+function fetchTts(sid: string, eqMode?: EqMode): Promise<TtsResult> {
+  const url = ttsUrl(sid, eqMode);
   let p = ttsCache.get(url);
   if (!p) {
     p = api.get<TtsResult>(url).then((r) => {
@@ -421,10 +447,11 @@ let detour: {
   queue: FigMention[];
 } | null = null;
 let eqRefCursor: { sid: string; i: number } | null = null;
+let eqSeq = 0;
 
 /** Pause what is playing, play something else, then come back to the same spot (playing again if it was).
- * `detailFor`: the figure popup whose "More detail" this is (its button spins until the audio starts). */
-async function startDetour(load: () => Promise<{ audio_url: string }>, detailFor: string | null = null): Promise<void> {
+ * `busy`: the AI request this is (aiBusy), whose button spins until the audio starts. */
+async function startDetour(load: () => Promise<{ audio_url: string }>, busy: string | null = null): Promise<void> {
   const st = get();
   // A detour from a detour (E pressed again) keeps the original place.
   const d = detour ?? (detour = { src: audio.src, time: audio.currentTime, tts: st.tts, current: st.current, wasPlaying: st.playing, kind, audioSid, queue: figQueue });
@@ -433,7 +460,7 @@ async function startDetour(load: () => Promise<{ audio_url: string }>, detailFor
   kind = "detour";
   audioSid = d.current;
   figQueue = [];
-  useStore.setState({ word: null, loading: true, error: null, figDetail: detailFor });
+  useStore.setState({ word: null, loading: true, error: null, aiBusy: busy });
   try {
     const r = await load();
     if (my !== token) return;
@@ -449,19 +476,25 @@ async function startDetour(load: () => Promise<{ audio_url: string }>, detailFor
     endDetour();
     useStore.setState({ error: msg });
   } finally {
-    detailDone(my);
+    busyDone(my);
   }
 }
 
 /** The key "More detail" requests are tracked by: a popup as opened (its seq) and the target it shows. */
 export function detailKey(p: FigPopup): string {
-  return `${p.seq}:${p.key}`;
+  return `fig:${p.seq}:${p.key}`;
 }
 
-/** A request that may have been "More detail" is over (playing, failed): its button stops spinning. Requests that
- * replace it (a new token) set figDetail themselves. */
-function detailDone(my: number) {
-  if (my === token && get().figDetail) useStore.setState({ figDetail: null });
+/** A request that may have been an AI one is over (playing, failed): its button stops spinning. Requests that
+ * replace it (a new token) set aiBusy themselves. */
+function busyDone(my: number) {
+  if (my === token && get().aiBusy) useStore.setState({ aiBusy: null });
+}
+
+/** The equation popup once reading moves on: a clicked (pinned) one stays, the one `E` opened closes. */
+function eqPopupKept(): EqPopup | null {
+  const p = get().eqPopup;
+  return p?.pinned ? p : null;
 }
 
 function endDetour(resume = true) {
@@ -470,7 +503,7 @@ function endDetour(resume = true) {
   kind = d.kind;
   audioSid = d.audioSid;
   figQueue = d.queue;
-  useStore.setState({ eqRef: null, tts: d.tts, current: d.current, loading: false });
+  useStore.setState({ eqPopup: eqPopupKept(), tts: d.tts, current: d.current, loading: false });
   if (d.src) {
     audio.src = d.src;
     audio.currentTime = d.time;
@@ -511,6 +544,12 @@ export function citedEquations(sid: string | null): Block[] {
   return out;
 }
 
+/** An equation read on request (`E`, "Read it"): in the Equations mode, but read even when that mode skips them. */
+function fetchEquationTts(b: Block): Promise<TtsResult> {
+  const mode = get().eqMode;
+  return fetchTts(b.sentences[0].id, mode === "skip" ? "auto" : mode);
+}
+
 /** `E`: pause, show the cited equation over the text, read it, then resume where reading was. */
 export async function readCitedEquation() {
   const st = get();
@@ -519,8 +558,78 @@ export async function readCitedEquation() {
   const i = eqRefCursor && eqRefCursor.sid === st.current ? (eqRefCursor.i + 1) % refs.length : 0;
   eqRefCursor = { sid: st.current, i };
   const b = refs[i];
-  useStore.setState({ eqRef: { blockId: b.id, sentenceId: st.current } });
-  await startDetour(() => fetchTts(b.sentences[0].id));
+  useStore.setState({ eqPopup: { blockId: b.id, anchor: { sid: st.current, span: null, rects: null }, prefer: "above", pinned: false, seq: ++eqSeq } });
+  void loadEquationDescription(b.id);
+  await startDetour(() => fetchEquationTts(b));
+}
+
+/** Click on an equation mention ("Eq. (3)"): show the equation next to it; reading stays where it is. */
+export function openEquation(m: EqMention) {
+  useStore.setState({ eqPopup: { blockId: m.block_id, anchor: { sid: m.sentence_id, span: m.span, rects: m.rects ?? null }, prefer: "below", pinned: true, seq: ++eqSeq } });
+  void loadEquationDescription(m.block_id);
+}
+
+export function closeEquation() {
+  useStore.setState({ eqPopup: null });
+}
+
+/** A button in the equation popup was used: it stays open after its reading ends. */
+function pinEquation(blockId: string) {
+  const p = get().eqPopup;
+  if (p && p.blockId === blockId && !p.pinned) useStore.setState({ eqPopup: { ...p, pinned: true } });
+}
+
+/** "Read it" in the equation popup: the equation as reading reads it, then back to where reading was. */
+export function hearEquation(blockId: string) {
+  const b = get().doc?.blocks.find((x) => x.id === blockId);
+  if (!b?.sentences.length) return;
+  pinEquation(blockId);
+  void startDetour(() => fetchEquationTts(b));
+}
+
+interface EqDescTts extends TtsResult {
+  description: string;
+}
+
+/** "AI description" (equation popup and details): the local AI explains the equation from its LaTeX and the text
+ * around it (made once in a few seconds, cached afterwards) and it is read, then reading goes back to where it was. */
+export function hearEquationDescription(blockId: string) {
+  const st = get();
+  const busy = `eq:${blockId}`;
+  if (!st.doc || st.aiBusy === busy) return;
+  const docId = st.doc.id;
+  pinEquation(blockId);
+  void startDetour(async () => {
+    const r = await api.get<EqDescTts>(`/api/tts/${docId}/equation/${blockId}/describe?voice=${encodeURIComponent(get().voice)}`);
+    if (get().doc?.id === docId) useStore.setState((s) => ({ eqDescriptions: { ...s.eqDescriptions, [blockId]: r.description } }));
+    return r;
+  }, busy);
+}
+
+/** An equation's AI description if one was made before (shown without asking the AI). */
+export async function loadEquationDescription(blockId: string) {
+  const st = get();
+  if (!st.doc || st.eqDescriptions[blockId]) return;
+  const docId = st.doc.id;
+  try {
+    const r = await api.get<{ description: string | null }>(`/api/docs/${docId}/equations/${blockId}/description`);
+    const text = r.description;
+    if (text && get().doc?.id === docId) useStore.setState((s) => ({ eqDescriptions: { ...s.eqDescriptions, [blockId]: text } }));
+  } catch {
+    /* none yet */
+  }
+}
+
+export async function loadEquationMentions(docId: string) {
+  try {
+    const r = await api.get<{ mentions: EqMention[] }>(`/api/docs/${docId}/equations/mentions`);
+    if (get().doc?.id !== docId) return;
+    const byS = new Map<string, EqMention[]>();
+    for (const m of r.mentions) byS.set(m.sentence_id, [...(byS.get(m.sentence_id) ?? []), m]);
+    useStore.setState({ eqMentions: byS });
+  } catch {
+    /* not parsed yet: no equation links */
+  }
 }
 
 /** Read arbitrary (AI) text aloud once, without continuing the paper afterwards. */
@@ -528,7 +637,7 @@ export async function sayText(text: string, label = "") {
   const my = ++token;
   audio.pause();
   detour = null;
-  useStore.setState({ loading: true, word: null, figDetail: null });
+  useStore.setState({ loading: true, word: null, aiBusy: null });
   try {
     const r = await api.post<TtsResult>("/api/tts/say", { text, voice: get().voice, label });
     if (my !== token) return;
@@ -551,7 +660,7 @@ export function jumpTo(sid: string) {
   audio.pause();
   kind = "sentence";
   detour = null;
-  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqRef: null, figDetail: null, highlightHidden: false });
+  useStore.setState({ current: sid, word: null, playing: false, loading: false, follow: true, selection: null, eqPopup: eqPopupKept(), aiBusy: null, highlightHidden: false });
 }
 
 /** A click beside the pages (or beside the text column): while paused or stopped, hide the highlight and the focus
@@ -615,7 +724,7 @@ async function playFigure(m: FigMention, detail = false): Promise<void> {
     description: prev?.key === m.key ? prev.description : null, caption: prev?.key === m.key ? prev.caption : null,
     pinned: prev?.pinned ?? false, loading: true, origin: "narration", captionOnly, seq: prev ? prev.seq : ++figSeq,
   };
-  useStore.setState({ figPopup: pop, figDetail: detail ? detailKey(pop) : null, word: null, loading: true });
+  useStore.setState({ figPopup: pop, aiBusy: detail ? detailKey(pop) : null, word: null, loading: true });
   try {
     const r = await api.get<FigTts>(figTtsUrl(m.key, detail, captionOnly));
     if (my !== token) return;
@@ -637,7 +746,7 @@ async function playFigure(m: FigMention, detail = false): Promise<void> {
     useStore.setState((s) => ({ error: msg, loading: false, figPopup: s.figPopup ? { ...s.figPopup, loading: false } : null }));
     continueReading(); // a failing figure never stops the paper
   } finally {
-    detailDone(my);
+    busyDone(my);
   }
 }
 
@@ -680,7 +789,7 @@ export function hearFigure(detail = false) {
 /** `D`: more detail on the figure currently shown (the local AI may take 5–15 s; pressing again meanwhile does nothing). */
 export function figureDetail() {
   const p = get().figPopup;
-  if (!p || get().figDetail === detailKey(p)) return;
+  if (!p || get().aiBusy === detailKey(p)) return;
   if (kind === "figure" && p.origin === "narration") {
     // While its description plays in the reading flow: the longer one replaces it, then reading goes on.
     figQueue = [];
@@ -698,13 +807,13 @@ export async function playSentence(sid: string): Promise<void> {
   kind = "sentence";
   audioSid = sid;
   detour = null;
-  if (get().eqRef) useStore.setState({ eqRef: null });
+  if (get().eqPopup && !get().eqPopup!.pinned) useStore.setState({ eqPopup: null });
   if (get().selection) useStore.setState({ selection: null });
   if (get().figPopup && !get().figPopup!.pinned) useStore.setState({ figPopup: null });
   const st = get();
   if (!st.doc || !st.index.has(sid)) return;
   audio.pause();
-  useStore.setState({ current: sid, loading: true, word: null, error: null, playing: true, figDetail: null });
+  useStore.setState({ current: sid, loading: true, word: null, error: null, playing: true, aiBusy: null });
   saveSoon();
   wantFiguresFrom(sid);
   try {
@@ -734,7 +843,7 @@ export function togglePlay() {
     audio.pause();
     // Paused while a detour was still loading: drop it, back to where reading was.
     if (kind === "detour" && detour && st.loading) endDetour(false);
-    useStore.setState({ playing: false, loading: false, figDetail: null });
+    useStore.setState({ playing: false, loading: false, aiBusy: null });
     return;
   }
   const own = kind === "sentence" ? st.tts?.sentence_id === st.current : kind !== "say" && audioSid === st.current;
@@ -760,7 +869,7 @@ export function stop() {
   audioSid = null;
   detour = null;
   figQueue = [];
-  useStore.setState({ playing: false, loading: false, word: null, tts: null, figDetail: null });
+  useStore.setState({ playing: false, loading: false, word: null, tts: null, aiBusy: null });
 }
 
 export function step(dir: 1 | -1) {

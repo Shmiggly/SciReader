@@ -1,5 +1,5 @@
 // Clean text view: the parsed paper as one readable column, synced with playback (same highlight,
-// click-to-read, figure mentions that open their figure). Adjustable font (incl. dyslexia-friendly), size, line
+// click-to-read, figure and equation mentions that open them). Adjustable font (incl. dyslexia-friendly), size, line
 // spacing and width.
 import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import katex from "katex";
@@ -10,7 +10,7 @@ import type { Sentence } from "./api";
 import { badgeState, eqLatex } from "./Equations";
 import { onBackground } from "./PdfView";
 import { Popups } from "./Popups";
-import { type FigMention, figLabel, hideHighlight, isReadable, openFigure, playSentence, useStore } from "./store";
+import { type EqMention, type FigMention, figLabel, hideHighlight, isReadable, openEquation, openFigure, playSentence, useStore } from "./store";
 
 export const REFLOW_FONTS: Record<string, string> = {
   serif: "Georgia, 'Times New Roman', serif",
@@ -29,6 +29,7 @@ export function ReflowView() {
   const eqResults = useStore((s) => s.eqResults);
   const eqState = useStore((s) => s.eqState);
   const figMentions = useStore((s) => s.figMentions);
+  const eqMentions = useStore((s) => s.eqMentions);
   const box = useRef<HTMLDivElement>(null);
 
   const blocks = useMemo(
@@ -86,7 +87,7 @@ export function ReflowView() {
               <p key={b.id} className={`${cls}${dim}`}>
                 {b.sentences.map((s) => (
                   <span key={s.id} data-sid={s.id} className={s.id === cur ? "cur" : undefined} onClick={() => click(s.id)} title={s.spoken !== s.text ? `Spoken as: ${s.spoken}` : undefined}>
-                    {withFigureLinks(s, figMentions.get(s.id))}{" "}
+                    {withMentionLinks(s, mentionsOf(s.id, figMentions, eqMentions))}{" "}
                   </span>
                 ))}
               </p>
@@ -99,9 +100,23 @@ export function ReflowView() {
   );
 }
 
-/** A sentence's text with its figure mentions as links (one per stretch of text where "Figs. 2–4" overlaps). */
-function withFigureLinks(s: Sentence, ms: FigMention[] | undefined): ReactNode {
-  if (!ms?.length) return s.text;
+interface TextMention {
+  span: [number, number];
+  title: string;
+  open: () => void;
+}
+
+/** A sentence's figure and equation mentions ("Fig. 3b", "Eq. (9)"). */
+function mentionsOf(sid: string, figs: Map<string, FigMention[]>, eqs: Map<string, EqMention[]>): TextMention[] {
+  return [
+    ...(figs.get(sid) ?? []).map((m) => ({ span: m.span, title: `${figLabel(m)}: show it and its AI description`, open: () => openFigure(m) })),
+    ...(eqs.get(sid) ?? []).map((m) => ({ span: m.span, title: `Equation ${m.number}: show it, read it or hear an AI description`, open: () => openEquation(m) })),
+  ];
+}
+
+/** A sentence's text with its mentions as links (one per stretch of text where "Figs. 2–4" overlaps). */
+function withMentionLinks(s: Sentence, ms: TextMention[]): ReactNode {
+  if (!ms.length) return s.text;
   const out: ReactNode[] = [];
   let at = 0;
   for (const m of [...ms].sort((a, b) => a.span[0] - b.span[0] || a.span[1] - b.span[1])) {
@@ -113,11 +128,11 @@ function withFigureLinks(s: Sentence, ms: FigMention[] | undefined): ReactNode {
         key={a}
         type="button"
         className="fig-ref"
-        data-fig={`${s.id}:${a}`}
-        title={`${figLabel(m)}: show it and its AI description`}
+        data-mention={`${s.id}:${a}`}
+        title={m.title}
         onClick={(ev) => {
           ev.stopPropagation();
-          openFigure(m);
+          m.open();
         }}
       >
         {s.text.slice(a, z)}

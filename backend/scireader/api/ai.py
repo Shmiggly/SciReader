@@ -136,6 +136,53 @@ def figure_tts(doc_id: str, key: str, voice: str = "af_heart", detail: bool = Fa
 
 
 # ---------------------------------------------------------------------------------------------
+# Equations: mentions in the text (they open the equation, like figure mentions), AI descriptions on request
+
+from ..llm import eq_describe  # noqa: E402
+
+
+@router.get("/docs/{doc_id}/equations/mentions")
+def equation_mentions(doc_id: str) -> dict:
+    doc = _doc_or_404(doc_id)
+    return {"mentions": eq_describe.find_mentions(doc, store.read_json(doc_id, "speech.json") or {})}
+
+
+def _equation_or_404(doc: dict, block_id: str) -> dict:
+    block = next((b for b in doc["blocks"] if b["id"] == block_id and b["type"] == "equation"), None)
+    if block is None:
+        raise HTTPException(404, "Unknown equation")
+    return block
+
+
+@router.get("/docs/{doc_id}/equations/{block_id}/description")
+def equation_description(doc_id: str, block_id: str) -> dict:
+    """The equation's AI description if one was made (null otherwise; this never asks the AI)."""
+    doc = _doc_or_404(doc_id)
+    block = _equation_or_404(doc, block_id)
+    result = (store.read_json(doc_id, "equations.json") or {}).get(block_id)
+    entry = eq_describe.cached(store, doc_id, block, result)
+    return {"description": entry["description"] if entry else None}
+
+
+@router.get("/tts/{doc_id}/equation/{block_id}/describe")
+def equation_describe_tts(doc_id: str, block_id: str, voice: str = "af_heart") -> dict:
+    """The equation's AI description read aloud (made by the reader model now if needed, which takes a few
+    seconds), labeled as AI."""
+    doc = _doc_or_404(doc_id)
+    block = _equation_or_404(doc, block_id)
+    try:
+        entry = eq_describe.describe(store, doc_id, doc, block)
+    except ollama.LLMUnavailable as exc:
+        raise HTTPException(503, f"No AI description: the local AI isn't available ({exc}).") from exc
+    from ..speech.pipeline import speak
+
+    spoken = speak(eq_describe.spoken_for(block, entry["description"])).spoken
+    k, meta = synth_cached(spoken, voice)
+    return {"audio_url": f"/api/audio/{k}.wav", "duration": meta["duration"], "spoken": spoken,
+            "description": entry["description"], "words": []}
+
+
+# ---------------------------------------------------------------------------------------------
 # Explain / Ask (grounded, with sentence citations) and reading arbitrary AI text aloud
 
 from pydantic import BaseModel  # noqa: E402

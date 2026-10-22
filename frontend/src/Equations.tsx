@@ -4,7 +4,7 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 import { api, type Block, type Doc } from "./api";
 import { FloatingPanel } from "./Float";
-import { playSentence, useStore } from "./store";
+import { hearEquationDescription, loadEquationDescription, playSentence, useStore } from "./store";
 
 export interface EqAttempt { speech: string; back: string; result: string; diff: string }
 /** Second reading of the page (backend llm/page_reading.py): which LaTeX is narrated, checked and read by rules. */
@@ -211,10 +211,30 @@ export function EquationBadge({ b, pos, compact, onHover }: {
   );
 }
 
+/** The "AI description" button of an equation (its popup, its details): spins while the local AI writes it. */
+export function EquationAiButton({ blockId, primary = false }: { blockId: string; primary?: boolean }) {
+  const busy = useStore((s) => s.aiBusy === `eq:${blockId}`);
+  return (
+    <button
+      className={primary ? "primary" : undefined}
+      onClick={() => hearEquationDescription(blockId)}
+      disabled={busy}
+      aria-busy={busy}
+      title={busy ? "The local AI is writing the description…" : "Hear what this equation says and what its symbols stand for (AI), then go back to where you were"}
+    >
+      {busy ? <span className="spinner" /> : "▶ "}AI description
+    </button>
+  );
+}
+
 /** The details of an equation's check (badge click), in a panel that opens below the equation and can be dragged. */
 export function EquationPopover({ b, anchor }: { b: Block; anchor: () => DOMRect | null }) {
   const res = useStore((s) => s.eqResults[b.id]);
   const eqState = useStore((s) => s.eqState);
+  const description = useStore((s) => s.eqDescriptions[b.id]);
+  useEffect(() => {
+    void loadEquationDescription(b.id);
+  }, [b.id]);
   const st = badgeState(b, res, eqState);
   let html = "";
   try {
@@ -262,6 +282,11 @@ export function EquationPopover({ b, anchor }: { b: Block; anchor: () => DOMRect
         <div className="eq-field-label">Spoken now {st === "verified" ? "(AI narration, checked)" : "(rule-based reading)"}</div>
         <div>{spoken ?? (used || "“" + label + "” only: no reading could be produced.")}</div>
       </div>
+      {description && (
+        <div className="fig-desc">
+          <span className="ai-label">AI description</span> {description}
+        </div>
+      )}
       {st === "verified" && <div className="muted small">An independent model ({res?.models?.checker}) wrote this narration back as LaTeX, and it matched the equation exactly.</div>}
       {st === "uncertain" && (
         <div className="muted small">
@@ -299,6 +324,7 @@ export function EquationPopover({ b, anchor }: { b: Block; anchor: () => DOMRect
         </details>
       )}
       <div className="eq-actions">
+        <EquationAiButton blockId={b.id} />
         <button className="primary" onClick={() => void playSentence(b.sentences[0].id)}>▶ Read it</button>
       </div>
     </FloatingPanel>

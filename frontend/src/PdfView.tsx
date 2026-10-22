@@ -1,5 +1,5 @@
 // The PDF, exactly as published (pdf.js canvas), with overlays: sentence/word highlight, focus dimming,
-// click-to-read hit testing, "spoken text" on hover, and figure mentions that open their figure when clicked.
+// click-to-read hit testing, "spoken text" on hover, and figure and equation mentions that open them when clicked.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as pdfjs from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
@@ -7,7 +7,7 @@ import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { Doc, Rect } from "./api";
 import { type BadgeLayout, EquationBadge, layoutBadges } from "./Equations";
 import { Popups } from "./Popups";
-import { type FigMention, PRESETS, figLabel, hideHighlight, openFigure, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
+import { PRESETS, figLabel, hideHighlight, openEquation, openFigure, playSentence, selectRangeTo, sentenceAt, useStore } from "./store";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -19,8 +19,15 @@ interface HitRect {
   y1: number;
 }
 
-interface FigHit {
-  m: FigMention;
+/** A figure or equation mention in the text ("Fig. 3b", "Eq. (9)"): a click opens what it refers to. */
+export interface Mention {
+  label: string;
+  rects: Rect[];
+  open: () => void;
+}
+
+interface MentionHit {
+  m: Mention;
   x0: number;
   y0: number;
   x1: number;
@@ -152,21 +159,22 @@ export function PdfView() {
     return m;
   }, [doc]);
 
-  // Figure mentions ("Fig. 3b"): page -> their boxes.
+  // Figure and equation mentions ("Fig. 3b", "Eq. (9)"): page -> their boxes.
   const figMentions = useStore((s) => s.figMentions);
-  const figs = useMemo(() => {
-    const m = new Map<number, FigHit[]>();
-    for (const ms of figMentions.values()) {
-      for (const f of ms) {
-        for (const r of f.rects ?? []) {
-          const arr = m.get(r[0]) ?? [];
-          arr.push({ m: f, x0: r[1], y0: r[2], x1: r[3], y1: r[4] });
-          m.set(r[0], arr);
-        }
+  const eqMentions = useStore((s) => s.eqMentions);
+  const mentions = useMemo(() => {
+    const m = new Map<number, MentionHit[]>();
+    const add = (mention: Mention) => {
+      for (const r of mention.rects) {
+        const arr = m.get(r[0]) ?? [];
+        arr.push({ m: mention, x0: r[1], y0: r[2], x1: r[3], y1: r[4] });
+        m.set(r[0], arr);
       }
-    }
+    };
+    for (const ms of figMentions.values()) for (const f of ms) add({ label: figLabel(f), rects: f.rects ?? [], open: () => openFigure(f) });
+    for (const ms of eqMentions.values()) for (const e of ms) add({ label: `Equation ${e.number}`, rects: e.rects ?? [], open: () => openEquation(e) });
     return m;
-  }, [figMentions]);
+  }, [figMentions, eqMentions]);
 
   // Auto-follow: keep the current sentence in view.
   useLayoutEffect(() => {
@@ -244,7 +252,7 @@ export function PdfView() {
             pdf={pdf}
             hits={hits.get(p.index) ?? []}
             cites={cites.get(p.index) ?? []}
-            figs={figs.get(p.index) ?? []}
+            mentions={mentions.get(p.index) ?? []}
             badges={badges}
             setRef={(el) => (pageRefs.current[p.index] = el)}
           />
@@ -290,18 +298,18 @@ interface PageProps {
   pdf: PDFDocumentProxy | null;
   hits: HitRect[];
   cites: { x0: number; y0: number; x1: number; y1: number; bib: string[] }[];
-  figs: FigHit[];
+  mentions: MentionHit[];
   badges: BadgeLayout;
   setRef: (el: HTMLDivElement | null) => void;
 }
 
-function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, setRef }: PageProps) {
+function Page({ index, width, height, scale, pdf, hits, cites, mentions, badges, setRef }: PageProps) {
   const div = useRef<HTMLDivElement | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(false);
   const [hover, setHover] = useState<{ sid: string; x: number; y: number } | null>(null);
   const [cite, setCite] = useState<{ bib: string[]; x: number; y: number } | null>(null);
-  const [figHot, setFigHot] = useState<{ m: FigMention; x: number; y: number } | null>(null);
+  const [mentionHot, setMentionHot] = useState<{ m: Mention; x: number; y: number } | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -353,10 +361,10 @@ function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, set
 
   const onClick = (ev: React.MouseEvent) => {
     if (window.getSelection()?.toString()) return;
-    const f = !ev.shiftKey && figAt(ev);
+    const f = !ev.shiftKey && mentionAt(ev);
     if (f) {
-      // The figure opens over the page; reading stays where it is.
-      openFigure(f.m);
+      // The figure or equation opens over the page; reading stays where it is.
+      f.m.open();
       return;
     }
     const c = citeAt(ev);
@@ -383,14 +391,14 @@ function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, set
     return c ? { bib: c.bib, x: ev.clientX - rect.left, y: ev.clientY - rect.top } : null;
   };
 
-  /** The figure mention under the pointer (the smallest box wins where "Figs. 2–4" overlaps "Figs. 2"). */
-  const figAt = (ev: React.MouseEvent) => {
-    if (!figs.length) return null;
+  /** The figure or equation mention under the pointer (the smallest box wins where "Figs. 2–4" overlaps "Figs. 2"). */
+  const mentionAt = (ev: React.MouseEvent) => {
+    if (!mentions.length) return null;
     const rect = div.current!.getBoundingClientRect();
     const x = (ev.clientX - rect.left) / scale;
     const y = (ev.clientY - rect.top) / scale;
-    let best: FigHit | null = null;
-    for (const h of figs) {
+    let best: MentionHit | null = null;
+    for (const h of mentions) {
       if (x < h.x0 - 1 || x > h.x1 + 1 || y < h.y0 - 1 || y > h.y1 + 1) continue;
       if (!best || (h.x1 - h.x0) * (h.y1 - h.y0) < (best.x1 - best.x0) * (best.y1 - best.y0)) best = h;
     }
@@ -399,15 +407,15 @@ function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, set
 
   const onMove = (ev: React.MouseEvent) => {
     if ((ev.target as HTMLElement).closest(".cite-tip")) return;
-    const f = figAt(ev);
+    const f = mentionAt(ev);
     if (f) {
-      if (figHot?.m !== f.m) setFigHot(f);
+      if (mentionHot?.m !== f.m) setMentionHot(f);
       window.clearTimeout(hoverTimer.current);
       setHover(null);
       setCite(null);
       return;
     }
-    if (figHot) setFigHot(null);
+    if (mentionHot) setMentionHot(null);
     const c = citeAt(ev);
     if (c) {
       setCite(c);
@@ -441,31 +449,31 @@ function Page({ index, width, height, scale, pdf, hits, cites, figs, badges, set
         window.clearTimeout(hoverTimer.current);
         setHover(null);
         setCite(null);
-        setFigHot(null);
+        setMentionHot(null);
       }}
       data-page={index}
-      style={{ width: width * scale, height: height * scale, cursor: figHot ? "zoom-in" : undefined }}
+      style={{ width: width * scale, height: height * scale, cursor: mentionHot ? "zoom-in" : undefined }}
     >
       <canvas ref={canvas} style={{ width: width * scale, height: height * scale }} />
       <Overlay page={index} scale={scale} />
       <EquationLayer page={index} scale={scale} badges={badges} />
-      {figHot && <FigTip m={figHot.m} page={index} scale={scale} x={figHot.x} y={figHot.y} pageWidth={width * scale} />}
+      {mentionHot && <MentionTip m={mentionHot.m} page={index} scale={scale} x={mentionHot.x} y={mentionHot.y} pageWidth={width * scale} />}
       {hover && <HoverTip sid={hover.sid} x={hover.x} y={hover.y} pageWidth={width * scale} />}
       {cite && <CiteTip bib={cite.bib} x={cite.x} y={cite.y} pageWidth={width * scale} />}
     </div>
   );
 }
 
-/** A hovered figure mention: outlined, with a hint that a click shows the figure. */
-function FigTip({ m, page, scale, x, y, pageWidth }: { m: FigMention; page: number; scale: number; x: number; y: number; pageWidth: number }) {
+/** A hovered figure or equation mention: outlined, with a hint that a click shows it. */
+function MentionTip({ m, page, scale, x, y, pageWidth }: { m: Mention; page: number; scale: number; x: number; y: number; pageWidth: number }) {
   const left = Math.min(Math.max(8, x - 110), pageWidth - 240);
   return (
     <>
-      {(m.rects ?? []).filter((r) => r[0] === page).map((r, i) => (
+      {m.rects.filter((r) => r[0] === page).map((r, i) => (
         <div key={i} className="fig-ref-hot" style={rectStyle(r, scale, 1)} />
       ))}
       <div className="hover-tip fig-tip" style={{ left, top: y + 18 }}>
-        {figLabel(m)}: click to see it
+        {m.label}: click to see it
       </div>
     </>
   );

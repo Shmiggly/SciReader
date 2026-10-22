@@ -200,8 +200,8 @@ select, input[type="text"], input:not([type]) {
 .eq-source.agree, .eq-source.arxiv { border-left-color: #9fd3ae; }
 .eq-source.page, .eq-source.vision_only { border-left-color: #b9cfea; }
 .eq-source.disputed, .eq-source.single, .eq-source.unreadable { border-left-color: #e8cf86; }
-.eq-actions { display: flex; justify-content: flex-end; }
-.eq-actions button[aria-busy="true"] { cursor: progress; color: var(--muted); }
+.eq-actions { display: flex; justify-content: flex-end; gap: 6px; }
+button[aria-busy="true"] { cursor: progress; opacity: 0.7; }
 
 /* Figure popup, and figure mentions ("Fig. 3b") that open it */
 .fig-pop img { max-height: min(360px, 34vh); }

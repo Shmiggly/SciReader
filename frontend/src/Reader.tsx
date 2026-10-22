@@ -15,6 +15,7 @@ import {
   FIG_MODES,
   citedEquations,
   figureDetail,
+  loadEquationMentions,
   loadFigures,
   readCitedEquation,
   PRESETS,
@@ -68,6 +69,7 @@ export function Reader({ onClose }: { onClose: () => void }) {
   useEquationChecks(doc.id);
   useEffect(() => {
     void loadFigures(doc.id);
+    void loadEquationMentions(doc.id);
     void api.post(`/api/docs/${doc.id}/figures/prepare`).catch(() => undefined);
   }, [doc.id]);
 
@@ -290,7 +292,7 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
       </section>
       <section className="muted small">
         Keys: Space play/pause · ←/→ sentence · Shift+←/→ paragraph · +/− speed · F focus · E cited equation · D figure detail.
-        Figures (playback bar) sets when reading stops to describe a figure; click “Fig. 3” in the text to see a figure any time. Popups move by their header.
+        Figures (playback bar) sets when reading stops to describe a figure; click “Fig. 3” in the text to see a figure any time, or “Eq. (2)” to see an equation, hear it or hear an AI description of it. Popups move by their header.
       </section>
     </aside>
   );

@@ -1,10 +1,23 @@
-// Popups over the reading area (the PDF or the text view): the figure popup, the equation details and the cited
-// equation (E). Each opens next to what it belongs to and can be dragged by its header inside the area.
+// Popups over the reading area (the PDF or the text view): the figure popup, the equation details and the equation
+// popup (a clicked "Eq. (3)", or E). Each opens next to what it belongs to and can be dragged by its header inside
+// the area.
 import { useEffect, useState } from "react";
 import { api, type Rect } from "./api";
-import { EquationPopover } from "./Equations";
+import { EquationAiButton, EquationPopover } from "./Equations";
 import { FloatingPanel } from "./Float";
-import { type FigPopup, type PopAnchor, closeFigure, detailKey, figureDetail, hearFigure, noteFigureReady, sentenceAt, useStore } from "./store";
+import {
+  type FigPopup,
+  type PopAnchor,
+  closeEquation,
+  closeFigure,
+  detailKey,
+  figureDetail,
+  hearEquation,
+  hearFigure,
+  noteFigureReady,
+  sentenceAt,
+  useStore,
+} from "./store";
 
 export type View = "pdf" | "text";
 
@@ -23,7 +36,7 @@ function textBox(selector: string): DOMRect | null {
 
 /** The box to open next to: a mention (its last line, or first for "above") or else its sentence. */
 function anchorBox(view: View, a: PopAnchor, prefer: "below" | "above"): DOMRect | null {
-  if (view === "text") return (a.span && textBox(`[data-fig="${a.sid}:${a.span[0]}"]`)) || textBox(`[data-sid="${a.sid}"]`);
+  if (view === "text") return (a.span && textBox(`[data-mention="${a.sid}:${a.span[0]}"]`)) || textBox(`[data-sid="${a.sid}"]`);
   const rects = a.rects?.length ? a.rects : (sentenceAt(a.sid)?.s.rects ?? []);
   const r = prefer === "above" ? rects[0] : rects[rects.length - 1];
   return r ? pageBox(r) : null;
@@ -33,7 +46,7 @@ export function Popups({ view }: { view: View }) {
   return (
     <div className="float-layer">
       <EquationDetails view={view} />
-      <CitedEquation view={view} />
+      <EquationPanel view={view} />
       <FigurePanel view={view} />
     </div>
   );
@@ -48,35 +61,47 @@ function EquationDetails({ view }: { view: View }) {
   return <EquationPopover b={b} anchor={() => anchorBox(view, a, "below")} />;
 }
 
-function CitedEquation({ view }: { view: View }) {
-  const ref = useStore((s) => s.eqRef);
+/** An equation over the text: clicked in the text ("Eq. (3)", stays until closed) or cited by the sentence being read
+ * (E, closes when its reading ends). Read it, or hear an AI description of it. */
+function EquationPanel({ view }: { view: View }) {
+  const pop = useStore((s) => s.eqPopup);
   const doc = useStore((s) => s.doc)!;
-  const res = useStore((s) => (ref ? s.eqResults[ref.blockId] : undefined));
-  const b = ref ? doc.blocks.find((x) => x.id === ref.blockId) : undefined;
-  if (!ref || !b) return null;
+  const res = useStore((s) => (pop ? s.eqResults[pop.blockId] : undefined));
+  const description = useStore((s) => (pop ? s.eqDescriptions[pop.blockId] : undefined));
+  const b = pop ? doc.blocks.find((x) => x.id === pop.blockId) : undefined;
+  if (!pop || !b) return null;
   const [x0, y0, x1, y1] = b.bbox;
   const verdict = res?.verdict;
+  const name = b.eq_number ? `Equation ${b.eq_number}` : "Equation";
   return (
     <FloatingPanel
       className="eqref-pop"
       width={560}
-      openKey={`${b.id}:${ref.sentenceId}`}
+      openKey={`eq:${pop.seq}`}
       anchorKey=""
-      prefer="above"
-      anchor={() => anchorBox(view, { sid: ref.sentenceId, span: null, rects: null }, "above")}
-      label={`Equation ${b.eq_number}`}
+      prefer={pop.prefer}
+      anchor={() => anchorBox(view, pop.anchor, pop.prefer)}
+      label={name}
       head={
         <>
-          <b>Equation {b.eq_number} (page {b.page + 1})</b>
+          <b>{name} (page {b.page + 1})</b>
           {verdict && <span className={`eq-badge static ${verdict}`}>{verdict}</span>}
+          <button onClick={() => hearEquation(b.id)} title="Read the equation, then go back to where you were">▶ Read it</button>
+          <EquationAiButton blockId={b.id} primary />
+          <button className="ghost" onClick={closeEquation} aria-label="Close">✕</button>
         </>
       }
     >
       <img
         src={`/api/docs/${doc.id}/crop?page=${b.page}&x0=${x0}&y0=${y0}&x1=${x1}&y1=${y1}`}
-        alt={`Equation ${b.eq_number}`}
+        alt={name}
         style={{ aspectRatio: `${Math.max(1, x1 - x0 + 8)} / ${Math.max(1, y1 - y0 + 8)}` }}
       />
+      {description && (
+        <div className="fig-desc">
+          <span className="ai-label">AI description</span> {description}
+        </div>
+      )}
     </FloatingPanel>
   );
 }
@@ -127,7 +152,7 @@ function useFigureTarget(pop: FigPopup | null): string | undefined {
 function FigurePanel({ view }: { view: View }) {
   const pop = useStore((s) => s.figPopup);
   const doc = useStore((s) => s.doc)!;
-  const detailFor = useStore((s) => s.figDetail);
+  const detailFor = useStore((s) => s.aiBusy);
   const job = useFigureTarget(pop);
   if (!pop) return null;
   const detailBusy = detailFor === detailKey(pop);
